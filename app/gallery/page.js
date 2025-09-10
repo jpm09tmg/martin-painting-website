@@ -1,4 +1,16 @@
- 'use client'
+/**
+ * Dev Notes – Gallery Page
+ * -----------------------
+ * - Make pagination functional instead of just static buttons.
+ * - Add lightbox / image carousel when clicking a project card.
+ * - Replace hardcoded project data with DB/API call.
+ * - Store images in cloud storage (S3, etc.) instead of /public for scaling.
+ * - Consider multiple-tag filtering (e.g. Interior + Residential).
+ * - Add loading states or skeletons for better UX when fetching.
+ * - Improve accessibility (keyboard nav, aria labels).
+ */
+
+'use client'
  import { useState } from 'react'
     import Image from 'next/image'
     import Header from '../components/Header'
