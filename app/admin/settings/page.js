@@ -59,6 +59,7 @@ export default function SettingsPage() {
 
                 {/* Form */}
                 <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Full Name */}
                   <div className="flex flex-col">
                     <label
                       htmlFor="fullName"
@@ -82,6 +83,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
+                  {/* Position */}
                   <div className="flex flex-col">
                     <label
                       htmlFor="position"
@@ -104,6 +106,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
+                  {/* Email */}
                   <div className="flex flex-col">
                     <label
                       htmlFor="email"
@@ -150,6 +153,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
+                  {/* Address */}
                   <div className="flex flex-col">
                     <label
                       htmlFor="address"
@@ -181,7 +185,7 @@ export default function SettingsPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Login Information
               </h2>
-
+              {/* Username */}
               <div className="w-full max-w-md mx-auto space-y-6">
                 <div className="flex flex-col">
                   <label
@@ -206,6 +210,7 @@ export default function SettingsPage() {
                   />
                 </div>
 
+                {/* Password */}
                 <div className="flex flex-col">
                   <label
                     htmlFor="password"
