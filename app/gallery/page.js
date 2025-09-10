@@ -146,28 +146,48 @@
                         </div>
                     </div>
                 </div>
-
-                {/*Project Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredProjects.map(project => (
-                        <div key={project.id} className="group cursor-pointer">
-                            <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-                                <Image
-                                    src={project.image}
-                                    alt={project.alt}
-                                    width={400}
-                                    height={300}
-                                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
-                            </div>
+                
+                {/* Same grid from landscaping site; add image carousel on click */}
+                {/* Project Grid */}
+                <div className="py-12 bg-white">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {filteredProjects.map((project) => (
+                                <div key={project.id} className="group cursor-pointer">
+                                    <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                                        <Image
+                                            src={project.image}
+                                            alt={project.alt}
+                                            width={400}
+                                            height={300}
+                                            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
 
                 {/* Pagination */}
+                <div className="py-8 bg-white border-t border-gray-200">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <div className="flex justify-center items-center space-x-4">
+                            <button className="text-gray-600 hover:text-[#5F9136]">Prev</button>
+                            <div className="flex space-x-2">
+                                <button className="w-10 h-10 bg-[#5F9136] text-white rounded-full">1</button>
+                                <button className="w-10 h-10 bg-white text-gray-700 border">2</button>
+                                <button className="w-10 h-10 bg-white text-gray-700 border">3</button>
+                                <span className="w-10 h-10 flex items-center justify-center text-gray-500">...</span>
+                            </div>
+                            <button className="text-gray-600 hover:text-[#5F9136]">Next</button>
+                        </div>
+                    </div>
+                </div>
 
+
+                <Footer />
             </div>
-
         )
     }
