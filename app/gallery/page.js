@@ -1,8 +1,8 @@
  'use client'
  import { useState } from 'react'
     import Image from 'next/image'
-    import Header from '../../components/Header'
-    import Footer from '../../components/Footer'
+    import Header from '../components/Header'
+    import Footer from '../components/Footer'
 
     export default function Gallery() {
         //const [images, setImages] = useState([]);
@@ -124,10 +124,31 @@
                         </p>
                     </div>
                 </div>
-
+                
+                
                 {/* Filter Buttons */}
+                <div className="py-8 bg-white">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <div className="flex justify-center space-x-4">
+                            {['all', 'interior', 'exterior', 'commercial', 'residential'].map((cat) => (
+                            <button
+                                key={cat} // switched filter buttons to loop instead of hardcoding each button for better rendering
+                                onClick={() => setActiveFilter(cat)}
+                                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                activeFilter === cat
+                                    ? 'bg-[#5F9136] text-white'
+                                    : 'bg-white text-gray-700 border border-[#5F9136] hover:bg-[#5F9136] hover:text-white'
+                                }`}
+                            >
+                                {cat.charAt(0).toUpperCase() + cat.slice(1)} {/* Capitalizes first letter of each filter button */}
+                            </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
                 {/*Project Grid */}
+                
 
                 {/* Pagination */}
 
