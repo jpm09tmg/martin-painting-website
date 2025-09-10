@@ -7,8 +7,11 @@
     export default function Gallery() {
         //const [images, setImages] = useState([]);
 
+        //sets default filter to 'all'
         const [activeFilter, setActiveFilter] = useState('all');
 
+
+        //image data
         const projects = [
             { 
                 id: 1,
@@ -102,21 +105,33 @@
             }
         ]
 
+        // Sets filtering based on category by navigating the category buttons at top of gallery
+        const filteredProjects = activeFilter === 'all'
+            ? projects
+            : projects.filter(project => project.category === activeFilter);
 
+
+        // Note: Consider adding a file that determines website color scheme and company theme to allow easy switching of color palette
         return (
-            <>
-                <Header />
-                <main>
-                    <h1>Gallery</h1>
-                    <div className="gallery">
-                        {images.map((image) => (
-                            <div key={image.id} className="gallery-item">
-                                <Image src={image.src} alt={image.alt} width={300} height={300} />
-                            </div>
-                        ))}
+            <div className="w-full min-h-screen flex flex-col bg-white">
+                <Header currentPage="gallery" />
+                                
+                <div className="bg[#F1F4E8] py-16">
+                    <div className="max-w-7xl mx-auto px-4 text-center">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">Painting Project Gallery</h1>
+                        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+                            Explore some of our completed painting projects. From interior walls to full home exteriors and commercial spaces, we bring color and quality craftsmanship to every job.
+                        </p>
                     </div>
-                </main>
-                <Footer />
-            </>
-        );
+                </div>
+
+                {/* Filter Buttons */}
+
+                {/*Project Grid */}
+
+                {/* Pagination */}
+
+            </div>
+
+        )
     }
