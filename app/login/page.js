@@ -7,7 +7,7 @@ import { User, Lock } from 'lucide-react'
 export default function AdminLoginPage() {
   return (
     <div className="min-h-screen w-full bg-white">
-      <div className="w-full h-[90px] bg-[#5F9136] flex items-center justify-center">
+      <div className="w-full h-16 bg-[#74A744] justify-center flex items-center">
         <div className="flex items-center">
             <Link href="/" className="hover:opacity-80 transition-opacity">
                   <div className="w-28 h-12 bg-[#E4EDCB] rounded-lg overflow-hidden shadow-md">
