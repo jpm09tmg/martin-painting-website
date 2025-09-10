@@ -15,6 +15,7 @@ export default function AdminHeader() {
                 />
               </div>
             </Link>
+            {/* TODO: add admin icon + notification bell? + logout option */}
         </div>
     )
 }
