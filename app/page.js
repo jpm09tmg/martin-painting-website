@@ -231,7 +231,7 @@ export default function Home() {
             Get a free consultation and quote for your painting project
           </p>
           <Link 
-            href="/appointment" 
+            href="/appointments" 
             className="px-8 py-3 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] transition duration-300"
           >
             Book Appointment
