@@ -108,7 +108,7 @@
         // Sets filtering based on category by navigating the category buttons at top of gallery
         const filteredProjects = activeFilter === 'all'
             ? projects
-            : projects.filter(project => project.category === activeFilter);
+            : projects.filter(project => project.category.includes(activeFilter)) // changed to accommodate change from single tag to array of tags
 
 
         // Note: Consider adding a file that determines website color scheme and company theme to allow easy switching of color palette
@@ -148,7 +148,7 @@
                 </div>
 
                 {/*Project Grid */}
-                
+
 
                 {/* Pagination */}
 
