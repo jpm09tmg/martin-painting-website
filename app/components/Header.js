@@ -70,6 +70,16 @@ export default function Header({ currentPage = 'home' }) {
           >
             Contact
           </Link>
+          <Link 
+            href="/admin/login" 
+            className={`px-6 py-4 text-sm transition-colors ${
+              isActive('admin') 
+                ? 'text-black bg-white/10 border-b-2 border-black' 
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            Admin
+          </Link>
         </nav>
       </div>
     </div>
