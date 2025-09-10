@@ -40,67 +40,67 @@
             { 
                 id: 5,
                 category: ['interior', 'residential'],
-                image: 'greenBed.jpg',
+                image: '/greenBed.jpg',
                 alt: 'Green Bedroom'
             },
             { 
                 id: 6,
                 category: ['interior', 'residential'],
-                image: 'greyBath.jpg',
+                image: '/greyBath.jpg',
                 alt: 'Grey Bathroom'
             },
             { 
                 id: 7,
                 category: ['interior', 'commercial'],
-                image: 'greyCom.jpg',
+                image: '/greyCom.jpg',
                 alt: 'Grey Commercial Hallway'
             },
             { 
                 id: 8,
                 category: ['interior', 'commercial'],
-                image: 'greyLiving.jpg',
+                image: '/greyLiving.jpg',
                 alt: 'Grey Living Room'
             },
             { 
                 id: 9,  
                 category: ['interior', 'commercial'],
-                image: 'greyShop.jpg',
+                image: '/greyShop.jpg',
                 alt: 'Grey Shop'
             },
             { 
                 id: 10,
                 category: ['exterior', 'residential'],
-                image: 'redExt.jpg',
+                image: '/redExt.jpg',
                 alt: 'Red Exterior'
             },
             { 
                 id: 11,
                 category: ['interior', 'residential'],
-                image: 'whiteBath.jpg',
+                image: '/whiteBath.jpg',
                 alt: 'White Bathroom'
             },
             { 
                 id: 12,
                 category: ['interior', 'residential'],
-                image: 'whiteKitchen.jpg',
+                image: '/whiteKitchen.jpg',
                 alt: 'White Kitchen'
             },
             { 
                 id: 13,
                 category: ['interior', 'residential'],
-                image: 'whiteLiving.jpg',
+                image: '/whiteLiving.jpg',
                 alt: 'White Living Room'
             },
             { 
                 id: 14,
                 category: ['interior', 'commercial'],
-                image: 'whiteOffice.jpg',
+                image: '/whiteOffice.jpg',
                 alt: 'White Office'
             },
             { 
                 id: 15,
                 category: ['exterior', 'residential'],
-                image: 'whiteRedExt.jpg',
+                image: '/whiteRedExt.jpg',
                 alt: 'White and Red Exterior'
             }
         ]
@@ -148,7 +148,22 @@
                 </div>
 
                 {/*Project Grid */}
-
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredProjects.map(project => (
+                        <div key={project.id} className="group cursor-pointer">
+                            <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                                <Image
+                                    src={project.image}
+                                    alt={project.alt}
+                                    width={400}
+                                    height={300}
+                                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
                 {/* Pagination */}
 
