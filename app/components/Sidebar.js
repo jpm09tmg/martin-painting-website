@@ -11,6 +11,7 @@ export default function Sidebar() {
   const isDashboardActive = pathname === '/admin'
   const isAppointmentsActive = pathname.startsWith('/admin/appointments')
   const isProjectsActive = pathname.startsWith('/admin/projects')
+  const isQuotesActive = pathname.startsWith('/admin/quotes')
   const isPaymentsActive = pathname.startsWith('/admin/payments')
   const isSettingsActive = pathname.startsWith('/admin/settings')
 
@@ -31,11 +32,18 @@ export default function Sidebar() {
           <span>Appointments</span>
         </Link>
 
-        {/* Projects / Quotes */}
+        {/* Projects */}
         <Link href="/admin/projects" 
           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isProjectsActive ? 'bg-[#3F652B]' : ''}`}>
           <FileText className="w-5 h-5 text-white" />
-          <span>Projects / Quotes</span>
+          <span>Projects</span>
+        </Link>
+
+         {/* Quotes */}
+        <Link href="/admin/quotes" 
+          className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isQuotesActive ? 'bg-[#3F652B]' : ''}`}>
+          <FileText className="w-5 h-5 text-white" />
+          <span>Quotes</span>
         </Link>
 
         {/* Payments */}
