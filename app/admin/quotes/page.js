@@ -3,6 +3,12 @@ import { useState } from 'react'
 import AdminHeader from "../../components/adminHeader";
 import Sidebar from "../../components/Sidebar";
 
+/*this is a quote page that the admin can fill out to send to clients
+Things to add: ability to add individual items like rooms, ceilings, etc
+                logic for calculating cost
+                set up back end */
+
+
 export default function AdminQuoteForm() {
   const [formData, setFormData] = useState({
     // Client Information
@@ -171,6 +177,7 @@ export default function AdminQuoteForm() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                   ></textarea>
                 </div>
+                    {/* Additional sections for cost breakdown, terms, etc. can be added here */}
               </div>
             </div>
           </div>
