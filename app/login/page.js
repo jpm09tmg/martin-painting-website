@@ -1,13 +1,12 @@
-// TODO: restrict access + add session
-
 'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { User, Lock } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
+import { useAuth } from '../providers/AuthProvider'
 
 export default function AdminLoginPage() {
 
@@ -17,11 +16,17 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { session } = useAuth()
+
+  useEffect(() => {
+    if (session) router.push('/admin')
+  }, [session, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
