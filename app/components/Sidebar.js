@@ -56,17 +56,17 @@ export default function Sidebar() {
           <span>Appointments</span>
         </Link>
 
-        {/* Projects Link - Now Separate */}
-        <Link href="/admin/projects"
-           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isProjectsActive ? 'bg-[#3F652B]' : ''}`}>
+        {/* Projects */}
+        <Link href="/admin/projects" 
+          className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isProjectsActive ? 'bg-[#3F652B]' : ''}`}>
           <FileText className="w-5 h-5 text-white" />
           <span>Projects</span>
         </Link>
 
-        {/* Quotes Link - Now Separate */}
-        <Link href="/admin/quotes"
-           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isQuotesActive ? 'bg-[#3F652B]' : ''}`}>
-          <MessageSquare className="w-5 h-5 text-white" />
+         {/* Quotes */}
+        <Link href="/admin/quotes" 
+          className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isQuotesActive ? 'bg-[#3F652B]' : ''}`}>
+          <FileText className="w-5 h-5 text-white" />
           <span>Quotes</span>
         </Link>
 
