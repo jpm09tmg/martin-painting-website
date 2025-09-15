@@ -19,7 +19,6 @@ export default function AdminQuoteForm() {
     // Project Details
     projectType: '',
     propertyType: '',
-    locationType: '',
     projectDescription: '',
     
     // Quote Details
@@ -164,7 +163,7 @@ export default function AdminQuoteForm() {
               <div className="p-6 border-b border-gray-200">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Project Details</h2>
                 
-                <div className="grid md:grid-cols-3 gap-6 mb-6">
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Property Type
@@ -187,7 +186,7 @@ export default function AdminQuoteForm() {
                     </label>
                     <select
                       name="projectType"
-                      value={formData.locationType}
+                      value={formData.projectType}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                     >
@@ -197,7 +196,6 @@ export default function AdminQuoteForm() {
                       <option value="Both">Interior & Exterior</option>
                     </select>
                   </div>
-
                 </div>
 
                 <div>
