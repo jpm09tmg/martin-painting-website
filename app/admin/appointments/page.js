@@ -1,6 +1,3 @@
-import AdminHeader from '../../components/adminHeader'
-import Sidebar from '../../components/Sidebar'
-
 /**
  * Appointments Management Page
  * 
@@ -23,26 +20,6 @@ export default function AppointmentsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      
-      {/* 
-       * Admin Header Component
-       * 
-       * This is the same header used across all admin pages for consistency.
-       * It shows the Martin Painting branding and will eventually include admin user info
-       * and logout functionality when authentication is added to the system.
-       */}
-      <AdminHeader />
-
-      <div className="flex flex-1">
-        
-        {/* 
-         * Navigation Sidebar
-         * 
-         * The left sidebar provides navigation between different admin sections.
-         * It highlights the current page (Appointments) and gives quick access to
-         * the dashboard, projects, quotes, and settings pages.
-         */}
-        <Sidebar />
 
         {/* 
          * Main Content Area
@@ -94,7 +71,7 @@ export default function AppointmentsPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-gray-900">0</p>
-                  <p className="text-gray-600">Today's Appointments</p>
+                  <p className="text-gray-600">Today&apos;s Appointments</p>
                 </div>
               </div>
             </div>
@@ -263,6 +240,5 @@ export default function AppointmentsPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

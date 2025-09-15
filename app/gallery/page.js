@@ -128,7 +128,7 @@
             <div className="w-full min-h-screen flex flex-col bg-white">
                 <Header currentPage="gallery" />
                                 
-                <div className="bg[#F1F4E8] py-16">
+                <div className="bg-[#F1F4E8] py-16">
                     <div className="max-w-7xl mx-auto px-4 text-center">
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">Painting Project Gallery</h1>
                         <p className="text-xl text-gray-700 max-w-3xl mx-auto">

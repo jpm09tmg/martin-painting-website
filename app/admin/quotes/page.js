@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
-import AdminHeader from "../../components/adminHeader";
-import Sidebar from "../../components/Sidebar";
+
 
 /*this is a quote page that the admin can fill out to send to clients
 Things to add: ability to add individual items like rooms, ceilings, etc
@@ -83,10 +82,7 @@ export default function AdminQuoteForm() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <AdminHeader />
-
-      <div className="flex flex-1">
-        <Sidebar />
+      
 
         <div className="flex-1 p-4">
           <div className="w-full max-w-6xl mx-auto">
@@ -371,6 +367,5 @@ export default function AdminQuoteForm() {
           </div>
         </div>
       </div>
-    </div>
   )
 }
