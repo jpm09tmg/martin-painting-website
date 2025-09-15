@@ -183,7 +183,7 @@ export default function AdminQuoteForm() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Location Type
+                      Project Type
                     </label>
                     <select
                       name="locationType"
@@ -191,26 +191,13 @@ export default function AdminQuoteForm() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                     >
-                      <option value="">Select location</option>
+                      <option value="">Select type</option>
                       <option value="Interior">Interior</option>
                       <option value="Exterior">Exterior</option>
                       <option value="Both">Interior & Exterior</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Type
-                    </label>
-                    <input
-                      type="text"
-                      name="projectType"
-                      value={formData.projectType}
-                      onChange={handleChange}
-                      placeholder="e.g., Full House Repaint"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    />
-                  </div>
                 </div>
 
                 <div>
