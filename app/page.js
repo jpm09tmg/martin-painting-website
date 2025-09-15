@@ -23,7 +23,7 @@ export default function Home() {
         <div className="relative z-10 h-full flex items-center justify-center">
           <div className="flex items-center justify-center w-full h-full" style={{ marginTop: '-40px' }}>
             <Image 
-              src="/martinPainting.pn"
+              src="/martinPainting.png"
               alt="Martin Painting Logo"
               width={6200}
               height={6200}
