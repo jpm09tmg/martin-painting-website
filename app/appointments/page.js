@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Header from '../components/Header'
+import { supabase } from '../../lib/supabase-client'
 
 export default function BookAppointment() {
   const [formData, setFormData] = useState({
@@ -32,9 +33,25 @@ export default function BookAppointment() {
     setLoading(true)
     setMessage('')
 
-    // Simulate form submission (frontend only)
-    setTimeout(() => {
-      setMessage('Appointment request submitted successfully! We will contact you within 24 hours to confirm your appointment.')
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([{
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          property_type: formData.propertyType,
+          location_type: formData.locationType,
+          appointment_date: formData.appointmentDate,
+          appointment_time: formData.appointmentTime,
+          details: formData.details
+        }])
+
+      if (error) throw error
+
+      setMessage('Appointment request submitted successfully!')
       setFormData({
         firstName: '',
         lastName: '',
@@ -47,8 +64,12 @@ export default function BookAppointment() {
         appointmentTime: '',
         details: ''
       })
-      setLoading(false)
-    }, 1500)
+    } catch (error) {
+      console.error('Error submitting appointment:', error)
+      setMessage('Error submitting appointment. Please try again or call us directly.')
+    }
+
+    setLoading(false)
   }
 
   const timeSlots = [
