@@ -40,11 +40,17 @@ export default function QuotePage() {
     <div className="min-h-screen bg-white">
       <Header currentPage="quote" />
 
-      <div className="w-full max-w-6xl mx-auto py-8 px-4">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Get Your Painting Estimate</h1>
-          <p className="text-lg text-gray-600">Fill out the details below to receive a personalized estimate</p>
+      {/* Hero Section */}
+      <div className="bg-[#F1F4E8] py-16">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Get Your Painting Estimate</h1>
+          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+            Fill out the details below to receive a personalized estimate for your painting project
+          </p>
         </div>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto py-8 px-4">
 
         <div className="bg-white rounded-lg shadow-lg border border-gray-200">
           
