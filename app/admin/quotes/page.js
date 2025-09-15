@@ -186,7 +186,7 @@ export default function AdminQuoteForm() {
                       Project Type
                     </label>
                     <select
-                      name="locationType"
+                      name="projectType"
                       value={formData.locationType}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
