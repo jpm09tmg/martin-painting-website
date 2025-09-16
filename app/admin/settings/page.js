@@ -1,7 +1,5 @@
 "use client";
 
-import AdminHeader from "../../components/adminHeader";
-import Sidebar from "../../components/Sidebar";
 
 import { useState } from "react";
 import { User, Eye, EyeOff, Camera } from "lucide-react";
@@ -26,9 +24,6 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <AdminHeader />
-      <div className="flex flex-1">
-        <Sidebar />
 
         <main className="flex-1 p-4">
           <div className="p-6 space-y-8">
@@ -262,6 +257,5 @@ export default function SettingsPage() {
           </div>
         </main>
       </div>
-    </div>
   );
 }
