@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabase-client';
 
 const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -68,13 +68,21 @@ const AdminAppointments = () => {
   };
 
   const filteredAppointments = appointments.filter(appointment => {
-    const matchesFilter = filter === 'all' || appointment.status === filter;
-    const matchesSearch = 
-      appointment.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.propertyAddress?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
+  let matchesFilter;
+  if (filter === 'active') {
+    matchesFilter = appointment.status === 'pending' || appointment.status === 'confirmed';
+  } else if (filter === 'all') {
+    matchesFilter = true;
+  } else {
+    matchesFilter = appointment.status === filter;
+  }
+  
+  const matchesSearch = 
+    appointment.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    appointment.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    appointment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    appointment.propertyAddress?.toLowerCase().includes(searchTerm.toLowerCase());
+  return matchesFilter && matchesSearch;
   });
 
   const updateStatus = async (id, newStatus) => {
@@ -179,14 +187,15 @@ const AdminAppointments = () => {
             <Filter className="w-4 h-4 text-gray-500" />
             <select 
               value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Appointments</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+  onChange={(e) => setFilter(e.target.value)}
+  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+>
+  <option value="active">Active Appointments</option>
+  <option value="all">All Appointments</option>
+  <option value="pending">Pending</option>
+  <option value="confirmed">Confirmed</option>
+  <option value="completed">Completed</option>
+  <option value="cancelled">Cancelled</option>
             </select>
           </div>
           
@@ -314,9 +323,7 @@ const AdminAppointments = () => {
                     </button>
                   )}
                   
-                  <button className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded text-sm">
-                    View Details
-                  </button>
+                  
                 </div>
               </div>
             </div>
