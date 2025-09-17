@@ -240,49 +240,6 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
-
-          {/* Quick Action Buttons for frequent Tasks */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              
-              <Link href="/admin/projects/add" className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-[#74A744]">
-                <div className="flex items-center">
-                  <svg className="w-8 h-8 text-[#74A744] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                  </svg>
-                  <div>
-                    <p className="font-semibold text-gray-900">Add New Project</p>
-                    <p className="text-sm text-gray-600">Create a new painting project</p>
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="/admin/quotes" className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-yellow-500">
-                <div className="flex items-center">
-                  <svg className="w-8 h-8 text-yellow-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd"/>
-                  </svg>
-                  <div>
-                    <p className="font-semibold text-gray-900">Manage Quotes</p>
-                    <p className="text-sm text-gray-600">Review customer requests</p>
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="/admin/appointments" className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-blue-500">
-                <div className="flex items-center">
-                  <svg className="w-8 h-8 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
-                  </svg>
-                  <div>
-                    <p className="font-semibold text-gray-900">Schedule Appointment</p>
-                    <p className="text-sm text-gray-600">Book customer meetings</p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
   );
