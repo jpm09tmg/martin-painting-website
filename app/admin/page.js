@@ -1,7 +1,4 @@
 import Link from 'next/link'
-import AdminHeader from '../components/adminHeader'
-import Sidebar from '../components/Sidebar'
-
 /**
  * Admin Dashboard - Main Overview Page
  * 
@@ -34,13 +31,6 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       
-      {/* Top navigation bar with logo and admin controls */}
-      <AdminHeader />
-
-      <div className="flex flex-1">
-        
-        {/* Left sidebar with navigation menu */}
-        <Sidebar />
 
         {/* Main content area with dashboard widgets */}
         <div className="flex-1 p-8 bg-gray-50">
@@ -48,7 +38,7 @@ export default function AdminDashboard() {
           {/* Page title and welcome message */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here's what's happening with Martin Painting.</p>
+            <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with Martin Painting.</p>
           </div>
 
           {/* Few important areas in admin dashboard */}
@@ -295,6 +285,5 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -1,7 +1,5 @@
 'use client'
 
-import AdminHeader from "@/app/components/adminHeader"
-import Sidebar from "@/app/components/Sidebar"
 import { useState } from "react"
 
 export default function PaymentsPage() {
@@ -20,10 +18,6 @@ export default function PaymentsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <AdminHeader />
-
-      <div className="flex flex-1">
-        <Sidebar />
 
         
 
@@ -66,6 +60,5 @@ export default function PaymentsPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }
