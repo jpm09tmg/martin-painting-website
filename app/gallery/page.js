@@ -1,15 +1,3 @@
-/**
- * Dev Notes – Gallery Page
- * -----------------------
- * - Make pagination functional instead of just static buttons.
- * - Add lightbox / image carousel when clicking a project card.
- * - Replace hardcoded project data with DB/API call.
- * - Store images in cloud storage (S3, etc.) instead of /public for scaling.
- * - Consider multiple-tag filtering (e.g. Interior + Residential).
- * - Add loading states or skeletons for better UX when fetching.
- * - Improve accessibility (keyboard nav, aria labels).
- */
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -38,7 +26,7 @@ const PAGE_SIZE = 12;
 async function listFolder(folder) {
   const { data, error } = await supabase.storage.from("gallery").list(folder, {
     limit: 1000, //fetch up to 1000 images per folder
-    sortBy: { column: "created_at", order: "desc" },
+    sortBy: { column: "name", order: "asc" },
   });
   if (error) throw error;
 
@@ -124,106 +112,6 @@ export default function Gallery() {
 
   // filtering button categories
   const filters = ["all", "interior", "exterior", "commercial", "residential"];
-
-  //image data hardcoded version
-  //   const projects = [
-  //     {
-  //       id: 1,
-  //       category: ["exterior", "residential"],
-  //       image: "/blueExt.jpg",
-  //       alt: "Blue Exterior",
-  //     },
-  //     {
-  //       id: 2,
-  //       category: ["interior", "residential"],
-  //       image: "/blueLiving.jpg",
-  //       alt: "Blue Living Room",
-  //     },
-  //     {
-  //       id: 3,
-  //       category: ["interior", "commercial"],
-  //       image: "/blueOffice.jpg",
-  //       alt: "Blue Office",
-  //     },
-  //     {
-  //       id: 4,
-  //       category: ["exterior", "residential"],
-  //       image: "/deckstain.jpg",
-  //       alt: "Deck Stain",
-  //     },
-  //     {
-  //       id: 5,
-  //       category: ["interior", "residential"],
-  //       image: "/greenBed.jpg",
-  //       alt: "Green Bedroom",
-  //     },
-  //     {
-  //       id: 6,
-  //       category: ["interior", "residential"],
-  //       image: "/greyBath.jpg",
-  //       alt: "Grey Bathroom",
-  //     },
-  //     {
-  //       id: 7,
-  //       category: ["interior", "commercial"],
-  //       image: "/greyCom.jpg",
-  //       alt: "Grey Commercial Hallway",
-  //     },
-  //     {
-  //       id: 8,
-  //       category: ["interior", "commercial"],
-  //       image: "/greyLiving.jpg",
-  //       alt: "Grey Living Room",
-  //     },
-  //     {
-  //       id: 9,
-  //       category: ["interior", "commercial"],
-  //       image: "/greyShop.jpg",
-  //       alt: "Grey Shop",
-  //     },
-  //     {
-  //       id: 10,
-  //       category: ["exterior", "residential"],
-  //       image: "/redExt.jpg",
-  //       alt: "Red Exterior",
-  //     },
-  //     {
-  //       id: 11,
-  //       category: ["interior", "residential"],
-  //       image: "/whiteBath.jpg",
-  //       alt: "White Bathroom",
-  //     },
-  //     {
-  //       id: 12,
-  //       category: ["interior", "residential"],
-  //       image: "/whiteKitchen.jpg",
-  //       alt: "White Kitchen",
-  //     },
-  //     {
-  //       id: 13,
-  //       category: ["interior", "residential"],
-  //       image: "/whiteLiving.jpg",
-  //       alt: "White Living Room",
-  //     },
-  //     {
-  //       id: 14,
-  //       category: ["interior", "commercial"],
-  //       image: "/whiteOffice.jpg",
-  //       alt: "White Office",
-  //     },
-  //     {
-  //       id: 15,
-  //       category: ["exterior", "residential"],
-  //       image: "/whiteRedExt.jpg",
-  //       alt: "White and Red Exterior",
-  //     },
-  //   ];
-
-  // Sets filtering based on category by navigating the category buttons at top of gallery
-  //   const filteredProjects =
-  //     activeFilter === "all"
-  //       ? projects
-  //       : projects.filter((project) => project.category.includes(activeFilter)); // changed to accommodate change from single tag to array of tags
 
   // Note: Consider adding a file that determines website color scheme and company theme to allow easy switching of color palette
   return (
