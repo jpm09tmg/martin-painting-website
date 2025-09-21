@@ -1,20 +1,41 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase-client"
 
 export default function PaymentsPage() {
 
-  const [payments, setPayments] = useState([
-    { id: 1, project: "Exterior House Painting", client: "John Doe", total: 2500, paid: 1500, status: "Partial" },
-    { id: 2, project: "Interior Office Painting", client: "Sarah Smith", total: 4000, paid: 4000, status: "Paid" },
-    { id: 3, project: "Fence & Deck Stain", client: "Mike Lee", total: 1200, paid: 0, status: "Unpaid" },
-  ])
+  const [payments, setPayments] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const handleStatusChange = (id, newStatus) => {
+  useEffect(() => {
+    const fetchPayments = async () => {
+      const { data, error } = await supabase.from("payments").select("*")
+      if (error) {
+        console.error("Error fetching payments:", error)
+      }
+      else {
+        setPayments(data)
+      }
+      setLoading(false)
+    }
+
+    fetchPayments()
+  }, [])
+
+  const handleStatusChange = async (id, newStatus) => {
+    const { error } = await supabase.from("payments").update({status: newStatus}).eq("id", id)
+
+    if (error) {
+      console.error("Failed to update status: ", error)
+    } else {
     setPayments(prev =>
       prev.map(p => (p.id === id ? { ...p, status: newStatus } : p))
     )
+    }
   }
+
+    if (loading) return <p className="p-6">Loading payments...</p>
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
