@@ -122,7 +122,8 @@ export default function QuotePage() {
                   type="number"
                   name="squareFootage"
                   placeholder="e.g., 1200"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
                 />
               </div>
 
@@ -134,7 +135,8 @@ export default function QuotePage() {
                   type="number"
                   name="numberOfRooms"
                   placeholder="e.g., 3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
                 />
               </div>
 
@@ -144,7 +146,7 @@ export default function QuotePage() {
                 </label>
                 <select
                   name="ceilingHeight"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
                 >
                   <option value="">Select height</option>
                   <option value="8ft">8 feet (standard)</option>
@@ -162,7 +164,7 @@ export default function QuotePage() {
                 </label>
                 <select
                   name="currentCondition"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
                 >
                   <option value="">Select condition</option>
                   {paintConditions.map((condition) => (
@@ -177,7 +179,7 @@ export default function QuotePage() {
                 </label>
                 <select
                   name="paintQuality"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
                 >
                   <option value="">Select quality</option>
                   {paintQualities.map((quality) => (
