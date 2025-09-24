@@ -1,3 +1,4 @@
+// app/page.js
 import Link from "next/link";
 import Image from "next/image";
 import Header from "./components/Header";
@@ -124,32 +125,36 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
               {
+                key: "interior",
                 title: "Interior Painting",
-                href: "/services/interior",
+                href: "/services#interior",
                 img: "/whiteLiving.jpg",
                 desc: "Transform your indoor spaces with our professional interior painting services.",
               },
               {
+                key: "exterior",
                 title: "Exterior Painting",
-                href: "/services/exterior",
+                href: "/services#exterior",
                 img: "/blueExt.jpg",
                 desc: "Protect and beautify your homes exterior with weather-resistant paint solutions.",
               },
               {
+                key: "residential",
                 title: "Residential",
-                href: "/services/residential",
+                href: "/services#residential",
                 img: "/greenBed.jpg",
                 desc: "Complete home painting services tailored to your personal style and needs.",
               },
               {
+                key: "commercial",
                 title: "Commercial",
-                href: "/services/commercial",
+                href: "/services#commercial",
                 img: "/greyCom.jpg",
                 desc: "Professional painting solutions for offices, retail spaces, and commercial buildings.",
               },
             ].map((s) => (
               <div
-                key={s.title}
+                key={s.key}
                 className="group bg-[#EAF3E0] rounded-lg p-8 transition-all duration-200 motion-reduce:transition-none hover:shadow-lg hover:-translate-y-1"
               >
                 <div className="overflow-hidden rounded-lg mb-6">
