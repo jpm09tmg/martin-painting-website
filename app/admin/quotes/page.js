@@ -814,6 +814,7 @@ Notes: ${quote.notes || 'None'}
                         </div>
                       </div>
 
+                      {/* Adds a remove button */}
                       {formData.items.length > 1 && (
                         <div className="mt-4 flex justify-end">
                           <button

@@ -341,6 +341,7 @@ export default function QuotePage() {
                       </div>
                     </div>
 
+                          {/* Links to appointment page */}
                     <div className="mt-6 pt-4 border-t">
                       <Link
                         href="/appointments"
