@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from './providers/AuthProvider'
+import { AuthProvider } from "./providers/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,18 +14,17 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Martin Painting - Professional Painting Services Calgary",
-  description: "Expert interior and exterior painting services for residential and commercial properties in Calgary.",
+  description:
+    "Expert interior and exterior painting services for residential and commercial properties in Calgary.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth motion-reduce:scroll-auto`}
       >
-        <AuthProvider>
-        {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
