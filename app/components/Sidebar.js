@@ -24,11 +24,13 @@ export default function Sidebar() {
   const pathname = usePathname()
   
   const isDashboardActive = pathname === '/admin'
+  const isClientsActive = pathname.startsWith('/admin/clients')
   const isAppointmentsActive = pathname.startsWith('/admin/appointments')
   const isProjectsActive = pathname.startsWith('/admin/projects')
   const isQuotesActive = pathname.startsWith('/admin/quotes')
   const isPaymentsActive = pathname.startsWith('/admin/payments')
   const isSettingsActive = pathname.startsWith('/admin/settings')
+  
 
   return (
     <aside className="w-[250px] bg-[#547d32] min-h-screen sticky top-0">
@@ -47,6 +49,13 @@ export default function Sidebar() {
            className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isDashboardActive ? 'bg-[#3F652B]' : ''}`}>
           <Home className="w-5 h-5 text-white" />
           <span>Dashboard</span>
+        </Link>
+
+        {/* Clients Link */}
+        <Link href="/admin/clients"
+           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isClientsActive ? 'bg-[#3F652B]' : ''}`}>
+          <Home className="w-5 h-5 text-white" />
+          <span>Clients</span>
         </Link>
 
         {/* Appointments Link */}
