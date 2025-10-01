@@ -9,6 +9,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [message, setMessage] = useState('')
+  const [editingClient, setEditingClient] = useState(null)
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -61,25 +62,56 @@ export default function ClientsPage() {
       phone: '',
       address: ''
     })
+    setEditingClient(null)
+  }
+
+  const openEditForm = (client) => {
+    setFormData({
+      firstName: client.first_name || '',
+      lastName: client.last_name || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      address: client.address || ''
+    })
+    setEditingClient(client)
+    setShowForm(true)
   }
 
   const saveClient = async () => {
     setMessage('')
 
     try {
-      const { error } = await supabase
-        .from('clients')
-        .insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address
-        })
+      if (editingClient) {
+        // Update existing client
+        const { error } = await supabase
+          .from('clients')
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address
+          })
+          .eq('id', editingClient.id)
 
-      if (error) throw error
+        if (error) throw error
+        setMessage('Client updated successfully!')
+      } else {
+        // Insert new client
+        const { error } = await supabase
+          .from('clients')
+          .insert({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address
+          })
 
-      setMessage('Client added successfully!')
+        if (error) throw error
+        setMessage('Client added successfully!')
+      }
+
       resetForm()
       setShowForm(false)
       loadClients() // Reload clients
@@ -204,7 +236,11 @@ export default function ClientsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredClients.map((client) => (
-                  <tr key={client.id} className="hover:bg-gray-50">
+                  <tr 
+                    key={client.id} 
+                    onClick={() => openEditForm(client)}
+                    className="hover:bg-gray-50 cursor-pointer"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {client.first_name} {client.last_name}
@@ -241,12 +277,14 @@ export default function ClientsPage() {
         )}
       </div>
 
-      {/* Add Client Form Modal */}
+      {/* Add or Edit Client Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full max-h-[95vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Add New Client</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {editingClient ? 'Edit Client' : 'Add New Client'}
+              </h2>
               <button
                 onClick={() => {setShowForm(false); resetForm(); setMessage('')}}
                 className="text-gray-400 hover:text-gray-600"
@@ -334,7 +372,7 @@ export default function ClientsPage() {
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5d8636] transition-colors flex items-center justify-center"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Add Client
+                  {editingClient ? 'Update Client' : 'Add Client'}
                 </button>
               </div>
             </div>
