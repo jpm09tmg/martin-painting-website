@@ -8,10 +8,11 @@ import { supabase } from '../../lib/supabase-client'
  * 
  * This is the central hub for managing Martin Painting business operations.
  * Shows key metrics, recent activity, and provides quick access to common tasks.
- * Connected to appointments database only (quotes removed for debugging).
+ * Connected to both appointments and projects databases.
  */
 export default function AdminDashboard() {
   const [appointments, setAppointments] = useState([])
+  const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Load data on component mount
@@ -21,14 +22,12 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
+      // Load appointments
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10)
-
-      console.log('Appointments data:', appointmentsData)
-      console.log('Appointments error:', appointmentsError)
 
       if (appointmentsError) {
         console.error('Appointments error:', appointmentsError)
@@ -37,9 +36,24 @@ export default function AdminDashboard() {
         setAppointments(appointmentsData || [])
       }
 
+      // Load projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (projectsError) {
+        console.error('Projects error:', projectsError)
+        setProjects([])
+      } else {
+        setProjects(projectsData || [])
+      }
+
     } catch (err) {
       console.error('Error loading dashboard data:', err)
       setAppointments([])
+      setProjects([])
     } finally {
       setLoading(false)
     }
@@ -50,15 +64,15 @@ export default function AdminDashboard() {
     .filter(apt => apt.status === 'pending')
     .slice(0, 2) // Show only latest 2
 
-  // Calculate stats from real data (appointments only)
+  // Calculate stats from real data
   const stats = {
-    totalProjects: 0, // Still not connected to projects database
-    pendingQuotes: 0, // Removed quotes query
+    totalProjects: projects.length,
+    totalAppointments: appointments.length,
     completedThisMonth: appointments.filter(apt => 
       apt.status === 'completed' && 
       new Date(apt.created_at).getMonth() === new Date().getMonth()
     ).length,
-    revenue: '$0' // Still needs revenue calculation
+    pendingAppointments: upcomingAppointments.length
   }
 
   const formatDate = (dateString) => {
@@ -67,6 +81,16 @@ export default function AdminDashboard() {
       day: 'numeric',
       year: 'numeric'
     })
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Planning': return 'bg-yellow-100 text-yellow-800'
+      case 'In Progress': return 'bg-blue-100 text-blue-800'
+      case 'Completed': return 'bg-green-100 text-green-800'
+      case 'On Hold': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
   }
 
   return (
@@ -107,7 +131,7 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">{appointments.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalAppointments}</p>
                 <p className="text-gray-600">Total Appointments</p>
               </div>
             </div>
@@ -137,7 +161,7 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">{upcomingAppointments.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pendingAppointments}</p>
                 <p className="text-gray-600">Pending Appointments</p>
               </div>
             </div>
@@ -155,20 +179,56 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="p-6">
-            <div className="text-center py-8">
-              <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              <p className="text-gray-500 font-medium">No projects yet</p>
-              <p className="text-gray-400 text-sm">Projects will appear here once you start adding them</p>
-              <Link href="/admin/projects" className="inline-block mt-3 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] text-sm">
-                Add Your First Project
-              </Link>
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading projects...</p>
+              </div>
+            ) : projects.length > 0 ? (
+              <div className="space-y-4">
+                {projects.map((project) => (
+                  <div key={project.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">{project.name}</h4>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                        {project.status}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p><span className="font-medium">Client:</span> {project.client}</p>
+                      <p><span className="font-medium">Address:</span> {project.address}</p>
+                      <p><span className="font-medium">Budget:</span> ${project.budget?.toLocaleString()}</p>
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Progress</span>
+                          <span>{project.progress || 0}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-[#74A744] h-2 rounded-full transition-all"
+                            style={{ width: `${project.progress || 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <p className="text-gray-500 font-medium">No projects yet</p>
+                <p className="text-gray-400 text-sm">Projects will appear here once you start adding them</p>
+                <Link href="/admin/projects" className="inline-block mt-3 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] text-sm">
+                  Add Your First Project
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Upcoming Appointments Section - shows real data */}
+        {/* Upcoming Appointments Section */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -186,26 +246,28 @@ export default function AdminDashboard() {
             ) : upcomingAppointments.length > 0 ? (
               <div className="space-y-4">
                 {upcomingAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                        <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                        </svg>
+                  <div key={appointment.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{appointment.first_name} {appointment.last_name}</h4>
+                          <p className="text-sm text-gray-600">{appointment.email}</p>
+                          <p className="text-sm text-gray-600">Phone: {appointment.phone}</p>
+                          <p className="text-sm text-gray-600 mt-1">{appointment.property_type} - {appointment.location_type}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{appointment.first_name} {appointment.last_name}</p>
-                        <p className="text-sm text-gray-600">{appointment.email}</p>
-                        <p className="text-xs text-gray-500">Phone: {appointment.phone}</p>
-                        <p className="text-xs text-gray-500">{appointment.property_type} - {appointment.location_type}</p>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{formatDate(appointment.appointment_date)}</p>
+                        <p className="text-sm text-gray-600">{appointment.appointment_time}</p>
+                        <span className="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                          {appointment.status}
+                        </span>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900">{appointment.appointment_date}</p>
-                      <p className="text-sm text-[#74A744]">{appointment.appointment_time}</p>
-                      <span className="inline-block mt-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                        {appointment.status}
-                      </span>
                     </div>
                   </div>
                 ))}
@@ -213,10 +275,10 @@ export default function AdminDashboard() {
             ) : (
               <div className="text-center py-8">
                 <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 6v6m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M6 7h8" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-gray-500 font-medium">No pending appointments</p>
-                <p className="text-gray-400 text-sm">Pending appointments will appear here</p>
+                <p className="text-gray-500 font-medium">No upcoming appointments</p>
+                <p className="text-gray-400 text-sm">New appointments will appear here</p>
               </div>
             )}
           </div>
