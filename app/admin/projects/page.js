@@ -1,13 +1,16 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Search, Filter, Calendar, DollarSign, User, MapPin, Clock } from 'lucide-react'
+import { supabase } from '@/lib/supabase-client'
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState('')
   
-  // Projects data - will be loaded from database
+  // Projects data - loaded from database
   const [projects, setProjects] = useState([])
 
   const [newProject, setNewProject] = useState({
@@ -22,6 +25,29 @@ export default function ProjectsPage() {
     description: ''
   })
 
+  // Load projects from database on component mount
+  useEffect(() => {
+    loadProjects()
+  }, [])
+
+  const loadProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      
+      setProjects(data || [])
+    } catch (err) {
+      console.error('Error loading projects:', err)
+      setMessage(`Error loading projects: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Filter projects based on search and status
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,58 +57,99 @@ export default function ProjectsPage() {
     return matchesSearch && matchesStatus
   })
 
-  // Update progress function
-  const updateProgress = (projectId, change) => {
-    setProjects(projects.map(project => {
-      if (project.id === projectId) {
-        const newProgress = Math.max(0, Math.min(100, project.progress + change))
-        // Auto-update status based on progress
-        let newStatus = project.status
-        if (newProgress === 0) {
-          newStatus = 'Planning'
-        } else if (newProgress > 0 && newProgress < 100) {
-          newStatus = 'In Progress'
-        } else if (newProgress === 100) {
-          newStatus = 'Completed'
-        }
-        
-        return {
-          ...project,
+  // Update progress function - now saves to database
+  const updateProgress = async (projectId, change) => {
+    const project = projects.find(p => p.id === projectId)
+    if (!project) return
+
+    const newProgress = Math.max(0, Math.min(100, project.progress + change))
+    
+    // Auto-update status based on progress
+    let newStatus = project.status
+    if (newProgress === 0) {
+      newStatus = 'Planning'
+    } else if (newProgress > 0 && newProgress < 100) {
+      newStatus = 'In Progress'
+    } else if (newProgress === 100) {
+      newStatus = 'Completed'
+    }
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ 
           progress: newProgress,
           status: newStatus
+        })
+        .eq('id', projectId)
+
+      if (error) throw error
+
+      // Update local state
+      setProjects(projects.map(p => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            progress: newProgress,
+            status: newStatus
+          }
         }
-      }
-      return project
-    }))
-    
-    // TODO: Update progress in database
-    // updateProgressInDatabase(projectId, newProgress)
+        return p
+      }))
+    } catch (err) {
+      console.error('Error updating progress:', err)
+      setMessage(`Error updating progress: ${err.message}`)
+    }
   }
 
-  const handleAddProject = (e) => {
+  const handleAddProject = async (e) => {
     e.preventDefault()
-    const project = {
-      ...newProject,
-      id: Date.now(), // Temporary ID until database save
-      progress: 0,
-      budget: parseInt(newProject.budget)
+    setMessage('')
+
+    try {
+      const projectData = {
+        name: newProject.name,
+        client: newProject.client,
+        address: newProject.address,
+        status: newProject.status,
+        start_date: newProject.startDate,
+        end_date: newProject.endDate,
+        budget: parseInt(newProject.budget),
+        type: newProject.type,
+        description: newProject.description,
+        progress: 0
+      }
+
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([projectData])
+        .select()
+
+      if (error) throw error
+
+      setMessage('Project added successfully!')
+      setProjects([data[0], ...projects])
+      
+      // Reset form
+      setNewProject({
+        name: '',
+        client: '',
+        address: '',
+        status: 'Planning',
+        startDate: '',
+        endDate: '',
+        budget: '',
+        type: 'Interior',
+        description: ''
+      })
+      setShowAddModal(false)
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(''), 3000)
+    } catch (err) {
+      console.error('Error adding project:', err)
+      setMessage(`Error adding project: ${err.message}`)
     }
-    setProjects([...projects, project])
-    setNewProject({
-      name: '',
-      client: '',
-      address: '',
-      status: 'Planning',
-      startDate: '',
-      endDate: '',
-      budget: '',
-      type: 'Interior',
-      description: ''
-    })
-    setShowAddModal(false)
-    
-    // TODO: Add database save functionality
-    // saveProjectToDatabase(project)
   }
 
   const getStatusColor = (status) => {
@@ -109,6 +176,13 @@ export default function ProjectsPage() {
     <div className="flex flex-col min-h-screen bg-white">
       <div className="flex-1 p-8 bg-gray-50">
         
+        {/* Success/Error Message */}
+        {message && (
+          <div className={`mb-4 p-4 rounded-lg ${message.includes('Error') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+            {message}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="mb-6">
@@ -160,7 +234,7 @@ export default function ProjectsPage() {
                   <DollarSign className="w-6 h-6 text-[#74A744]" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">${projects.reduce((sum, p) => sum + p.budget, 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">${projects.reduce((sum, p) => sum + (p.budget || 0), 0).toLocaleString()}</p>
                   <p className="text-gray-600">Total Value</p>
                 </div>
               </div>
@@ -198,144 +272,153 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => (
-            <div key={project.id} className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{project.name}</h3>
-                  <div className="flex gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                      {project.status}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(project.type)}`}>
-                      {project.type}
-                    </span>
-                  </div>
-                </div>
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading projects...</p>
+          </div>
+        ) : (
+          <>
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow">
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{project.name}</h3>
+                      <div className="flex gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                          {project.status}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(project.type)}`}>
+                          {project.type}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <User className="w-4 h-4 mr-2" />
-                    <span>{project.client}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span className="line-clamp-1">{project.address}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    <span>{project.startDate} → {project.endDate}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    <span className="font-medium">${project.budget.toLocaleString()}</span>
-                  </div>
-                </div>
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <User className="w-4 h-4 mr-2" />
+                        <span>{project.client}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span className="line-clamp-1">{project.address}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>{project.start_date} → {project.end_date}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        <span className="font-medium">${project.budget?.toLocaleString()}</span>
+                      </div>
+                    </div>
 
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 line-clamp-2">{project.description}</p>
-                </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 line-clamp-2">{project.description}</p>
+                    </div>
 
-                {/* Progress Bar with Status */}
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Progress</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">{project.progress}%</span>
-                      {project.progress === 100 && (
-                        <span className="text-green-600 text-xs font-medium">✓ Complete</span>
-                      )}
+                    {/* Progress Bar with Status */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Progress</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{project.progress || 0}%</span>
+                          {project.progress === 100 && (
+                            <span className="text-green-600 text-xs font-medium">✓ Complete</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className={`h-3 rounded-full transition-all duration-500 ${
+                            project.progress === 100 ? 'bg-green-500' : 
+                            project.progress >= 75 ? 'bg-[#74A744]' : 
+                            project.progress >= 50 ? 'bg-blue-500' : 
+                            project.progress >= 25 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${project.progress || 0}%` }}
+                        ></div>
+                      </div>
+                      {/* Progress Milestones */}
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>Start</span>
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>Done</span>
+                      </div>
+                    </div>
+
+                    {/* Progress Update Buttons */}
+                    <div className="flex gap-2 mb-3">
+                      <button 
+                        onClick={() => updateProgress(project.id, -10)}
+                        disabled={project.progress <= 0}
+                        className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        -10%
+                      </button>
+                      <button 
+                        onClick={() => updateProgress(project.id, 10)}
+                        disabled={project.progress >= 100}
+                        className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        +10%
+                      </button>
+                      <button 
+                        onClick={() => updateProgress(project.id, 25)}
+                        disabled={project.progress >= 100}
+                        className="px-3 py-1 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        +25%
+                      </button>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                        View Details
+                      </button>
+                      <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
+                        Edit Project
+                      </button>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div 
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        project.progress === 100 ? 'bg-green-500' : 
-                        project.progress >= 75 ? 'bg-[#74A744]' : 
-                        project.progress >= 50 ? 'bg-blue-500' : 
-                        project.progress >= 25 ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${project.progress}%` }}
-                    ></div>
-                  </div>
-                  {/* Progress Milestones */}
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>Start</span>
-                    <span>25%</span>
-                    <span>50%</span>
-                    <span>75%</span>
-                    <span>Done</span>
-                  </div>
                 </div>
+              ))}
+            </div>
 
-                {/* Progress Update Buttons */}
-                <div className="flex gap-2 mb-3">
-                  <button 
-                    onClick={() => updateProgress(project.id, -10)}
-                    disabled={project.progress <= 0}
-                    className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    -10%
-                  </button>
-                  <button 
-                    onClick={() => updateProgress(project.id, 10)}
-                    disabled={project.progress >= 100}
-                    className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    +10%
-                  </button>
-                  <button 
-                    onClick={() => updateProgress(project.id, 25)}
-                    disabled={project.progress >= 100}
-                    className="px-3 py-1 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    +25%
-                  </button>
+            {/* Empty State - No Projects */}
+            {projects.length === 0 && searchTerm === '' && statusFilter === 'all' && (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-gray-400" />
                 </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
-                    View Details
-                  </button>
-                  <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
-                    Edit Project
-                  </button>
-                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
+                <p className="text-gray-500 mb-6">Get started by adding your first painting project</p>
+                <button 
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Add First Project
+                </button>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
 
-        {/* Empty State - No Projects */}
-        {projects.length === 0 && searchTerm === '' && statusFilter === 'all' && (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-            <p className="text-gray-500 mb-6">Get started by adding your first painting project</p>
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add First Project
-            </button>
-          </div>
-        )}
-
-        {/* Empty State - No Search Results */}
-        {filteredProjects.length === 0 && (searchTerm !== '' || statusFilter !== 'all') && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-            <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-          </div>
+            {/* Empty State - No Search Results */}
+            {filteredProjects.length === 0 && (searchTerm !== '' || statusFilter !== 'all') && (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
