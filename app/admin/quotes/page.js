@@ -530,27 +530,6 @@ Notes: ${quote.notes || 'None'}
                     </div>
                   </div>
 
-                  {/* Quick Status Update */}
-                  <div className="flex gap-2 mb-3">
-                    <button 
-                      onClick={() => updateQuoteStatus(quote.id, 'Sent')}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 transition-colors"
-                    >
-                      Send
-                    </button>
-                    <button 
-                      onClick={() => updateQuoteStatus(quote.id, 'Approved')}
-                      className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-colors"
-                    >
-                      Approve
-                    </button>
-                    <button 
-                      onClick={() => updateQuoteStatus(quote.id, 'Rejected')}
-                      className="px-3 py-1 bg-red-100 text-red-700 text-xs rounded-lg hover:bg-red-200 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
@@ -835,6 +814,7 @@ Notes: ${quote.notes || 'None'}
                         </div>
                       </div>
 
+                      {/* Adds a remove button */}
                       {formData.items.length > 1 && (
                         <div className="mt-4 flex justify-end">
                           <button
@@ -885,7 +865,7 @@ Notes: ${quote.notes || 'None'}
                 <button
                   type="button"
                   onClick={() => {setShowForm(false); resetForm()}}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-500 transition-colors"
                 >
                   Cancel
                 </button>
