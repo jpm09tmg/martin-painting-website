@@ -18,6 +18,9 @@ export default function QuotePage() {
 
 
   // property type, job type, paint condition, etc options. Multipliers added to the end(might have to adjust)
+  // we could add these to database later for easier updating
+  // Base rates are per square foot
+  // Multipliers increase the base rate by a percentage
   const propertyTypes = [
     { name: 'Residential', description: 'Homes, condos, townhouses', multiplier: 1.0 },
     { name: 'Commercial', description: 'Offices, retail, restaurants', multiplier: 1.1 }
