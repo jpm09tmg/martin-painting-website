@@ -31,11 +31,21 @@ export default function PaymentsPage() {
     }
   }
 
+  const handlePaymentMethodChange = async (id, newMethod) => {
+    const { error } = await supabase.from('payments').update({ payment_method: newMethod }).eq('id', id)
+    if (error) {
+      console.error("Failed to update payment method: ", error)
+    } else {
+      setPayments(prev => prev.map(p => (p.id === id ? { ...p, payment_method: newMethod } : p)))
+    }
+  }
+
   const term = searchTerm.toLowerCase()
   const filteredPayments = payments.filter(p =>
     p.project?.toLowerCase().includes(term) ||
     p.client?.toLowerCase().includes(term) ||
-    p.status?.toLowerCase().includes(term)
+    p.status?.toLowerCase().includes(term) ||
+    p.payment_method?.toLowerCase().includes(term)
   )
 
   const unpaidAmount = payments.reduce((sum, p) => {
@@ -94,7 +104,7 @@ export default function PaymentsPage() {
           <Search className="w-4 h-4 text-gray-500" />
           <input
             type="text"
-            placeholder="Search by project, client, or status..."
+            placeholder="Search by project, client, status, or payment method..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#74A744]"
@@ -117,6 +127,7 @@ export default function PaymentsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total ($)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid ($)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -134,6 +145,18 @@ export default function PaymentsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">${p.paid}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={p.payment_method || ''}
+                        onChange={(e) => handlePaymentMethodChange(p.id, e.target.value)}
+                        className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="E-Transfer">E-Transfer</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
