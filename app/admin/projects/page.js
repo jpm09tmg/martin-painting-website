@@ -111,18 +111,9 @@ export default function ProjectsPage() {
         
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Projects Management</h1>
-              <p className="text-gray-600">Track and manage all painting projects</p>
-            </div>
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium flex items-center transition-colors"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add New Project
-            </button>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Projects Management</h1>
+            <p className="text-gray-600">Track and manage all painting projects</p>
           </div>
 
           {/* Stats Cards */}
