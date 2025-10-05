@@ -17,7 +17,7 @@ const AdminAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const { data, error } = await supabase
-        .from('appointments')
+        .from('appointments_test')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -32,6 +32,8 @@ const AdminAppointments = () => {
         lastName: apt.last_name,
         propertyType: apt.property_type,
         locationType: apt.location_type,
+        preferredDate: apt.preferred_date,
+        preferredTime: apt.preferred_time,
         appointmentDate: apt.appointment_date,
         appointmentTime: apt.appointment_time,
         propertyAddress: apt.address,
@@ -88,7 +90,7 @@ const AdminAppointments = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       const { error } = await supabase
-        .from('appointments')
+        .from('appointments_test')
         .update({ status: newStatus })
         .eq('id', id);
 
