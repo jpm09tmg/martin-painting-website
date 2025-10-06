@@ -32,24 +32,75 @@ export default function BookAppointment() {
     setMessage('')
 
     try {
-      const { data, error } = await supabase
-        .from('appointments')
+      // Check if client already exists (by email)
+      let clientId = null
+      
+      if (formData.email) {
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('email', formData.email)
+          .single()
+        
+        if (existingClient) {
+          clientId = existingClient.id
+          
+          // Update client info with latest details from appointment
+          await supabase
+            .from('clients')
+            .update({
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              phone: formData.phone,
+              address: formData.address
+            })
+            .eq('id', clientId)
+        }
+      }
+      
+      // Create new client if doesn't exist
+      if (!clientId) {
+        const { data: newClient, error: clientError } = await supabase
+          .from('clients')
+          .insert([{
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address
+          }])
+          .select()
+          .single()
+
+        if (clientError) {
+          console.error('Error creating client:', clientError.message)
+          // Continue appointment
+        } else {
+          clientId = newClient?.id
+        }
+      }
+
+      // Create the appointment (contact info comes from clients table via client_id)
+      const { error: appointmentError } = await supabase
+        .from('appointments_test')
         .insert([{
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
           property_type: formData.propertyType,
           location_type: formData.locationType,
+          preferred_date: formData.appointmentDate,
+          preferred_time: formData.appointmentTime,
           appointment_date: formData.appointmentDate,
           appointment_time: formData.appointmentTime,
-          details: formData.details
+          details: formData.details,
+          client_id: clientId,
+          status: 'pending'
         }])
 
-      if (error) throw error
+      if (appointmentError) {
+        console.error('Error creating appointment:', appointmentError.message)
+        throw appointmentError
+      }
 
-      setMessage('Appointment request submitted successfully!')
+      setMessage('Appointment request submitted successfully! We\'ll contact you soon to confirm.')
       setFormData({
         firstName: '',
         lastName: '',
@@ -63,8 +114,8 @@ export default function BookAppointment() {
         details: ''
       })
     } catch (error) {
-      console.error('Error submitting appointment:', error)
-      setMessage('Error submitting appointment. Please try again or call us directly.')
+      console.error('Error submitting appointment:', error?.message)
+      setMessage(`Error: ${error?.message || 'Please try again or call us directly.'}`)
     }
 
     setLoading(false)
@@ -192,21 +243,6 @@ export default function BookAppointment() {
                   placeholder="Tell us about your painting project... (room sizes, color preferences, timeline, etc.)"
                 ></textarea>
               </div>
-
-              <div>
-                <label className="block text-sm font-normal text-[#404040] mb-2">
-                  Property Address
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter full address for consultation"
-                  required
-                  className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                />
-              </div>
             </div>
 
             {/* Right Panel - Contact Information */}
@@ -270,6 +306,21 @@ export default function BookAppointment() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="(403) 555-PAINT"
+                    required
+                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="123 Main Street, Calgary, AB T2P 1J9"
                     required
                     className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                   />

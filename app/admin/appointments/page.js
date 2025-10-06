@@ -8,6 +8,9 @@ const AdminAppointments = () => {
   const [filter, setFilter] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editingAppointment, setEditingAppointment] = useState(null);
+  const [confirmedDate, setConfirmedDate] = useState('');
+  const [confirmedTime, setConfirmedTime] = useState('');
 
   // Fetch appointments from Supabase
   useEffect(() => {
@@ -17,8 +20,17 @@ const AdminAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const { data, error } = await supabase
-        .from('appointments')
-        .select('*')
+        .from('appointments_test')
+        .select(`
+          *,
+          clients (
+            first_name,
+            last_name,
+            email,
+            phone,
+            address
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -28,13 +40,18 @@ const AdminAppointments = () => {
         ...apt,
         status: apt.status || 'pending',
         // Map database fields to display fields
-        firstName: apt.first_name,
-        lastName: apt.last_name,
+        // Get contact info from joined clients table
+        firstName: apt.clients?.first_name,
+        lastName: apt.clients?.last_name,
+        email: apt.clients?.email,
+        phone: apt.clients?.phone,
+        address: apt.clients?.address,
         propertyType: apt.property_type,
         locationType: apt.location_type,
+        preferredDate: apt.preferred_date,
+        preferredTime: apt.preferred_time,
         appointmentDate: apt.appointment_date,
         appointmentTime: apt.appointment_time,
-        propertyAddress: apt.address,
         projectDetails: apt.details,
         createdAt: apt.created_at
       }));
@@ -88,7 +105,7 @@ const AdminAppointments = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       const { error } = await supabase
-        .from('appointments')
+        .from('appointments_test')
         .update({ status: newStatus })
         .eq('id', id);
 
@@ -100,6 +117,45 @@ const AdminAppointments = () => {
       );
     } catch (error) {
       console.error('Error updating appointment status:', error);
+    }
+  };
+
+  const openConfirmModal = (appointment) => {
+    setEditingAppointment(appointment);
+    // Pre-fill with preferred date/time or existing confirmed date/time
+    setConfirmedDate(appointment.confirmedDate || appointment.preferredDate || '');
+    setConfirmedTime(appointment.confirmedTime || appointment.preferredTime || '');
+  };
+
+  const confirmAppointment = async () => {
+    if (!editingAppointment) return;
+
+    try {
+      const { error } = await supabase
+        .from('appointments_test')
+        .update({ 
+          appointment_date: confirmedDate,
+          appointment_time: confirmedTime,
+          status: 'confirmed'
+        })
+        .eq('id', editingAppointment.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setAppointments(prev => 
+        prev.map(apt => apt.id === editingAppointment.id 
+          ? { ...apt, confirmedDate, confirmedTime, status: 'confirmed', appointmentDate: confirmedDate, appointmentTime: confirmedTime } 
+          : apt
+        )
+      );
+
+      // Close modal
+      setEditingAppointment(null);
+      setConfirmedDate('');
+      setConfirmedTime('');
+    } catch (error) {
+      console.error('Error confirming appointment:', error);
     }
   };
 
@@ -279,9 +335,19 @@ const AdminAppointments = () => {
                         <Calendar className="w-4 h-4" />
                         Schedule
                       </h3>
-                      <div className="space-y-1 text-sm">
-                        <p><span className="text-gray-500">Date:</span> {new Date(appointment.appointmentDate).toLocaleDateString()}</p>
-                        <p><span className="text-gray-500">Time:</span> {appointment.appointmentTime}</p>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <p className="font-medium text-gray-700">Requested:</p>
+                          <p><span className="text-gray-500">Date:</span> {new Date(appointment.preferredDate).toLocaleDateString()}</p>
+                          <p><span className="text-gray-500">Time:</span> {appointment.preferredTime}</p>
+                        </div>
+                        {appointment.confirmedDate && (
+                          <div className="pt-2 border-t">
+                            <p className="font-medium text-green-700">Confirmed:</p>
+                            <p><span className="text-gray-500">Date:</span> {new Date(appointment.confirmedDate).toLocaleDateString()}</p>
+                            <p><span className="text-gray-500">Time:</span> {appointment.confirmedTime}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -300,10 +366,11 @@ const AdminAppointments = () => {
                   {appointment.status === 'pending' && (
                     <>
                       <button 
-                        onClick={() => updateStatus(appointment.id, 'confirmed')}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
+                        onClick={() => openConfirmModal(appointment)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center justify-center"
                       >
-                        Confirm
+                        <Calendar className="w-4 h-4 mr-1" />
+                        Set Date & Confirm
                       </button>
                       <button 
                         onClick={() => updateStatus(appointment.id, 'cancelled')}
@@ -315,12 +382,20 @@ const AdminAppointments = () => {
                   )}
                   
                   {appointment.status === 'confirmed' && (
-                    <button 
-                      onClick={() => updateStatus(appointment.id, 'completed')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
-                    >
-                      Mark Complete
-                    </button>
+                    <>
+                      <button 
+                        onClick={() => openConfirmModal(appointment)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm text-xs"
+                      >
+                        Edit Date/Time
+                      </button>
+                      <button 
+                        onClick={() => updateStatus(appointment.id, 'completed')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+                      >
+                        Mark Complete
+                      </button>
+                    </>
                   )}
                   
                   
@@ -330,6 +405,88 @@ const AdminAppointments = () => {
           ))
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {editingAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Confirm Appointment
+            </h2>
+            
+            {/* Customer Info */}
+            <div className="mb-4 p-3 bg-gray-50 rounded">
+              <p className="font-medium text-gray-900">
+                {editingAppointment.firstName} {editingAppointment.lastName}
+              </p>
+              <p className="text-sm text-gray-600">{editingAppointment.email}</p>
+              <p className="text-sm text-gray-600">{editingAppointment.phone}</p>
+            </div>
+
+            {/* Requested Date/Time */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-sm font-medium text-blue-900 mb-2">Customer Requested:</p>
+              <p className="text-sm text-blue-800">
+                <strong>Date:</strong> {new Date(editingAppointment.preferredDate).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-blue-800">
+                <strong>Time:</strong> {editingAppointment.preferredTime}
+              </p>
+            </div>
+
+            {/* Set Actual Date/Time */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirmed Appointment Date
+                </label>
+                <input
+                  type="date"
+                  value={confirmedDate}
+                  onChange={(e) => setConfirmedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirmed Appointment Time
+                </label>
+                <input
+                  type="time"
+                  value={confirmedTime}
+                  onChange={(e) => setConfirmedTime(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setEditingAppointment(null);
+                  setConfirmedDate('');
+                  setConfirmedTime('');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAppointment}
+                disabled={!confirmedDate || !confirmedTime}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirm Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
