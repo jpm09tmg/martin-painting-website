@@ -80,8 +80,15 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/quote"
+                href="/appointments"
                 className={btnPrimary}
+                aria-label="Book an appointment"
+              >
+                Book Appointment
+              </Link>
+              <Link
+                href="/quote"
+                className={btnOutline}
                 aria-label="Get a free quote"
               >
                 Get Free Quote
