@@ -80,15 +80,10 @@ export default function BookAppointment() {
         }
       }
 
-      // Create the appointment
+      // Create the appointment (contact info comes from clients table via client_id)
       const { error: appointmentError } = await supabase
         .from('appointments_test')
         .insert([{
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
           property_type: formData.propertyType,
           location_type: formData.locationType,
           preferred_date: formData.appointmentDate,
