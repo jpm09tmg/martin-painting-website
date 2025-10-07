@@ -6,7 +6,7 @@ import Footer from "@/src/components/layout/Footer";
 import { btnPrimary, btnOutline, textLink } from "@/src/components/ui/buttons";
 
 export default function Home() {
-  // Reusable button styles
+  // Reusable button styles *transferred to components/ui/buttons.js*
   // const btnPrimary =
   //   "inline-flex items-center justify-center rounded-md px-8 py-3 font-semibold text-white bg-[#74A744] " +
   //   "transition-all duration-200 motion-reduce:transition-none " +
@@ -111,6 +111,7 @@ export default function Home() {
                 alt="Professional interior painting"
                 width={584}
                 height={400}
+                sizes="(min-width: 1024px) 40vw, 90vw"
                 className="w-full h-96 object-cover transition-transform duration-300 motion-reduce:transition-none group-hover:scale-[1.03]"
               />
             </div>
