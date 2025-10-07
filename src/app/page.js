@@ -1,8 +1,8 @@
 // app/page.js
 import Link from "next/link";
 import Image from "next/image";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "@/src/components/Header";
+import Footer from "@/src/components/Footer";
 
 export default function Home() {
   // Reusable button styles
