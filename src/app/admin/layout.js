@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabase-client";
-import AdminHeader from "../../components/adminHeader";
-import Sidebar from "../../components/Sidebar";
+import AdminHeader from "../../components/admin/adminHeader";
+import Sidebar from "../../components/admin/Sidebar";
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
