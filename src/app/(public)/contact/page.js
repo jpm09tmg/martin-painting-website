@@ -1,6 +1,6 @@
 import { MapPin, Phone, Mail, Facebook, Instagram } from "lucide-react";
-import Header from "@/src/components/Header";
-import Footer from "@/src/components/Footer";
+import Header from "@/src/components/layout/Header";
+import Footer from "@/src/components/layout/Footer";
 
 export default function ContactPage() {
   return (

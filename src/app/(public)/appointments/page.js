@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Header from "@/src/components/Header";
+import Header from "@/src/components/layout/Header";
 import { supabase } from "@/src/lib/supabase-client";
 
 export default function BookAppointment() {

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Check } from "lucide-react";
-import Header from "@/src/components/Header";
-import Footer from "@/src/components/Footer";
+import Header from "@/src/components/layout/Header";
+import Footer from "@/src/components/layout/Footer";
 
 export default function ServicesPage() {
   return (
