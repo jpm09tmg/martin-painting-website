@@ -76,7 +76,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/blueLiving.jpg"
+                    src="/projectImages/blueLiving.jpg"
                     alt="Painted living room with modern colors"
                     width={300}
                     height={300}
@@ -85,7 +85,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greenBed.jpg"
+                    src="/projectImages/greenBed.jpg"
                     alt="Beautifully painted bedroom"
                     width={300}
                     height={300}
@@ -96,7 +96,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteKitchen.jpg"
+                    src="/projectImages/whiteKitchen.jpg"
                     alt="Professional kitchen painting"
                     width={300}
                     height={300}
@@ -105,7 +105,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteBath.jpg"
+                    src="/projectImages/whiteBath.jpg"
                     alt="Freshly painted bathroom"
                     width={300}
                     height={300}
@@ -126,7 +126,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/blueExt.jpg"
+                    src="/projectImages/blueExt.jpg"
                     alt="House front exterior painting"
                     width={300}
                     height={300}
@@ -135,7 +135,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/redExt.jpg"
+                    src="/projectImages/redExt.jpg"
                     alt="Professional siding painting"
                     width={300}
                     height={300}
@@ -146,7 +146,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteRedExt.jpg"
+                    src="/projectImages/whiteRedExt.jpg"
                     alt="Detailed trim and window painting"
                     width={300}
                     height={300}
@@ -155,7 +155,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/deckstain.jpg"
+                    src="/projectImages/deckStain.jpg"
                     alt="Deck staining and exterior work"
                     width={300}
                     height={300}
@@ -261,7 +261,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greyLiving.jpg"
+                    src="/projectImages/greyLiving.jpg"
                     alt="Family room painting project"
                     width={300}
                     height={300}
@@ -270,7 +270,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteLiving.jpg"
+                    src="/projectImages/whiteLiving.jpg"
                     alt="Elegant dining room paint job"
                     width={300}
                     height={300}
@@ -281,7 +281,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greyBath.jpg"
+                    src="/projectImages/greyBath.jpg"
                     alt="Beautifully painted hallway"
                     width={300}
                     height={300}
@@ -290,7 +290,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/blueExt.jpg"
+                    src="/projectImages/blueExt.jpg"
                     alt="Complete home exterior painting"
                     width={300}
                     height={300}
@@ -311,7 +311,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteOffice.jpg"
+                    src="/projectImages/whiteOffice.jpg"
                     alt="Professional office painting"
                     width={300}
                     height={300}
@@ -320,7 +320,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greyCom.jpg"
+                    src="/projectImages/greyCom.jpg"
                     alt="Retail space painting project"
                     width={300}
                     height={300}
@@ -331,7 +331,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greyShop.jpg"
+                    src="/projectImages/greyShop.jpg"
                     alt="Grey shop interior painting"
                     width={300}
                     height={300}
@@ -340,7 +340,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/blueOffice.jpg"
+                    src="/projectImages/blueOffice.jpg"
                     alt="Blue office wall painting"
                     width={300}
                     height={300}
@@ -404,7 +404,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/redExt.jpg"
+                    src="/projectImages/redExt.jpg"
                     alt="Color consultation service"
                     width={300}
                     height={300}
@@ -424,7 +424,7 @@ export default function ServicesPage() {
               <div className="space-y-4">
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/whiteBath.jpg"
+                    src="/projectImages/whiteBath.jpg"
                     alt="Professional project planning"
                     width={300}
                     height={300}
@@ -433,7 +433,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/greyBath.jpg"
+                    src="/projectImages/greyBath.jpg"
                     alt="High-quality paint finish"
                     width={300}
                     height={300}
