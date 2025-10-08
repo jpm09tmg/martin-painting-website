@@ -61,7 +61,7 @@ export default function ValueProp() {
         <div className="flex-1">
           <div className="rounded-lg shadow-lg overflow-hidden group">
             <Image
-              src="/blueLiving.jpg"
+              src="/projectImages/blueLiving.jpg"
               alt="Professional interior painting"
               width={584}
               height={400}

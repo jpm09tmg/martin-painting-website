@@ -105,7 +105,7 @@ export default async function ServicesGrid() {
                   alt={`${s.title} service`}
                   width={640}
                   height={384}
-                  sizes="(min-width: 1024px) 20vw, 90vw"
+                  // sizes="(min-width: 1024px) 20vw, 90vw"
                   className="w-full h-48 object-cover transition-transform duration-300 motion-reduce:transition-none group-hover:scale-[1.04]"
                 />
               </div>
