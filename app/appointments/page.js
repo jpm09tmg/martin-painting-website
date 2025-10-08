@@ -121,6 +121,8 @@ export default function BookAppointment() {
     setLoading(false)
   }
 
+  // Time slots for selection
+  //these as well as property and location types could be moved to a db table for easier updating
   const timeSlots = [
     '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
     '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'
@@ -328,6 +330,8 @@ export default function BookAppointment() {
                   <label className="block text-sm font-normal text-[#404040] mb-2">
                     Preferred Consultation Date
                   </label>
+
+                  {/* "min" sets the minimum date to the current day. Maybe this should be the next day? */}
                   <input
                     type="date"
                     name="appointmentDate"
@@ -356,7 +360,8 @@ export default function BookAppointment() {
                     ))}
                   </select>
                 </div>
-
+                
+                 {/* If message includes "success it will be green, red if not" */}
                 {message && (
                   <div className={`p-4 rounded-md text-sm ${
                     message.includes('success') 
