@@ -24,3 +24,13 @@ Result: GPT confirmed my suspicions, no subroutes means incorrect referencing fr
 
 Updated Home page to have proper links to sections on services page. Needed services page to reflect references.
 Result: GPT reviewed current services page, added section references for proper navigation from home page.
+
+<!-- Folder Structure Update 1.0 -->
+
+Asked for assistance organizing folder for clarity and readability.
+Result: Recommended folder structure partially adopted. Grouped customer-facing pages under (public). Updated link paths for import.
+
+<!-- Home Page Update 2.0 -->
+
+Asked for recommendation for improvements using other highly rated painter service websites as reference.
+Result: Transferred sections into components with own pages for scalability. Features pending.
