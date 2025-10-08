@@ -1,12 +1,14 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Plus, Search, Filter, Calendar, DollarSign, User, MapPin, Clock, X } from 'lucide-react'
+import { Plus, Search, Filter, Calendar, DollarSign, User, MapPin, Clock, Trash2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase-client'
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState(null)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   
@@ -152,6 +154,36 @@ export default function ProjectsPage() {
     }
   }
 
+  // Delete project function
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectToDelete.id)
+
+      if (error) throw error
+
+      setMessage('Project deleted successfully!')
+      setProjects(projects.filter(p => p.id !== projectToDelete.id))
+      setShowDeleteConfirm(false)
+      setProjectToDelete(null)
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(''), 3000)
+    } catch (err) {
+      console.error('Error deleting project:', err)
+      setMessage(`Error deleting project: ${err.message}`)
+    }
+  }
+
+  const confirmDelete = (project) => {
+    setProjectToDelete(project)
+    setShowDeleteConfirm(true)
+  }
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Planning': return 'bg-yellow-100 text-yellow-800'
@@ -294,8 +326,8 @@ export default function ProjectsPage() {
                 <div key={project.id} className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{project.name}</h3>
-                      <div className="flex gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">{project.name}</h3>
+                      <div className="flex gap-2 ml-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                           {project.status}
                         </span>
@@ -392,6 +424,13 @@ export default function ProjectsPage() {
                       </button>
                       <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
                         Edit Project
+                      </button>
+                      <button 
+                        onClick={() => confirmDelete(project)}
+                        className="px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -579,6 +618,39 @@ export default function ProjectsPage() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && projectToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Project</h3>
+              <p className="text-gray-600 text-center mb-6">
+                Are you sure you want to delete <strong>{projectToDelete.name}</strong>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false)
+                    setProjectToDelete(null)
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteProject}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
