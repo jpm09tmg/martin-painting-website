@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@lib/supabase-client";
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
