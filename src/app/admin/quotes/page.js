@@ -305,6 +305,33 @@ export default function AdminQuoteForm() {
     }
   };
 
+const sendQuoteEmail = async (quoteId) => {
+  setMessage('Sending quote...');
+  
+  try {
+    const response = await fetch('/api/send-quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quoteId })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      setMessage('Quote sent successfully to client');
+      loadQuotes();
+      setShowViewModal(false);
+      
+      // clear success message after 5 seconds
+      setTimeout(() => setMessage(''), 5000);
+    } else {
+      setMessage(`Error: ${result.error}`);
+    }
+  } catch (error) {
+    setMessage(`Error sending quote: ${error.message}`);
+  }
+};
+
   const editQuote = (quote) => {
     setFormData({
       clientName: quote.client_name || "",

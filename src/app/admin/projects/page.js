@@ -9,13 +9,17 @@ import {
   User,
   MapPin,
   Clock,
+  Trash2,
+  X,
 } from "lucide-react";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@lib/supabase-client";
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -165,6 +169,36 @@ export default function ProjectsPage() {
     }
   };
 
+  // Delete project function
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", projectToDelete.id);
+
+      if (error) throw error;
+
+      setMessage("Project deleted successfully!");
+      setProjects(projects.filter((p) => p.id !== projectToDelete.id));
+      setShowDeleteConfirm(false);
+      setProjectToDelete(null);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error("Error deleting project:", err);
+      setMessage(`Error deleting project: ${err.message}`);
+    }
+  };
+
+  const confirmDelete = (project) => {
+    setProjectToDelete(project);
+    setShowDeleteConfirm(true);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Planning":
@@ -213,13 +247,22 @@ export default function ProjectsPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Projects Management
-            </h1>
-            <p className="text-gray-600">
-              Track and manage all painting projects
-            </p>
+          <div className="mb-6 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Projects Management
+              </h1>
+              <p className="text-gray-600">
+                Track and manage all painting projects
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center shadow-lg transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Project
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -333,10 +376,10 @@ export default function ProjectsPage() {
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
                         {project.name}
                       </h3>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 ml-2">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                             project.status
@@ -459,6 +502,13 @@ export default function ProjectsPage() {
                       <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
                         Edit Project
                       </button>
+                      <button
+                        onClick={() => confirmDelete(project)}
+                        className="px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -512,13 +562,19 @@ export default function ProjectsPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
+            <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 Add New Project
               </h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
 
-            <form onSubmit={handleAddProject} className="p-6 space-y-4">
+            <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -659,7 +715,7 @@ export default function ProjectsPage() {
                     Description
                   </label>
                   <textarea
-                    rows="3"
+                    rows={3}
                     value={newProject.description}
                     onChange={(e) =>
                       setNewProject({
@@ -682,13 +738,52 @@ export default function ProjectsPage() {
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleAddProject}
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors"
                 >
                   Add Project
                 </button>
               </div>
-            </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && projectToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Delete Project
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Are you sure you want to delete{" "}
+                <strong>{projectToDelete.name}</strong>? This action cannot be
+                undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setProjectToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteProject}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
