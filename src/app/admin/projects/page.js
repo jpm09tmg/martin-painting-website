@@ -25,6 +25,9 @@ export default function ProjectsPage() {
 
   // Projects data - loaded from database
   const [projects, setProjects] = useState([]);
+  
+  // Clients data - for dropdown
+  const [clients, setClients] = useState([]);
 
   const [newProject, setNewProject] = useState({
     name: "",
@@ -41,6 +44,7 @@ export default function ProjectsPage() {
   // Load projects from database on component mount
   useEffect(() => {
     loadProjects();
+    loadClients();
   }, []);
 
   const loadProjects = async () => {
@@ -58,6 +62,21 @@ export default function ProjectsPage() {
       setMessage(`Error loading projects: ${err.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .order("last_name", { ascending: true });
+
+      if (error) throw error;
+
+      setClients(data || []);
+    } catch (err) {
+      console.error("Error loading clients:", err);
     }
   };
 
@@ -596,16 +615,24 @@ export default function ProjectsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Client Name
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={newProject.client}
                     onChange={(e) =>
                       setNewProject({ ...newProject, client: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Client name"
-                  />
+                  >
+                    <option value="">Select a client...</option>
+                    {clients.map((client) => (
+                      <option
+                        key={client.id}
+                        value={`${client.first_name} ${client.last_name}`}
+                      >
+                        {client.first_name} {client.last_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">
