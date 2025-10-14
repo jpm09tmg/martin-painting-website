@@ -341,7 +341,7 @@ const AdminAppointments = () => {
             <Calendar className="w-8 h-8 text-blue-500 mr-3" />
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Today's Appointments</p>
+              <p className="text-sm text-gray-600">Todays Appointments</p>
             </div>
           </div>
         </div>
