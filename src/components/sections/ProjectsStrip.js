@@ -4,9 +4,18 @@ import { btnPrimary } from "@/src/components/ui/buttons";
 
 export default function ProjectsStrip() {
   const projects = [
-    { src: "/whiteLiving.jpg", alt: "Recent interior painting project" },
-    { src: "/redExt.jpg", alt: "Recent exterior painting project" },
-    { src: "/greyCom.jpg", alt: "Recent commercial painting project" },
+    {
+      src: "/projectImages/whiteLiving.jpg",
+      alt: "Recent interior painting project",
+    },
+    {
+      src: "/projectImages/redExt.jpg",
+      alt: "Recent exterior painting project",
+    },
+    {
+      src: "/projectImages/greyCom.jpg",
+      alt: "Recent commercial painting project",
+    },
   ];
 
   return (
