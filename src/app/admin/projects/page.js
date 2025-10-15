@@ -11,6 +11,10 @@ import {
   Clock,
   Trash2,
   X,
+  Mail,
+  Phone,
+  Palette,
+  Home,
 } from "lucide-react";
 import { supabase } from "@lib/supabase-client";
 
@@ -496,7 +500,7 @@ export default function ProjectsPage() {
                       </div>
                       {project.clients?.phone && (
                         <div className="flex items-center text-sm text-gray-600">
-                          <span className="mr-2">📞</span>
+                          <Phone className="w-4 h-4 mr-2" />
                           <span>{project.clients.phone}</span>
                         </div>
                       )}
@@ -948,14 +952,14 @@ export default function ProjectsPage() {
                   </div>
                   {selectedProject.clients?.email && (
                     <div className="flex items-center text-sm">
-                      <span className="mr-2 text-gray-500">📧</span>
+                      <Mail className="w-4 h-4 mr-2 text-gray-500" />
                       <span className="font-medium text-gray-700 w-24">Email:</span>
                       <span className="text-gray-900">{selectedProject.clients.email}</span>
                     </div>
                   )}
                   {selectedProject.clients?.phone && (
                     <div className="flex items-center text-sm">
-                      <span className="mr-2 text-gray-500">📞</span>
+                      <Phone className="w-4 h-4 mr-2 text-gray-500" />
                       <span className="font-medium text-gray-700 w-24">Phone:</span>
                       <span className="text-gray-900">{selectedProject.clients.phone}</span>
                     </div>
@@ -994,7 +998,7 @@ export default function ProjectsPage() {
                   </div>
                   {selectedProject.type && (
                     <div className="flex items-center text-sm">
-                      <span className="mr-2 text-gray-500">🎨</span>
+                      <Palette className="w-4 h-4 mr-2 text-gray-500" />
                       <span className="font-medium text-gray-700 w-24">Type:</span>
                       <span className="text-gray-900">{selectedProject.type}</span>
                     </div>
@@ -1048,14 +1052,14 @@ export default function ProjectsPage() {
                     )}
                     {selectedProject.quotes.project_type && (
                       <div className="flex items-center text-sm">
-                        <span className="mr-2 text-gray-500">🎨</span>
+                        <Palette className="w-4 h-4 mr-2 text-gray-500" />
                         <span className="font-medium text-gray-700 w-40">Project Type:</span>
                         <span className="text-gray-900">{selectedProject.quotes.project_type}</span>
                       </div>
                     )}
                     {selectedProject.quotes.property_type && (
                       <div className="flex items-center text-sm">
-                        <span className="mr-2 text-gray-500">🏠</span>
+                        <Home className="w-4 h-4 mr-2 text-gray-500" />
                         <span className="font-medium text-gray-700 w-40">Property Type:</span>
                         <span className="text-gray-900">{selectedProject.quotes.property_type}</span>
                       </div>
@@ -1150,7 +1154,7 @@ export default function ProjectsPage() {
                     )}
                     {selectedProject.appointments.property_type && (
                       <div className="flex items-center text-sm">
-                        <span className="mr-2 text-gray-500">🏠</span>
+                        <Home className="w-4 h-4 mr-2 text-gray-500" />
                         <span className="font-medium text-gray-700 w-32">Property Type:</span>
                         <span className="text-gray-900">{selectedProject.appointments.property_type}</span>
                       </div>
