@@ -11,6 +11,10 @@ import {
   Clock,
   Trash2,
   X,
+  Mail,
+  Phone,
+  Palette,
+  Home,
 } from "lucide-react";
 import { supabase } from "@lib/supabase-client";
 
@@ -19,36 +23,51 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   // Projects data - loaded from database
   const [projects, setProjects] = useState([]);
+  
+  // Clients data - for dropdown
+  const [clients, setClients] = useState([]);
+  const [quotes, setQuotes] = useState([]);
+  const [appointments, setAppointments] = useState([]);
 
   const [newProject, setNewProject] = useState({
-    name: "",
-    client: "",
-    address: "",
+    client_id: "",
+    project_address: "",
     status: "Planning",
-    startDate: "",
-    endDate: "",
-    budget: "",
+    start_date: "",
+    end_date: "",
     type: "Interior",
     description: "",
+    quote_id: "",
+    appointment_id: "",
   });
 
   // Load projects from database on component mount
   useEffect(() => {
     loadProjects();
+    loadClients();
+    loadQuotes();
+    loadAppointments();
   }, []);
 
   const loadProjects = async () => {
     try {
       const { data, error } = await supabase
         .from("projects")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select(`
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
+        `)
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
 
@@ -61,23 +80,72 @@ export default function ProjectsPage() {
     }
   };
 
+  const loadClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .order("last_name", { ascending: true });
+
+      if (error) throw error;
+
+      setClients(data || []);
+    } catch (err) {
+      console.error("Error loading clients:", err);
+    }
+  };
+
+  const loadQuotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("quotes")
+        .select("id, total_amount, client_id, clients(first_name, last_name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setQuotes(data || []);
+    } catch (err) {
+      console.error("Error loading quotes:", err);
+    }
+  };
+
+  const loadAppointments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id, appointment_date, client_id, clients(first_name, last_name)")
+        .order("appointment_date", { ascending: false });
+
+      if (error) throw error;
+
+      setAppointments(data || []);
+    } catch (err) {
+      console.error("Error loading appointments:", err);
+    }
+  };
+
   // Filter projects based on search and status
   const filteredProjects = projects.filter((project) => {
+    const clientName = project.clients 
+      ? `${project.clients.first_name} ${project.clients.last_name}`.toLowerCase()
+      : "";
+    const projectAddress = (project.project_address || "").toLowerCase();
+    
     const matchesSearch =
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.address.toLowerCase().includes(searchTerm.toLowerCase());
+      clientName.includes(searchTerm.toLowerCase()) ||
+      projectAddress.includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || project.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  // Update progress function - now saves to database
+  // Update progress function - saves to database
   const updateProgress = async (projectId, change) => {
     const project = projects.find((p) => p.id === projectId);
     if (!project) return;
 
-    const newProgress = Math.max(0, Math.min(100, project.progress + change));
+    const newProgress = Math.max(0, Math.min(100, (project.progress || 0) + change));
 
     // Auto-update status based on progress
     let newStatus = project.status;
@@ -95,6 +163,7 @@ export default function ProjectsPage() {
         .update({
           progress: newProgress,
           status: newStatus,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", projectId);
 
@@ -108,11 +177,14 @@ export default function ProjectsPage() {
               ...p,
               progress: newProgress,
               status: newStatus,
+              updated_at: new Date().toISOString(),
             };
           }
           return p;
         })
       );
+      setMessage("Progress updated successfully!");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       console.error("Error updating progress:", err);
       setMessage(`Error updating progress: ${err.message}`);
@@ -125,39 +197,53 @@ export default function ProjectsPage() {
 
     try {
       const projectData = {
-        name: newProject.name,
-        client: newProject.client,
-        address: newProject.address,
+        client_id: newProject.client_id,
+        project_address: newProject.project_address,
         status: newProject.status,
-        start_date: newProject.startDate,
-        end_date: newProject.endDate,
-        budget: parseInt(newProject.budget),
+        start_date: newProject.start_date,
+        end_date: newProject.end_date,
         type: newProject.type,
         description: newProject.description,
         progress: 0,
       };
 
+      // Only add quote_id if it's provided
+      if (newProject.quote_id && newProject.quote_id !== "") {
+        projectData.quote_id = newProject.quote_id;
+      }
+
+      // Only add appointment_id if it's provided
+      if (newProject.appointment_id && newProject.appointment_id !== "") {
+        projectData.appointment_id = newProject.appointment_id;
+      }
+
       const { data, error } = await supabase
         .from("projects")
         .insert([projectData])
-        .select();
+        .select(`
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
+        `);
 
       if (error) throw error;
 
       setMessage("Project added successfully!");
-      setProjects([data[0], ...projects]);
+      // Reload all projects to ensure data consistency
+      await loadProjects();
 
       // Reset form
       setNewProject({
-        name: "",
-        client: "",
-        address: "",
+        client_id: "",
+        project_address: "",
         status: "Planning",
-        startDate: "",
-        endDate: "",
-        budget: "",
+        start_date: "",
+        end_date: "",
         type: "Interior",
         description: "",
+        quote_id: "",
+        appointment_id: "",
       });
       setShowAddModal(false);
 
@@ -197,6 +283,11 @@ export default function ProjectsPage() {
   const confirmDelete = (project) => {
     setProjectToDelete(project);
     setShowDeleteConfirm(true);
+  };
+
+  const viewProjectDetails = (project) => {
+    setSelectedProject(project);
+    setShowDetailsModal(true);
   };
 
   const getStatusColor = (status) => {
@@ -313,17 +404,14 @@ export default function ProjectsPage() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-[#74A744]" />
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-gray-900">
-                    $
-                    {projects
-                      .reduce((sum, p) => sum + (p.budget || 0), 0)
-                      .toLocaleString()}
+                    {projects.filter((p) => p.status === "On Hold").length}
                   </p>
-                  <p className="text-gray-600">Total Value</p>
+                  <p className="text-gray-600">On Hold</p>
                 </div>
               </div>
             </div>
@@ -377,7 +465,9 @@ export default function ProjectsPage() {
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
-                        {project.name}
+                        {project.clients 
+                          ? `${project.clients.first_name} ${project.clients.last_name}'s Project`
+                          : "Project"}
                       </h3>
                       <div className="flex gap-2 ml-2">
                         <span
@@ -387,44 +477,60 @@ export default function ProjectsPage() {
                         >
                           {project.status}
                         </span>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
-                            project.type
-                          )}`}
-                        >
-                          {project.type}
-                        </span>
+                        {project.type && (
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                              project.type
+                            )}`}
+                          >
+                            {project.type}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <div className="space-y-3 mb-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <User className="w-4 h-4 mr-2" />
-                        <span>{project.client}</span>
+                        <span>
+                          {project.clients 
+                            ? `${project.clients.first_name} ${project.clients.last_name}`
+                            : "No client"}
+                        </span>
                       </div>
+                      {project.clients?.phone && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Phone className="w-4 h-4 mr-2" />
+                          <span>{project.clients.phone}</span>
+                        </div>
+                      )}
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="w-4 h-4 mr-2" />
-                        <span className="line-clamp-1">{project.address}</span>
+                        <span className="line-clamp-1">{project.project_address || "No address"}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>
-                          {project.start_date} → {project.end_date}
+                          {project.start_date || "TBD"} → {project.end_date || "TBD"}
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        <span className="font-medium">
-                          ${project.budget?.toLocaleString()}
-                        </span>
-                      </div>
+                      {project.quotes?.total_amount && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          <span className="font-medium">
+                            ${project.quotes.total_amount.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {project.description}
-                      </p>
-                    </div>
+                    {project.description && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {project.description}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Progress Bar with Status */}
                     <div className="mb-4">
@@ -496,11 +602,11 @@ export default function ProjectsPage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                      <button 
+                        onClick={() => viewProjectDetails(project)}
+                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
+                      >
                         View Details
-                      </button>
-                      <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
-                        Edit Project
                       </button>
                       <button
                         onClick={() => confirmDelete(project)}
@@ -578,46 +684,35 @@ export default function ProjectsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Name
+                    Client *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    value={newProject.name}
+                    value={newProject.client_id}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, name: e.target.value })
+                      setNewProject({ ...newProject, client_id: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="e.g., Modern Office Renovation"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newProject.client}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, client: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Client name"
-                  />
+                  >
+                    <option value="">Select a client...</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.first_name} {client.last_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
+                    Project Address *
                   </label>
                   <input
                     type="text"
                     required
-                    value={newProject.address}
+                    value={newProject.project_address}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, address: e.target.value })
+                      setNewProject({ ...newProject, project_address: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                     placeholder="Project address"
@@ -644,34 +739,16 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={newProject.status}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, status: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                  >
-                    <option value="Planning">Planning</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="On Hold">On Hold</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date
+                    Start Date *
                   </label>
                   <input
                     type="date"
                     required
-                    value={newProject.startDate}
+                    value={newProject.start_date}
                     onChange={(e) =>
                       setNewProject({
                         ...newProject,
-                        startDate: e.target.value,
+                        start_date: e.target.value,
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
@@ -680,14 +757,14 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date
+                    End Date *
                   </label>
                   <input
                     type="date"
                     required
-                    value={newProject.endDate}
+                    value={newProject.end_date}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, endDate: e.target.value })
+                      setNewProject({ ...newProject, end_date: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                   />
@@ -695,19 +772,42 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Budget ($)
+                    Related Quote (Optional)
                   </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={newProject.budget}
+                  <select
+                    value={newProject.quote_id}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, budget: e.target.value })
+                      setNewProject({ ...newProject, quote_id: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="0"
-                  />
+                  >
+                    <option value="">None</option>
+                    {quotes.map((quote) => (
+                      <option key={quote.id} value={quote.id}>
+                        ${quote.total_amount?.toLocaleString()} - {quote.clients?.first_name} {quote.clients?.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Related Appointment (Optional)
+                  </label>
+                  <select
+                    value={newProject.appointment_id}
+                    onChange={(e) =>
+                      setNewProject({ ...newProject, appointment_id: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  >
+                    <option value="">None</option>
+                    {appointments.map((appointment) => (
+                      <option key={appointment.id} value={appointment.id}>
+                        {appointment.appointment_date} - {appointment.clients?.first_name} {appointment.clients?.last_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">
@@ -724,7 +824,7 @@ export default function ProjectsPage() {
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Project description..."
+                    placeholder="Project description and notes..."
                   />
                 </div>
               </div>
@@ -762,9 +862,13 @@ export default function ProjectsPage() {
                 Delete Project
               </h3>
               <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to delete{" "}
-                <strong>{projectToDelete.name}</strong>? This action cannot be
-                undone.
+                Are you sure you want to delete the project for{" "}
+                <strong>
+                  {projectToDelete.clients 
+                    ? `${projectToDelete.clients.first_name} ${projectToDelete.clients.last_name}`
+                    : "this client"}
+                </strong>{" "}
+                at <strong>{projectToDelete.project_address}</strong>? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
@@ -781,6 +885,338 @@ export default function ProjectsPage() {
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Details Modal */}
+      {showDetailsModal && selectedProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Project Details
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedProject(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Status and Type Badges */}
+              <div className="flex gap-2 mb-6">
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                    selectedProject.status
+                  )}`}
+                >
+                  {selectedProject.status}
+                </span>
+                {selectedProject.type && (
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(
+                      selectedProject.type
+                    )}`}
+                  >
+                    {selectedProject.type}
+                  </span>
+                )}
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                  {selectedProject.progress || 0}% Complete
+                </span>
+              </div>
+
+              {/* Client Information */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Client Information
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex items-center text-sm">
+                    <User className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">Name:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.clients
+                        ? `${selectedProject.clients.first_name} ${selectedProject.clients.last_name}`
+                        : "N/A"}
+                    </span>
+                  </div>
+                  {selectedProject.clients?.email && (
+                    <div className="flex items-center text-sm">
+                      <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">Email:</span>
+                      <span className="text-gray-900">{selectedProject.clients.email}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.phone && (
+                    <div className="flex items-center text-sm">
+                      <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">Phone:</span>
+                      <span className="text-gray-900">{selectedProject.clients.phone}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.address && (
+                    <div className="flex items-start text-sm">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                      <span className="font-medium text-gray-700 w-24">Address:</span>
+                      <span className="text-gray-900 flex-1">{selectedProject.clients.address}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.created_at && (
+                    <div className="flex items-center text-sm">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">Client Since:</span>
+                      <span className="text-gray-900">
+                        {new Date(selectedProject.clients.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project Information */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Project Information
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start text-sm">
+                    <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                    <span className="font-medium text-gray-700 w-24">Address:</span>
+                    <span className="text-gray-900 flex-1">
+                      {selectedProject.project_address || "N/A"}
+                    </span>
+                  </div>
+                  {selectedProject.type && (
+                    <div className="flex items-center text-sm">
+                      <Palette className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">Type:</span>
+                      <span className="text-gray-900">{selectedProject.type}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">Start Date:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.start_date || "TBD"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">End Date:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.end_date || "TBD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedProject.description && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Description
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Quote Details */}
+              {selectedProject.quotes && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Quote Details
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    {selectedProject.quotes.total_amount && (
+                      <div className="flex items-center text-sm">
+                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Total Amount:</span>
+                        <span className="text-gray-900 font-semibold">
+                          ${selectedProject.quotes.total_amount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_type && (
+                      <div className="flex items-center text-sm">
+                        <Palette className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Project Type:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.project_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.property_type && (
+                      <div className="flex items-center text-sm">
+                        <Home className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Property Type:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.property_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_address && (
+                      <div className="flex items-start text-sm">
+                        <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                        <span className="font-medium text-gray-700 w-40">Quote Address:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.project_address}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.quote_valid_until && (
+                      <div className="flex items-center text-sm">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Valid Until:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.quote_valid_until}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_description && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-40">Project Description:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.project_description}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.notes && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-40">Quote Notes:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.notes}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quote Items Table */}
+                  {selectedProject.quotes.quote_items && selectedProject.quotes.quote_items.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-900 mb-2">Quote Items</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Item</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Description</th>
+                              <th className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Qty</th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">Price</th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {selectedProject.quotes.quote_items.map((item) => (
+                              <tr key={item.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.item_name}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{item.description}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 text-center">{item.quantity}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 text-right">${parseFloat(item.price).toFixed(2)}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">${parseFloat(item.total).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                            <tr className="bg-gray-50 font-semibold">
+                              <td colSpan="4" className="px-4 py-3 text-sm text-gray-900 text-right">Total:</td>
+                              <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                                ${selectedProject.quotes.total_amount.toLocaleString()}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Appointment Details */}
+              {selectedProject.appointments && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Appointment Details
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    {selectedProject.appointments.appointment_date && (
+                      <div className="flex items-center text-sm">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Date:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.appointment_date}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.appointment_time && (
+                      <div className="flex items-center text-sm">
+                        <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Time:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.appointment_time}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.property_type && (
+                      <div className="flex items-center text-sm">
+                        <Home className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Property Type:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.property_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.location_type && (
+                      <div className="flex items-center text-sm">
+                        <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Location Type:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.location_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.details && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-32">Appointment Details:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.appointments.details}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Progress</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Completion Status
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {selectedProject.progress || 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        selectedProject.progress === 100
+                          ? "bg-green-500"
+                          : selectedProject.progress >= 75
+                          ? "bg-[#74A744]"
+                          : selectedProject.progress >= 50
+                          ? "bg-blue-500"
+                          : selectedProject.progress >= 25
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{ width: `${selectedProject.progress || 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedProject(null);
+                  }}
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Close
                 </button>
               </div>
             </div>
