@@ -28,7 +28,7 @@ export default function ChatWidget({
     ],
   });
 
-  const safeInput = typeof input === "string" ? input : "";
+  // const safeInput = typeof input === "string" ? input : "";
 
   // Focus textarea when opened
   useEffect(() => {
@@ -170,8 +170,8 @@ export default function ChatWidget({
             onSubmit={handleSubmit}
             className="border-t border-gray-200 p-2 flex items-end gap-2"
           >
-            <textarea
-              value={safeInput}
+            <input
+              value={input}
               onChange={handleInputChange}
               placeholder="Type your message…"
               rows={1}
@@ -179,7 +179,7 @@ export default function ChatWidget({
             />
             <button
               type="submit"
-              disabled={isLoading || !safeInput.trim()}
+              disabled={isLoading || !input}
               className={clsx(
                 "rounded-xl px-3 py-2 text-sm text-white flex items-center gap-1 disabled:opacity-60 transition-colors"
               )}
