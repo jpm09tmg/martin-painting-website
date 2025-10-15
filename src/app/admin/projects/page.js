@@ -19,7 +19,9 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -57,21 +59,9 @@ export default function ProjectsPage() {
         .from("projects")
         .select(`
           *,
-          clients (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          quotes (
-            id,
-            total_amount
-          ),
-          appointments (
-            id,
-            appointment_date
-          )
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `)
         .order("updated_at", { ascending: false });
 
@@ -228,21 +218,9 @@ export default function ProjectsPage() {
         .insert([projectData])
         .select(`
           *,
-          clients (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          quotes (
-            id,
-            total_amount
-          ),
-          appointments (
-            id,
-            appointment_date
-          )
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `);
 
       if (error) throw error;
@@ -301,6 +279,11 @@ export default function ProjectsPage() {
   const confirmDelete = (project) => {
     setProjectToDelete(project);
     setShowDeleteConfirm(true);
+  };
+
+  const viewProjectDetails = (project) => {
+    setSelectedProject(project);
+    setShowDetailsModal(true);
   };
 
   const getStatusColor = (status) => {
@@ -615,7 +598,10 @@ export default function ProjectsPage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                      <button 
+                        onClick={() => viewProjectDetails(project)}
+                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
+                      >
                         View Details
                       </button>
                       <button
@@ -895,6 +881,338 @@ export default function ProjectsPage() {
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Details Modal */}
+      {showDetailsModal && selectedProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Project Details
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedProject(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Status and Type Badges */}
+              <div className="flex gap-2 mb-6">
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                    selectedProject.status
+                  )}`}
+                >
+                  {selectedProject.status}
+                </span>
+                {selectedProject.type && (
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(
+                      selectedProject.type
+                    )}`}
+                  >
+                    {selectedProject.type}
+                  </span>
+                )}
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                  {selectedProject.progress || 0}% Complete
+                </span>
+              </div>
+
+              {/* Client Information */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Client Information
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex items-center text-sm">
+                    <User className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">Name:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.clients
+                        ? `${selectedProject.clients.first_name} ${selectedProject.clients.last_name}`
+                        : "N/A"}
+                    </span>
+                  </div>
+                  {selectedProject.clients?.email && (
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2 text-gray-500">📧</span>
+                      <span className="font-medium text-gray-700 w-24">Email:</span>
+                      <span className="text-gray-900">{selectedProject.clients.email}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.phone && (
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2 text-gray-500">📞</span>
+                      <span className="font-medium text-gray-700 w-24">Phone:</span>
+                      <span className="text-gray-900">{selectedProject.clients.phone}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.address && (
+                    <div className="flex items-start text-sm">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                      <span className="font-medium text-gray-700 w-24">Address:</span>
+                      <span className="text-gray-900 flex-1">{selectedProject.clients.address}</span>
+                    </div>
+                  )}
+                  {selectedProject.clients?.created_at && (
+                    <div className="flex items-center text-sm">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">Client Since:</span>
+                      <span className="text-gray-900">
+                        {new Date(selectedProject.clients.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project Information */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Project Information
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start text-sm">
+                    <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                    <span className="font-medium text-gray-700 w-24">Address:</span>
+                    <span className="text-gray-900 flex-1">
+                      {selectedProject.project_address || "N/A"}
+                    </span>
+                  </div>
+                  {selectedProject.type && (
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2 text-gray-500">🎨</span>
+                      <span className="font-medium text-gray-700 w-24">Type:</span>
+                      <span className="text-gray-900">{selectedProject.type}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">Start Date:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.start_date || "TBD"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="font-medium text-gray-700 w-24">End Date:</span>
+                    <span className="text-gray-900">
+                      {selectedProject.end_date || "TBD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedProject.description && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Description
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Quote Details */}
+              {selectedProject.quotes && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Quote Details
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    {selectedProject.quotes.total_amount && (
+                      <div className="flex items-center text-sm">
+                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Total Amount:</span>
+                        <span className="text-gray-900 font-semibold">
+                          ${selectedProject.quotes.total_amount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_type && (
+                      <div className="flex items-center text-sm">
+                        <span className="mr-2 text-gray-500">🎨</span>
+                        <span className="font-medium text-gray-700 w-40">Project Type:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.project_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.property_type && (
+                      <div className="flex items-center text-sm">
+                        <span className="mr-2 text-gray-500">🏠</span>
+                        <span className="font-medium text-gray-700 w-40">Property Type:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.property_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_address && (
+                      <div className="flex items-start text-sm">
+                        <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                        <span className="font-medium text-gray-700 w-40">Quote Address:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.project_address}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.quote_valid_until && (
+                      <div className="flex items-center text-sm">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-40">Valid Until:</span>
+                        <span className="text-gray-900">{selectedProject.quotes.quote_valid_until}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.project_description && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-40">Project Description:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.project_description}</span>
+                      </div>
+                    )}
+                    {selectedProject.quotes.notes && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-40">Quote Notes:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.quotes.notes}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quote Items Table */}
+                  {selectedProject.quotes.quote_items && selectedProject.quotes.quote_items.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-900 mb-2">Quote Items</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Item</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Description</th>
+                              <th className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Qty</th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">Price</th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {selectedProject.quotes.quote_items.map((item) => (
+                              <tr key={item.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.item_name}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{item.description}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 text-center">{item.quantity}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 text-right">${parseFloat(item.price).toFixed(2)}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">${parseFloat(item.total).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                            <tr className="bg-gray-50 font-semibold">
+                              <td colSpan="4" className="px-4 py-3 text-sm text-gray-900 text-right">Total:</td>
+                              <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                                ${selectedProject.quotes.total_amount.toLocaleString()}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Appointment Details */}
+              {selectedProject.appointments && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Appointment Details
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    {selectedProject.appointments.appointment_date && (
+                      <div className="flex items-center text-sm">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Date:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.appointment_date}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.appointment_time && (
+                      <div className="flex items-center text-sm">
+                        <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Time:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.appointment_time}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.property_type && (
+                      <div className="flex items-center text-sm">
+                        <span className="mr-2 text-gray-500">🏠</span>
+                        <span className="font-medium text-gray-700 w-32">Property Type:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.property_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.location_type && (
+                      <div className="flex items-center text-sm">
+                        <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-gray-700 w-32">Location Type:</span>
+                        <span className="text-gray-900">{selectedProject.appointments.location_type}</span>
+                      </div>
+                    )}
+                    {selectedProject.appointments.details && (
+                      <div className="flex items-start text-sm mt-3 pt-3 border-t border-gray-200">
+                        <span className="font-medium text-gray-700 w-32">Appointment Details:</span>
+                        <span className="text-gray-900 flex-1">{selectedProject.appointments.details}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Progress</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Completion Status
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {selectedProject.progress || 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        selectedProject.progress === 100
+                          ? "bg-green-500"
+                          : selectedProject.progress >= 75
+                          ? "bg-[#74A744]"
+                          : selectedProject.progress >= 50
+                          ? "bg-blue-500"
+                          : selectedProject.progress >= 25
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{ width: `${selectedProject.progress || 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedProject(null);
+                  }}
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Close
                 </button>
               </div>
             </div>
