@@ -72,7 +72,7 @@ export default function AdminQuoteForm() {
   const loadQuotes = async () => {
     try {
       const { data, error } = await supabase
-        .from("quotes_table")
+        .from("quotes")
         .select(
           `
           *,
@@ -84,8 +84,8 @@ export default function AdminQuoteForm() {
             phone,
             address
           ),
-          appointments_test (*),
-          quote_items_duplicate (*)
+          appointments (*),
+          quote_items (*)
         `
         )
         .order("created_at", { ascending: false });
@@ -114,7 +114,7 @@ export default function AdminQuoteForm() {
   const loadAppointments = async () => {
     try {
       const { data, error } = await supabase
-        .from("appointments_test")
+        .from("appointments")
         .select("*")
         .order("appointment_date", { ascending: false });
 
@@ -235,7 +235,7 @@ export default function AdminQuoteForm() {
       if (isEditing && selectedQuote) {
         // Update existing quote
         const { data: updatedQuote, error: quoteError } = await supabase
-          .from("quotes_table")
+          .from("quotes")
           .update({
             client_id: formData.client_id,
             appointment_id: formData.appointment_id || null,
@@ -257,13 +257,13 @@ export default function AdminQuoteForm() {
 
         // Delete existing items
         await supabase
-          .from("quote_items_duplicate")
+          .from("quote_items")
           .delete()
           .eq("quote_id", selectedQuote.id);
       } else {
         // Insert new quote
         const { data: newQuote, error: quoteError } = await supabase
-          .from("quotes_table")
+          .from("quotes")
           .insert([{
             client_id: formData.client_id,
             appointment_id: formData.appointment_id || null,
@@ -302,7 +302,7 @@ export default function AdminQuoteForm() {
 
       if (itemsData.length > 0) {
         const { error: itemsError } = await supabase
-          .from("quote_items_duplicate")
+          .from("quote_items")
           .insert(itemsData);
 
         if (itemsError) throw itemsError;
@@ -323,7 +323,7 @@ export default function AdminQuoteForm() {
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       const { error } = await supabase
-        .from("quotes_table")
+        .from("quotes")
         .update({ status: newStatus })
         .eq("id", quoteId);
 
@@ -341,11 +341,11 @@ export default function AdminQuoteForm() {
 
     try {
       // Delete quote items first
-      await supabase.from("quote_items_duplicate").delete().eq("quote_id", quoteId);
+      await supabase.from("quote_items").delete().eq("quote_id", quoteId);
 
       // Delete quote
       const { error} = await supabase
-        .from("quotes_table")
+        .from("quotes")
         .delete()
         .eq("id", quoteId);
 
@@ -397,8 +397,8 @@ const sendQuoteEmail = async (quoteId) => {
       notes: quote.notes || "",
       status: quote.status || "Pending",
       items:
-        quote.quote_items_duplicate?.length > 0
-          ? quote.quote_items_duplicate.map((item) => ({
+        quote.quote_items?.length > 0
+          ? quote.quote_items.map((item) => ({
               id: item.id,
               itemName: item.item_name || "",
               description: item.description || "",
@@ -423,7 +423,7 @@ const sendQuoteEmail = async (quoteId) => {
   };
 
   const exportQuote = (quote) => {
-    const total = calculateQuoteTotal(quote.quote_items_duplicate);
+    const total = calculateQuoteTotal(quote.quote_items);
     const clientName = quote.clients 
       ? `${quote.clients.first_name} ${quote.clients.last_name}`
       : 'Unknown Client';
@@ -442,7 +442,7 @@ Description: ${quote.project_description}
 
 Items:
 ${
-  quote.quote_items_duplicate
+  quote.quote_items
     ?.map(
       (item) =>
         `${item.item_name} - ${item.description}
@@ -582,7 +582,7 @@ Notes: ${quote.notes || "None"}
                     $
                     {quotes
                       .reduce(
-                        (sum, q) => sum + calculateQuoteTotal(q.quote_items_duplicate),
+                        (sum, q) => sum + calculateQuoteTotal(q.quote_items),
                         0
                       )
                       .toLocaleString()}
@@ -641,7 +641,7 @@ Notes: ${quote.notes || "None"}
         {/* Quotes Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredQuotes.map((quote) => {
-            const total = calculateQuoteTotal(quote.quote_items_duplicate);
+            const total = calculateQuoteTotal(quote.quote_items);
             return (
               <div
                 key={quote.id}
@@ -704,7 +704,7 @@ Notes: ${quote.notes || "None"}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {quote.quote_items_duplicate?.length || 0} items • Valid until:{" "}
+                      {quote.quote_items?.length || 0} items • Valid until:{" "}
                       {quote.quote_valid_until || "N/A"}
                     </div>
                   </div>
@@ -1274,7 +1274,7 @@ Notes: ${quote.notes || "None"}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedQuote.quote_items_duplicate?.map((item, index) => (
+                      {selectedQuote.quote_items?.map((item, index) => (
                         <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {item.item_name}
@@ -1314,7 +1314,7 @@ Notes: ${quote.notes || "None"}
                         <td className="px-6 py-4 text-sm font-bold text-[#74A744]">
                           $
                           {calculateQuoteTotal(
-                            selectedQuote.quote_items_duplicate
+                            selectedQuote.quote_items
                           ).toLocaleString()}
                         </td>
                       </tr>

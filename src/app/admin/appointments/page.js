@@ -41,7 +41,7 @@ const AdminAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const { data, error } = await supabase
-        .from("appointments_test")
+        .from("appointments")
         .select(
           `
           *,
@@ -214,7 +214,7 @@ const AdminAppointments = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       const { error } = await supabase
-        .from("appointments_test")
+        .from("appointments")
         .update({ status: newStatus })
         .eq("id", id);
 
@@ -243,7 +243,7 @@ const AdminAppointments = () => {
 
     try {
       const { error } = await supabase
-        .from("appointments_test")
+        .from("appointments")
         .update({
           appointment_date: confirmedDate,
           appointment_time: confirmedTime,
