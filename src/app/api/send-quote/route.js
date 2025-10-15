@@ -118,7 +118,7 @@ export async function POST(request) {
                     </td>
                   </tr>
 
-                  <!-- Quote Items -->
+                  <!-- quote Items -->
                   <tr>
                     <td style="padding: 30px 40px 20px 40px;">
                       <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px;">Quote Breakdown</h3>
@@ -154,7 +154,7 @@ export async function POST(request) {
                   ` : ''}
 
                   ${quote.notes ? `
-                  <!-- Notes -->
+                  <!-- notes -->
                   <tr>
                     <td style="padding: 20px 40px;">
                       <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 18px;">Additional Notes</h3>
