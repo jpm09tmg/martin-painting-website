@@ -24,6 +24,8 @@ import {
 export default function AdminQuoteForm() {
   const [message, setMessage] = useState("");
   const [quotes, setQuotes] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
@@ -32,13 +34,12 @@ export default function AdminQuoteForm() {
   const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
-    // Client Information
-    clientName: "",
-    clientEmail: "",
-    clientPhone: "",
-    projectAddress: "",
+    // Foreign Keys
+    client_id: "",
+    appointment_id: "",
 
     // Project Details
+    projectAddress: "",
     projectType: "",
     propertyType: "",
     projectDescription: "",
@@ -64,16 +65,27 @@ export default function AdminQuoteForm() {
   // Load quotes on component mount
   useEffect(() => {
     loadQuotes();
+    loadClients();
+    loadAppointments();
   }, []);
 
   const loadQuotes = async () => {
     try {
       const { data, error } = await supabase
-        .from("quotes")
+        .from("quotes_table")
         .select(
           `
           *,
-          quote_items (*)
+          clients (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            address
+          ),
+          appointments_test (*),
+          quote_items_duplicate (*)
         `
         )
         .order("created_at", { ascending: false });
@@ -85,11 +97,44 @@ export default function AdminQuoteForm() {
     }
   };
 
+  const loadClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .order("last_name", { ascending: true });
+
+      if (error) throw error;
+      setClients(data || []);
+    } catch (err) {
+      console.error("Error loading clients:", err);
+    }
+  };
+
+  const loadAppointments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("appointments_test")
+        .select("*")
+        .order("appointment_date", { ascending: false });
+
+      if (error) throw error;
+      setAppointments(data || []);
+    } catch (err) {
+      console.error("Error loading appointments:", err);
+    }
+  };
+
   const filteredQuotes = quotes.filter((quote) => {
+    const clientName = quote.clients 
+      ? `${quote.clients.first_name} ${quote.clients.last_name}`
+      : '';
+    const clientEmail = quote.clients?.email || '';
     const matchesSearch =
-      quote.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.client_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.project_address?.toLowerCase().includes(searchTerm.toLowerCase());
+      clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      clientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.project_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.project_description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || quote.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -154,9 +199,8 @@ export default function AdminQuoteForm() {
 
   const resetForm = () => {
     setFormData({
-      clientName: "",
-      clientEmail: "",
-      clientPhone: "",
+      client_id: "",
+      appointment_id: "",
       projectAddress: "",
       projectType: "",
       propertyType: "",
@@ -183,15 +227,18 @@ export default function AdminQuoteForm() {
 
     try {
       let quote;
+      
+      // Calculate total amount from items
+      const totalAmount = formData.items
+        .reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
 
       if (isEditing && selectedQuote) {
         // Update existing quote
         const { data: updatedQuote, error: quoteError } = await supabase
-          .from("quotes")
+          .from("quotes_table")
           .update({
-            client_name: formData.clientName,
-            client_email: formData.clientEmail,
-            client_phone: formData.clientPhone,
+            client_id: formData.client_id,
+            appointment_id: formData.appointment_id || null,
             project_address: formData.projectAddress,
             project_type: formData.projectType,
             property_type: formData.propertyType,
@@ -199,6 +246,7 @@ export default function AdminQuoteForm() {
             quote_valid_until: formData.quoteValidUntil || null,
             notes: formData.notes,
             status: formData.status,
+            total_amount: totalAmount,
           })
           .eq("id", selectedQuote.id)
           .select()
@@ -209,17 +257,16 @@ export default function AdminQuoteForm() {
 
         // Delete existing items
         await supabase
-          .from("quote_items")
+          .from("quote_items_duplicate")
           .delete()
           .eq("quote_id", selectedQuote.id);
       } else {
         // Insert new quote
         const { data: newQuote, error: quoteError } = await supabase
-          .from("quotes")
-          .insert({
-            client_name: formData.clientName,
-            client_email: formData.clientEmail,
-            client_phone: formData.clientPhone,
+          .from("quotes_table")
+          .insert([{
+            client_id: formData.client_id,
+            appointment_id: formData.appointment_id || null,
             project_address: formData.projectAddress,
             project_type: formData.projectType,
             property_type: formData.propertyType,
@@ -227,11 +274,17 @@ export default function AdminQuoteForm() {
             quote_valid_until: formData.quoteValidUntil || null,
             notes: formData.notes,
             status: formData.status,
-          })
+            total_amount: totalAmount,
+          }])
           .select()
           .single();
 
         if (quoteError) throw quoteError;
+        
+        if (!newQuote || !newQuote.id) {
+          throw new Error("Failed to get quote ID after insert");
+        }
+        
         quote = newQuote;
       }
 
@@ -249,7 +302,7 @@ export default function AdminQuoteForm() {
 
       if (itemsData.length > 0) {
         const { error: itemsError } = await supabase
-          .from("quote_items")
+          .from("quote_items_duplicate")
           .insert(itemsData);
 
         if (itemsError) throw itemsError;
@@ -270,7 +323,7 @@ export default function AdminQuoteForm() {
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       const { error } = await supabase
-        .from("quotes")
+        .from("quotes_table")
         .update({ status: newStatus })
         .eq("id", quoteId);
 
@@ -288,11 +341,11 @@ export default function AdminQuoteForm() {
 
     try {
       // Delete quote items first
-      await supabase.from("quote_items").delete().eq("quote_id", quoteId);
+      await supabase.from("quote_items_duplicate").delete().eq("quote_id", quoteId);
 
       // Delete quote
-      const { error } = await supabase
-        .from("quotes")
+      const { error} = await supabase
+        .from("quotes_table")
         .delete()
         .eq("id", quoteId);
 
@@ -334,9 +387,8 @@ const sendQuoteEmail = async (quoteId) => {
 
   const editQuote = (quote) => {
     setFormData({
-      clientName: quote.client_name || "",
-      clientEmail: quote.client_email || "",
-      clientPhone: quote.client_phone || "",
+      client_id: quote.client_id || "",
+      appointment_id: quote.appointment_id || "",
       projectAddress: quote.project_address || "",
       projectType: quote.project_type || "",
       propertyType: quote.property_type || "",
@@ -345,8 +397,8 @@ const sendQuoteEmail = async (quoteId) => {
       notes: quote.notes || "",
       status: quote.status || "Pending",
       items:
-        quote.quote_items?.length > 0
-          ? quote.quote_items.map((item) => ({
+        quote.quote_items_duplicate?.length > 0
+          ? quote.quote_items_duplicate.map((item) => ({
               id: item.id,
               itemName: item.item_name || "",
               description: item.description || "",
@@ -371,22 +423,26 @@ const sendQuoteEmail = async (quoteId) => {
   };
 
   const exportQuote = (quote) => {
-    const total = calculateQuoteTotal(quote.quote_items);
+    const total = calculateQuoteTotal(quote.quote_items_duplicate);
+    const clientName = quote.clients 
+      ? `${quote.clients.first_name} ${quote.clients.last_name}`
+      : 'Unknown Client';
     const quoteData = `
 MARTIN PAINTING - QUOTE #${quote.id}
 
-Client: ${quote.client_name}
-Email: ${quote.client_email}
-Phone: ${quote.client_phone}
-Address: ${quote.project_address}
+Client: ${clientName}
+Email: ${quote.clients?.email || 'N/A'}
+Phone: ${quote.clients?.phone || 'N/A'}
+Client Address: ${quote.clients?.address || 'N/A'}
 
+Project Address: ${quote.project_address || 'N/A'}
 Project Details:
 Type: ${quote.project_type} - ${quote.property_type}
 Description: ${quote.project_description}
 
 Items:
 ${
-  quote.quote_items
+  quote.quote_items_duplicate
     ?.map(
       (item) =>
         `${item.item_name} - ${item.description}
@@ -406,7 +462,7 @@ Notes: ${quote.notes || "None"}
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Quote_${quote.id}_${quote.client_name?.replace(
+    a.download = `Quote_${quote.id}_${clientName.replace(
       /\s+/g,
       "_"
     )}.txt`;
@@ -526,7 +582,7 @@ Notes: ${quote.notes || "None"}
                     $
                     {quotes
                       .reduce(
-                        (sum, q) => sum + calculateQuoteTotal(q.quote_items),
+                        (sum, q) => sum + calculateQuoteTotal(q.quote_items_duplicate),
                         0
                       )
                       .toLocaleString()}
@@ -585,7 +641,7 @@ Notes: ${quote.notes || "None"}
         {/* Quotes Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredQuotes.map((quote) => {
-            const total = calculateQuoteTotal(quote.quote_items);
+            const total = calculateQuoteTotal(quote.quote_items_duplicate);
             return (
               <div
                 key={quote.id}
@@ -608,22 +664,34 @@ Notes: ${quote.notes || "None"}
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
-                      <span className="font-medium">{quote.client_name}</span>
+                      <span className="font-medium">
+                        {quote.clients 
+                          ? `${quote.clients.first_name} ${quote.clients.last_name}`
+                          : 'Unknown Client'}
+                      </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Mail className="w-4 h-4 mr-2" />
-                      <span>{quote.client_email}</span>
+                      <span>{quote.clients?.email || 'N/A'}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Phone className="w-4 h-4 mr-2" />
-                      <span>{quote.client_phone}</span>
+                      <span>{quote.clients?.phone || 'N/A'}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="w-4 h-4 mr-2" />
                       <span className="line-clamp-1">
-                        {quote.project_address}
+                        {quote.clients?.address || 'N/A'}
                       </span>
                     </div>
+                    {quote.project_address && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 mr-2 text-[#74A744]" />
+                        <span className="line-clamp-1 font-medium">
+                          Project: {quote.project_address}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-gray-50 rounded-lg p-3 mb-4">
@@ -636,7 +704,7 @@ Notes: ${quote.notes || "None"}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {quote.quote_items?.length || 0} items • Valid until:{" "}
+                      {quote.quote_items_duplicate?.length || 0} items • Valid until:{" "}
                       {quote.quote_valid_until || "N/A"}
                     </div>
                   </div>
@@ -722,71 +790,65 @@ Notes: ${quote.notes || "None"}
             </div>
 
             <div className="p-6 space-y-8">
-              {/* Client Information */}
+              {/* Client & Appointment Selection */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Client Information
+                  Client & Appointment
                 </h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client Name
+                      Select Client *
                     </label>
-                    <input
-                      type="text"
-                      name="clientName"
-                      value={formData.clientName}
+                    <select
+                      name="client_id"
+                      value={formData.client_id}
                       onChange={handleChange}
-                      placeholder="John Doe"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                       required
-                    />
+                    >
+                      <option value="">Select a client...</option>
+                      {clients.map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.first_name} {client.last_name} - {client.email}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client Email
+                      Select Appointment (Optional)
                     </label>
-                    <input
-                      type="email"
-                      name="clientEmail"
-                      value={formData.clientEmail}
+                    <select
+                      name="appointment_id"
+                      value={formData.appointment_id}
                       onChange={handleChange}
-                      placeholder="john@example.com"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                      required
-                    />
+                    >
+                      <option value="">No appointment selected</option>
+                      {appointments.map((appointment) => (
+                        <option key={appointment.id} value={appointment.id}>
+                          {appointment.appointment_date || appointment.preferred_date} - Appointment #{appointment.id}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client Phone
-                    </label>
-                    <input
-                      type="tel"
-                      name="clientPhone"
-                      value={formData.clientPhone}
-                      onChange={handleChange}
-                      placeholder="(403) 555-0123"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Address
-                    </label>
-                    <input
-                      type="text"
-                      name="projectAddress"
-                      value={formData.projectAddress}
-                      onChange={handleChange}
-                      placeholder="123 Main St, Calgary, AB"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                      required
-                    />
-                  </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Project Address *
+                  </label>
+                  <input
+                    type="text"
+                    name="projectAddress"
+                    value={formData.projectAddress}
+                    onChange={handleChange}
+                    placeholder="123 Main St, Calgary, AB"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    required
+                  />
                 </div>
               </div>
 
@@ -1117,25 +1179,27 @@ Notes: ${quote.notes || "None"}
                   <div>
                     <span className="text-gray-600">Name:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.client_name}
+                      {selectedQuote.clients 
+                        ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
+                        : 'Unknown Client'}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Email:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.client_email}
+                      {selectedQuote.clients?.email || 'N/A'}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Phone:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.client_phone}
+                      {selectedQuote.clients?.phone || 'N/A'}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Address:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.project_address}
+                      {selectedQuote.clients?.address || 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -1147,6 +1211,12 @@ Notes: ${quote.notes || "None"}
                   Project Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="md:col-span-2">
+                    <span className="text-gray-600">Project Address:</span>
+                    <span className="ml-2 font-medium">
+                      {selectedQuote.project_address || 'Not specified'}
+                    </span>
+                  </div>
                   <div>
                     <span className="text-gray-600">Property Type:</span>
                     <span className="ml-2 font-medium">
@@ -1204,7 +1274,7 @@ Notes: ${quote.notes || "None"}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedQuote.quote_items?.map((item, index) => (
+                      {selectedQuote.quote_items_duplicate?.map((item, index) => (
                         <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {item.item_name}
@@ -1244,7 +1314,7 @@ Notes: ${quote.notes || "None"}
                         <td className="px-6 py-4 text-sm font-bold text-[#74A744]">
                           $
                           {calculateQuoteTotal(
-                            selectedQuote.quote_items
+                            selectedQuote.quote_items_duplicate
                           ).toLocaleString()}
                         </td>
                       </tr>
