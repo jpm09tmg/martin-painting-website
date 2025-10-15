@@ -26,3 +26,9 @@ Result: Claude did as asked, just changing the client input field into a select 
 Asked Claude to update the page so that it uses the joined clients + appointments table, and we only need to pick from a dropdown menu
 Result: AI helped create as I asked, but it wouldn't connect to quote_items table as I forgot I was using a test table instead
 I duplicated the table then asked Claude to try again using my test tables
+
+<!-- Admin: Project Page Update -->
+Asked Claude to update Project Page so that it links clients + appointments + quotes. 
+Result: Claude did as asked and created an extra status option
+Took out the status option then asked Claude to make the view details button functional
+Result: Modal now shows will all available details for the project.
