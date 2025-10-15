@@ -1,9 +1,23 @@
-'use client'
+'use client' 
+// Marks this file as a Client Component in Next.js (so it can use hooks like useState)
+
 import { useState } from 'react'
 import Header from '../components/Header'
 import { supabase } from '../../lib/supabase-client'
 
+/**
+ * BookAppointment Component
+ * ----------------------------------------------------
+ * This component renders a two-panel booking form where users can:
+ * - Select property and location types
+ * - Enter personal and contact details
+ * - Choose a preferred date and time
+ * On submission, it saves client and appointment data to Supabase.
+ */
 export default function BookAppointment() {
+  // -------------------------------
+  // State Management
+  // -------------------------------
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,9 +30,13 @@ export default function BookAppointment() {
     appointmentTime: '',
     details: ''
   })
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
 
+  const [loading, setLoading] = useState(false)   // Indicates when submission is processing
+  const [message, setMessage] = useState('')      // Success or error message for user feedback
+
+  // -------------------------------
+  // Handle input changes dynamically
+  // -------------------------------
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -26,13 +44,16 @@ export default function BookAppointment() {
     })
   }
 
+  // -------------------------------
+  // Handle form submission
+  // -------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
     try {
-      // Check if client already exists (by email)
+      // STEP 1: Check if client already exists in database (by email)
       let clientId = null
       
       if (formData.email) {
@@ -42,10 +63,9 @@ export default function BookAppointment() {
           .eq('email', formData.email)
           .single()
         
+        // If existing client found, update their info
         if (existingClient) {
           clientId = existingClient.id
-          
-          // Update client info with latest details from appointment
           await supabase
             .from('clients')
             .update({
@@ -58,7 +78,7 @@ export default function BookAppointment() {
         }
       }
       
-      // Create new client if doesn't exist
+      // STEP 2: If no existing client, insert new one
       if (!clientId) {
         const { data: newClient, error: clientError } = await supabase
           .from('clients')
@@ -72,15 +92,15 @@ export default function BookAppointment() {
           .select()
           .single()
 
+        // Handle error gracefully (won’t block appointment creation)
         if (clientError) {
           console.error('Error creating client:', clientError.message)
-          // Continue appointment
         } else {
           clientId = newClient?.id
         }
       }
 
-      // Create the appointment (contact info comes from clients table via client_id)
+      // STEP 3: Insert appointment referencing the client
       const { error: appointmentError } = await supabase
         .from('appointments_test')
         .insert([{
@@ -95,12 +115,14 @@ export default function BookAppointment() {
           status: 'pending'
         }])
 
+      // If something fails, log and stop
       if (appointmentError) {
         console.error('Error creating appointment:', appointmentError.message)
         throw appointmentError
       }
 
-      setMessage('Appointment request submitted successfully! We\'ll contact you soon to confirm.')
+      // STEP 4: Reset form and show success message
+      setMessage("Appointment request submitted successfully! We'll contact you soon to confirm.")
       setFormData({
         firstName: '',
         lastName: '',
@@ -114,6 +136,7 @@ export default function BookAppointment() {
         details: ''
       })
     } catch (error) {
+      // Handle general errors
       console.error('Error submitting appointment:', error?.message)
       setMessage(`Error: ${error?.message || 'Please try again or call us directly.'}`)
     }
@@ -121,13 +144,17 @@ export default function BookAppointment() {
     setLoading(false)
   }
 
-  // Time slots for selection
-  //these as well as property and location types could be moved to a db table for easier updating
+  // -------------------------------
+  // Data lists for dropdowns / radios
+  // -------------------------------
+
+  // Predefined time slot options
   const timeSlots = [
     '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
     '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'
   ]
 
+  // Property type options
   const propertyTypes = [
     {
       name: 'Residential',
@@ -139,6 +166,7 @@ export default function BookAppointment() {
     }
   ]
 
+  // Location type options
   const locationTypes = [
     {
       name: 'Interior',
@@ -150,21 +178,32 @@ export default function BookAppointment() {
     }
   ]
 
+  // -------------------------------
+  // Component JSX Rendering
+  // -------------------------------
   return (
     <div className="min-h-screen bg-white">
+      {/* Header component (shared across pages) */}
       <Header currentPage="appointment" />
 
-      {/* Main Content */}
+      {/* Page content container */}
       <div className="w-full max-w-4xl mx-auto py-8 px-4">
+
+        {/* Section Title */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Book Your Painting Consultation</h1>
-          <p className="text-lg text-gray-600">Schedule a free consultation to discuss your painting project</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Book Your Painting Consultation
+          </h1>
+          <p className="text-lg text-gray-600">
+            Schedule a free consultation to discuss your painting project
+          </p>
         </div>
 
+        {/* Main form card */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
           <div className="grid md:grid-cols-2 gap-0">
-            
-            {/* Left Panel - Service Selection */}
+
+            {/* LEFT PANEL — Service Selection */}
             <div className="bg-[#F1F4E8] p-6">
               <h2 className="text-lg font-normal text-[#171717] mb-6">Service Details</h2>
               
@@ -174,7 +213,7 @@ export default function BookAppointment() {
                 <div className="space-y-3">
                   {propertyTypes.map((property) => (
                     <label 
-                      key={property.name} 
+                      key={property.name}
                       className={`flex items-start space-x-3 p-4 bg-white rounded-lg cursor-pointer transition-colors border ${
                         formData.propertyType === property.name 
                           ? 'border-[#DCE9D4] shadow-sm' 
@@ -205,7 +244,7 @@ export default function BookAppointment() {
                 <div className="space-y-3">
                   {locationTypes.map((location) => (
                     <label 
-                      key={location.name} 
+                      key={location.name}
                       className={`flex items-start space-x-3 p-4 bg-white rounded-lg cursor-pointer transition-colors border ${
                         formData.locationType === location.name 
                           ? 'border-[#DCE9D4] shadow-sm' 
@@ -230,6 +269,7 @@ export default function BookAppointment() {
                 </div>
               </div>
 
+              {/* Project Details textarea */}
               <div className="mb-6">
                 <label className="block text-sm font-normal text-[#404040] mb-2">
                   Project Details
@@ -240,21 +280,20 @@ export default function BookAppointment() {
                   onChange={handleChange}
                   rows="6"
                   className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                  placeholder="Tell us about your painting project... (room sizes, color preferences, timeline, etc.)"
+                  placeholder="Tell us about your painting project..."
                 ></textarea>
               </div>
             </div>
 
-            {/* Right Panel - Contact Information */}
+            {/* RIGHT PANEL — Contact Information */}
             <div className="bg-white p-6">
               <h2 className="text-lg font-normal text-[#171717] mb-6">Contact Information</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* First and Last Name fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-normal text-[#404040] mb-2">
-                      First Name
-                    </label>
+                    <label className="block text-sm font-normal text-[#404040] mb-2">First Name</label>
                     <input
                       type="text"
                       name="firstName"
@@ -262,13 +301,11 @@ export default function BookAppointment() {
                       onChange={handleChange}
                       placeholder="John"
                       required
-                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-normal text-[#404040] mb-2">
-                      Last Name
-                    </label>
+                    <label className="block text-sm font-normal text-[#404040] mb-2">Last Name</label>
                     <input
                       type="text"
                       name="lastName"
@@ -276,15 +313,14 @@ export default function BookAppointment() {
                       onChange={handleChange}
                       placeholder="Doe"
                       required
-                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                     />
                   </div>
                 </div>
 
+                {/* Email, phone, address inputs */}
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
-                    Email Address
-                  </label>
+                  <label className="block text-sm font-normal text-[#404040] mb-2">Email Address</label>
                   <input
                     type="email"
                     name="email"
@@ -292,14 +328,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="john@example.com"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
-                    Phone Number
-                  </label>
+                  <label className="block text-sm font-normal text-[#404040] mb-2">Phone Number</label>
                   <input
                     type="tel"
                     name="phone"
@@ -307,14 +341,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="(403) 555-PAINT"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
-                    Address
-                  </label>
+                  <label className="block text-sm font-normal text-[#404040] mb-2">Address</label>
                   <input
                     type="text"
                     name="address"
@@ -322,37 +354,32 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="123 Main Street, Calgary, AB T2P 1J9"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                   />
                 </div>
 
+                {/* Date and time selectors */}
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
-                    Preferred Consultation Date
-                  </label>
-
-                  {/* "min" sets the minimum date to the current day. Maybe this should be the next day? */}
+                  <label className="block text-sm font-normal text-[#404040] mb-2">Preferred Consultation Date</label>
                   <input
                     type="date"
                     name="appointmentDate"
                     value={formData.appointmentDate}
                     onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split('T')[0]} // cannot pick past dates
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
-                    Preferred Time
-                  </label>
+                  <label className="block text-sm font-normal text-[#404040] mb-2">Preferred Time</label>
                   <select
                     name="appointmentTime"
                     value={formData.appointmentTime}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                   >
                     <option value="">Select time</option>
                     {timeSlots.map((time) => (
@@ -360,26 +387,30 @@ export default function BookAppointment() {
                     ))}
                   </select>
                 </div>
-                
-                 {/* If message includes "success it will be green, red if not" */}
+
+                {/* Success/Error message */}
                 {message && (
-                  <div className={`p-4 rounded-md text-sm ${
-                    message.includes('success') 
-                      ? 'bg-green-50 text-green-800 border border-green-200' 
-                      : 'bg-red-50 text-red-800 border border-red-200'
-                  }`}>
+                  <div
+                    className={`p-4 rounded-md text-sm ${
+                      message.includes('success')
+                        ? 'bg-green-50 text-green-800 border border-green-200'
+                        : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                  >
                     {message}
                   </div>
                 )}
 
+                {/* Submit button */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 px-4 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                  className="w-full py-3 px-4 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] focus:outline-none focus:ring-2 focus:ring-[#74A744] disabled:opacity-50 transition duration-300"
                 >
                   {loading ? 'Submitting...' : 'Request Consultation'}
                 </button>
 
+                {/* Contact Info */}
                 <div className="text-center pt-4">
                   <p className="text-sm text-gray-600">
                     Or call us directly at{' '}
@@ -393,7 +424,7 @@ export default function BookAppointment() {
           </div>
         </div>
 
-        {/* Additional Information */}
+        {/* Info Section — What to Expect */}
         <div className="mt-8 bg-[#F1F4E8] rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">What to Expect</h3>
           <div className="grid md:grid-cols-3 gap-6">
@@ -402,21 +433,21 @@ export default function BookAppointment() {
                 <span className="text-white font-bold">1</span>
               </div>
               <h4 className="font-medium text-gray-900 mb-2">Free Consultation</h4>
-              <p className="text-sm text-gray-600">Well visit your property to assess your painting needs and discuss your vision.</p>
+              <p className="text-sm text-gray-600">We'll visit your property to assess your painting needs.</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-[#74A744] rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-white font-bold">2</span>
               </div>
               <h4 className="font-medium text-gray-900 mb-2">Detailed Quote</h4>
-              <p className="text-sm text-gray-600">Receive a comprehensive written estimate with material and labor breakdown.</p>
+              <p className="text-sm text-gray-600">Receive a clear written estimate with material and labor details.</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-[#74A744] rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-white font-bold">3</span>
               </div>
               <h4 className="font-medium text-gray-900 mb-2">Professional Service</h4>
-              <p className="text-sm text-gray-600">Schedule your painting project with our experienced and insured team.</p>
+              <p className="text-sm text-gray-600">Our insured team completes your project with care and quality.</p>
             </div>
           </div>
         </div>
