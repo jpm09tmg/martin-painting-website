@@ -14,7 +14,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-black/10 pointer-events-none" />
       </div>
 
-      {/* centered logo (same as your current hero) */}
+      {/* centered logo */}
       <div className="relative z-10 h-full flex items-center justify-center">
         <div
           className="flex items-center justify-center w-full h-full"
