@@ -17,3 +17,12 @@ Result: similar table from clients as well
 <!-- Database Updates -->
 Asked Claude to connect my database clients table to appointments table.
 Result: AI helped me link the joined tables so that editing one field changes the other
+
+<!-- Admin: Appointments Page Update -->
+Asked Claude to create dropdown menu by getting clients from table in database.
+Result: Claude did as asked, just changing the client input field into a select with options from the table.
+
+<!-- Admin: Quotes Page Update -->
+Asked Claude to update the page so that it uses the joined clients + appointments table, and we only need to pick from a dropdown menu
+Result: AI helped create as I asked, but it wouldn't connect to quote_items table as I forgot I was using a test table instead
+I duplicated the table then asked Claude to try again using my test tables
