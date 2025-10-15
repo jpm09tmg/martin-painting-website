@@ -28,31 +28,52 @@ export default function ProjectsPage() {
   
   // Clients data - for dropdown
   const [clients, setClients] = useState([]);
+  const [quotes, setQuotes] = useState([]);
+  const [appointments, setAppointments] = useState([]);
 
   const [newProject, setNewProject] = useState({
-    name: "",
-    client: "",
-    address: "",
+    client_id: "",
+    project_address: "",
     status: "Planning",
-    startDate: "",
-    endDate: "",
-    budget: "",
+    start_date: "",
+    end_date: "",
     type: "Interior",
     description: "",
+    quote_id: "",
+    appointment_id: "",
   });
 
   // Load projects from database on component mount
   useEffect(() => {
     loadProjects();
     loadClients();
+    loadQuotes();
+    loadAppointments();
   }, []);
 
   const loadProjects = async () => {
     try {
       const { data, error } = await supabase
         .from("projects")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select(`
+          *,
+          clients (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone
+          ),
+          quotes (
+            id,
+            total_amount
+          ),
+          appointments (
+            id,
+            appointment_date
+          )
+        `)
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
 
@@ -80,23 +101,57 @@ export default function ProjectsPage() {
     }
   };
 
+  const loadQuotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("quotes")
+        .select("id, total_amount, client_id, clients(first_name, last_name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setQuotes(data || []);
+    } catch (err) {
+      console.error("Error loading quotes:", err);
+    }
+  };
+
+  const loadAppointments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id, appointment_date, client_id, clients(first_name, last_name)")
+        .order("appointment_date", { ascending: false });
+
+      if (error) throw error;
+
+      setAppointments(data || []);
+    } catch (err) {
+      console.error("Error loading appointments:", err);
+    }
+  };
+
   // Filter projects based on search and status
   const filteredProjects = projects.filter((project) => {
+    const clientName = project.clients 
+      ? `${project.clients.first_name} ${project.clients.last_name}`.toLowerCase()
+      : "";
+    const projectAddress = (project.project_address || "").toLowerCase();
+    
     const matchesSearch =
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.address.toLowerCase().includes(searchTerm.toLowerCase());
+      clientName.includes(searchTerm.toLowerCase()) ||
+      projectAddress.includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || project.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  // Update progress function - now saves to database
+  // Update progress function - saves to database
   const updateProgress = async (projectId, change) => {
     const project = projects.find((p) => p.id === projectId);
     if (!project) return;
 
-    const newProgress = Math.max(0, Math.min(100, project.progress + change));
+    const newProgress = Math.max(0, Math.min(100, (project.progress || 0) + change));
 
     // Auto-update status based on progress
     let newStatus = project.status;
@@ -114,6 +169,7 @@ export default function ProjectsPage() {
         .update({
           progress: newProgress,
           status: newStatus,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", projectId);
 
@@ -127,11 +183,14 @@ export default function ProjectsPage() {
               ...p,
               progress: newProgress,
               status: newStatus,
+              updated_at: new Date().toISOString(),
             };
           }
           return p;
         })
       );
+      setMessage("Progress updated successfully!");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       console.error("Error updating progress:", err);
       setMessage(`Error updating progress: ${err.message}`);
@@ -144,39 +203,65 @@ export default function ProjectsPage() {
 
     try {
       const projectData = {
-        name: newProject.name,
-        client: newProject.client,
-        address: newProject.address,
+        client_id: newProject.client_id,
+        project_address: newProject.project_address,
         status: newProject.status,
-        start_date: newProject.startDate,
-        end_date: newProject.endDate,
-        budget: parseInt(newProject.budget),
+        start_date: newProject.start_date,
+        end_date: newProject.end_date,
         type: newProject.type,
         description: newProject.description,
         progress: 0,
       };
 
+      // Only add quote_id if it's provided
+      if (newProject.quote_id && newProject.quote_id !== "") {
+        projectData.quote_id = newProject.quote_id;
+      }
+
+      // Only add appointment_id if it's provided
+      if (newProject.appointment_id && newProject.appointment_id !== "") {
+        projectData.appointment_id = newProject.appointment_id;
+      }
+
       const { data, error } = await supabase
         .from("projects")
         .insert([projectData])
-        .select();
+        .select(`
+          *,
+          clients (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone
+          ),
+          quotes (
+            id,
+            total_amount
+          ),
+          appointments (
+            id,
+            appointment_date
+          )
+        `);
 
       if (error) throw error;
 
       setMessage("Project added successfully!");
-      setProjects([data[0], ...projects]);
+      // Reload all projects to ensure data consistency
+      await loadProjects();
 
       // Reset form
       setNewProject({
-        name: "",
-        client: "",
-        address: "",
+        client_id: "",
+        project_address: "",
         status: "Planning",
-        startDate: "",
-        endDate: "",
-        budget: "",
+        start_date: "",
+        end_date: "",
         type: "Interior",
         description: "",
+        quote_id: "",
+        appointment_id: "",
       });
       setShowAddModal(false);
 
@@ -332,17 +417,14 @@ export default function ProjectsPage() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-[#74A744]" />
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-gray-900">
-                    $
-                    {projects
-                      .reduce((sum, p) => sum + (p.budget || 0), 0)
-                      .toLocaleString()}
+                    {projects.filter((p) => p.status === "On Hold").length}
                   </p>
-                  <p className="text-gray-600">Total Value</p>
+                  <p className="text-gray-600">On Hold</p>
                 </div>
               </div>
             </div>
@@ -396,7 +478,9 @@ export default function ProjectsPage() {
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
-                        {project.name}
+                        {project.clients 
+                          ? `${project.clients.first_name} ${project.clients.last_name}'s Project`
+                          : "Project"}
                       </h3>
                       <div className="flex gap-2 ml-2">
                         <span
@@ -406,44 +490,60 @@ export default function ProjectsPage() {
                         >
                           {project.status}
                         </span>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
-                            project.type
-                          )}`}
-                        >
-                          {project.type}
-                        </span>
+                        {project.type && (
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                              project.type
+                            )}`}
+                          >
+                            {project.type}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <div className="space-y-3 mb-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <User className="w-4 h-4 mr-2" />
-                        <span>{project.client}</span>
+                        <span>
+                          {project.clients 
+                            ? `${project.clients.first_name} ${project.clients.last_name}`
+                            : "No client"}
+                        </span>
                       </div>
+                      {project.clients?.phone && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <span className="mr-2">📞</span>
+                          <span>{project.clients.phone}</span>
+                        </div>
+                      )}
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="w-4 h-4 mr-2" />
-                        <span className="line-clamp-1">{project.address}</span>
+                        <span className="line-clamp-1">{project.project_address || "No address"}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>
-                          {project.start_date} → {project.end_date}
+                          {project.start_date || "TBD"} → {project.end_date || "TBD"}
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        <span className="font-medium">
-                          ${project.budget?.toLocaleString()}
-                        </span>
-                      </div>
+                      {project.quotes?.total_amount && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          <span className="font-medium">
+                            ${project.quotes.total_amount.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {project.description}
-                      </p>
-                    </div>
+                    {project.description && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {project.description}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Progress Bar with Status */}
                     <div className="mb-4">
@@ -517,9 +617,6 @@ export default function ProjectsPage() {
                     <div className="flex gap-2">
                       <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
                         View Details
-                      </button>
-                      <button className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors">
-                        Edit Project
                       </button>
                       <button
                         onClick={() => confirmDelete(project)}
@@ -597,38 +694,19 @@ export default function ProjectsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newProject.name}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="e.g., Modern Office Renovation"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Name
+                    Client *
                   </label>
                   <select
                     required
-                    value={newProject.client}
+                    value={newProject.client_id}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, client: e.target.value })
+                      setNewProject({ ...newProject, client_id: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                   >
                     <option value="">Select a client...</option>
                     {clients.map((client) => (
-                      <option
-                        key={client.id}
-                        value={`${client.first_name} ${client.last_name}`}
-                      >
+                      <option key={client.id} value={client.id}>
                         {client.first_name} {client.last_name}
                       </option>
                     ))}
@@ -637,14 +715,14 @@ export default function ProjectsPage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
+                    Project Address *
                   </label>
                   <input
                     type="text"
                     required
-                    value={newProject.address}
+                    value={newProject.project_address}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, address: e.target.value })
+                      setNewProject({ ...newProject, project_address: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                     placeholder="Project address"
@@ -671,34 +749,16 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={newProject.status}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, status: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                  >
-                    <option value="Planning">Planning</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="On Hold">On Hold</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date
+                    Start Date *
                   </label>
                   <input
                     type="date"
                     required
-                    value={newProject.startDate}
+                    value={newProject.start_date}
                     onChange={(e) =>
                       setNewProject({
                         ...newProject,
-                        startDate: e.target.value,
+                        start_date: e.target.value,
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
@@ -707,14 +767,14 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date
+                    End Date *
                   </label>
                   <input
                     type="date"
                     required
-                    value={newProject.endDate}
+                    value={newProject.end_date}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, endDate: e.target.value })
+                      setNewProject({ ...newProject, end_date: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
                   />
@@ -722,19 +782,42 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Budget ($)
+                    Related Quote (Optional)
                   </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={newProject.budget}
+                  <select
+                    value={newProject.quote_id}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, budget: e.target.value })
+                      setNewProject({ ...newProject, quote_id: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="0"
-                  />
+                  >
+                    <option value="">None</option>
+                    {quotes.map((quote) => (
+                      <option key={quote.id} value={quote.id}>
+                        ${quote.total_amount?.toLocaleString()} - {quote.clients?.first_name} {quote.clients?.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Related Appointment (Optional)
+                  </label>
+                  <select
+                    value={newProject.appointment_id}
+                    onChange={(e) =>
+                      setNewProject({ ...newProject, appointment_id: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  >
+                    <option value="">None</option>
+                    {appointments.map((appointment) => (
+                      <option key={appointment.id} value={appointment.id}>
+                        {appointment.appointment_date} - {appointment.clients?.first_name} {appointment.clients?.last_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">
@@ -751,7 +834,7 @@ export default function ProjectsPage() {
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Project description..."
+                    placeholder="Project description and notes..."
                   />
                 </div>
               </div>
@@ -789,9 +872,13 @@ export default function ProjectsPage() {
                 Delete Project
               </h3>
               <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to delete{" "}
-                <strong>{projectToDelete.name}</strong>? This action cannot be
-                undone.
+                Are you sure you want to delete the project for{" "}
+                <strong>
+                  {projectToDelete.clients 
+                    ? `${projectToDelete.clients.first_name} ${projectToDelete.clients.last_name}`
+                    : "this client"}
+                </strong>{" "}
+                at <strong>{projectToDelete.project_address}</strong>? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
