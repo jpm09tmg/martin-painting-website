@@ -86,7 +86,7 @@ export default function Testimonials() {
   }, [currentIndex, allTestimonials.length]);
 
   if (allTestimonials.length === 0) {
-    return null; // Don't show anything if no testimonials
+    return null; // Don't show anything if no testimonials but will show the default ones
   }
 
   return (
