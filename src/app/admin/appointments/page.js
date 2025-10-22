@@ -78,11 +78,11 @@ const AdminAppointments = () => {
     try {
       // Query Supabase database for appointments with related customer data
       const { data, error } = await supabase
-        .from("appointments")           // Select from appointments table
+        .from("appointments")
         .select(
           `
-          *,                           // Get all columns from appointments
-          clients (                    // Join with clients table to get customer info
+          *,
+          clients (
             first_name,
             last_name,
             email,
@@ -91,7 +91,7 @@ const AdminAppointments = () => {
           )
         `
         )
-        .order("created_at", { ascending: false }); // Sort by creation date (newest first)
+        .order("created_at", { ascending: false });
 
       if (error) throw error; // If database returns error, throw it to catch block
 
@@ -246,8 +246,35 @@ const AdminAppointments = () => {
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // ============================================
-  // UTILITY FUNCTIONS - Get icons and colors based on status
+  // UTILITY FUNCTIONS - Format dates and get icons/colors
   // ============================================
+  
+  // Format date string without timezone issues
+  // Dates from database are in YYYY-MM-DD format, we need to display them without timezone conversion
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    // Split the date string and create date in local timezone
+    const [year, month, day] = dateString.split("-");
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
+  };
+
+  // Format date with full details (weekday, month, day, year)
+  const formatDateLong = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
   
   // Returns the appropriate icon component for each appointment status
   const getStatusIcon = (status) => {
@@ -306,7 +333,7 @@ const AdminAppointments = () => {
       appointment.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.propertyAddress
+      appointment.address
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
     
@@ -349,10 +376,10 @@ const AdminAppointments = () => {
     // Pre-fill the date/time inputs with existing confirmed values,
     // or fall back to customer's preferred date/time
     setConfirmedDate(
-      appointment.confirmedDate || appointment.preferredDate || ""
+      appointment.appointmentDate || appointment.preferredDate || ""
     );
     setConfirmedTime(
-      appointment.confirmedTime || appointment.preferredTime || ""
+      appointment.appointmentTime || appointment.preferredTime || ""
     );
   };
 
@@ -377,26 +404,13 @@ const AdminAppointments = () => {
 
       if (error) throw error;
 
-      // Update local state to reflect changes
-      setAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === editingAppointment.id
-            ? {
-                ...apt,
-                confirmedDate,                  // Update confirmed date
-                confirmedTime,                  // Update confirmed time
-                status: "confirmed",            // Update status
-                appointmentDate: confirmedDate, // Update display date
-                appointmentTime: confirmedTime, // Update display time
-              }
-            : apt
-        )
-      );
-
       // Close the modal and reset form fields
       setEditingAppointment(null);
       setConfirmedDate("");
       setConfirmedTime("");
+
+      // Refetch appointments to get the latest data from database
+      await fetchAppointments();
     } catch (error) {
       console.error("Error confirming appointment:", error);
     }
@@ -798,7 +812,7 @@ const AdminAppointments = () => {
                             <div className="flex items-center gap-1">
                               <MapPin className="w-3 h-3 text-gray-400" />
                               <span className="text-gray-600">
-                                {appointment.propertyAddress}
+                                {appointment.address}
                               </span>
                             </div>
                           </div>
@@ -818,9 +832,7 @@ const AdminAppointments = () => {
                               </p>
                               <p>
                                 <span className="text-gray-500">Date:</span>{" "}
-                                {new Date(
-                                  appointment.preferredDate
-                                ).toLocaleDateString()}
+                                {formatDate(appointment.preferredDate)}
                               </p>
                               <p>
                                 <span className="text-gray-500">Time:</span>{" "}
@@ -829,20 +841,18 @@ const AdminAppointments = () => {
                             </div>
                             
                             {/* Show confirmed date/time only if it exists */}
-                            {appointment.confirmedDate && (
+                            {appointment.appointmentDate && (
                               <div className="pt-2 border-t">
                                 <p className="font-medium text-green-700">
                                   Confirmed:
                                 </p>
                                 <p>
                                   <span className="text-gray-500">Date:</span>{" "}
-                                  {new Date(
-                                    appointment.confirmedDate
-                                  ).toLocaleDateString()}
+                                  {formatDate(appointment.appointmentDate)}
                                 </p>
                                 <p>
                                   <span className="text-gray-500">Time:</span>{" "}
-                                  {appointment.confirmedTime}
+                                  {appointment.appointmentTime}
                                 </p>
                               </div>
                             )}
@@ -991,7 +1001,7 @@ const AdminAppointments = () => {
                 <div>
                   <p className="text-sm text-gray-600">Address</p>
                   <p className="font-medium text-gray-900">
-                    {selectedAppointment.propertyAddress}
+                    {selectedAppointment.address}
                   </p>
                 </div>
               </div>
@@ -1003,15 +1013,10 @@ const AdminAppointments = () => {
                   <p className="text-sm text-gray-600">Date & Time</p>
                   <p className="font-medium text-gray-900">
                     {/* Format: "Monday, May 20, 2024 at 10:00 AM" */}
-                    {new Date(
+                    {formatDateLong(
                       selectedAppointment.appointmentDate ||
                         selectedAppointment.preferredDate
-                    ).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}{" "}
+                    )}{" "}
                     at{" "}
                     {selectedAppointment.appointmentTime ||
                       selectedAppointment.preferredTime}
@@ -1136,9 +1141,7 @@ const AdminAppointments = () => {
               </p>
               <p className="text-sm text-blue-800">
                 <strong>Date:</strong>{" "}
-                {new Date(
-                  editingAppointment.preferredDate
-                ).toLocaleDateString()}
+                {formatDate(editingAppointment.preferredDate)}
               </p>
               <p className="text-sm text-blue-800">
                 <strong>Time:</strong> {editingAppointment.preferredTime}
