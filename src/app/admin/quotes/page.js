@@ -709,26 +709,38 @@ Notes: ${quote.notes || "None"}
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
+                    {/* action buttons */}
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedQuote(quote);
-                        setShowViewModal(true);
-                      }}
+                    <button 
+                      onClick={() => {setSelectedQuote(quote); setShowViewModal(true)}}
                       className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View
                     </button>
-                    <button
+                    <button 
                       onClick={() => editQuote(quote)}
                       className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
                     </button>
-                    <button
+
+                    {/* Send Button */}
+                    <button 
+                      onClick={() => sendQuoteEmail(quote.id)}
+                      className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-center ${
+                      quote.status === 'Sent' 
+                      ? 'bg-green-50 text-green-600 cursor-not-allowed' 
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                      disabled={quote.status === 'Sent'}
+                    >
+                      <Mail className="w-4 h-4 mr-1" />
+                      {quote.status === 'Sent' ? 'Sent ✓' : 'Send'}
+                    </button>
+
+                    <button 
                       onClick={() => exportQuote(quote)}
                       className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors flex items-center justify-center"
                     >
