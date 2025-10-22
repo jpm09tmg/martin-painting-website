@@ -26,7 +26,6 @@ export default function ChatWidget({
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
   const textareaRef = useRef(null);
-  // Local input state (like your working page.tsx)
   const [input, setInput] = useState("");
 
   // useChat from the working test page
@@ -121,7 +120,11 @@ export default function ChatWidget({
 
           {messages.map((m) => (
             <Bubble key={m.id} roleLabel={m.role === "user" ? "You" : "AI"} tone={m.role}>
-              {"text" in m ? m.text : (m.content ?? "")}
+              {Array.isArray(m.parts)
+                ? m.parts.map((part, i) => (
+                    part.type === "text" ? <span key={`${m.id}-${i}`}>{part.text}</span> : null
+                  ))
+                : ("text" in m && m.text ? m.text : (m.content ?? ""))}
             </Bubble>
           ))}
 
@@ -153,7 +156,7 @@ export default function ChatWidget({
         <form onSubmit={onSubmit} className="border-t border-zinc-200 dark:border-zinc-800 p-2 flex items-end gap-2">
           <textarea
             ref={textareaRef}
-            value={input}
+            value={input ?? ""}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message…"
             rows={1}
