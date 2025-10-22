@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useChat } from "@ai-sdk/react"; // matches your working page.tsx
+import { useChat } from "@ai-sdk/react"; 
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import clsx from "clsx";
 
-/**
- * ChatWidget.jsx — baseline built directly on the same pattern as your working test page
- * - Single source of truth: sendMessage({ text }) from useChat
- * - No manual fetch, no mixed submit paths
- * - Greeting is UI-only (not sent to the server)
- * - Quick suggestions call sendMessage directly
- * - Small, accessible floating widget with Tailwind classes
- */
+
 export default function ChatWidget({
   greeting = "Hi! I’m the Martin Painting assistant. How can I help?",
   brandHex = "#74A744",
