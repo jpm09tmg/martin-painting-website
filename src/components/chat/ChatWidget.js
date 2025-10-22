@@ -19,6 +19,8 @@ export default function ChatWidget({
     handleInputChange,
     handleSubmit,
     isLoading,
+    error,
+    append, // may be undefined
     setInput,
   } = useChat({
     api: "/api/chat",
@@ -28,7 +30,24 @@ export default function ChatWidget({
     ],
   });
 
-  // const safeInput = typeof input === "string" ? input : "";
+  // Fallback local state in case the SDK doesn't give us a change handler
+  const [localInput, setLocalInput] = useState("");
+
+  const effectiveInput = typeof input === "string" ? input : localInput;
+
+  const effectiveOnChange =
+    typeof handleInputChange === "function"
+      ? handleInputChange
+      : (e) => {
+          setLocalInput(e.target.value);
+          if (typeof setInput === "function") setInput(e.target.value);
+        };
+
+  const safeInput = typeof input === "string" ? input : "";
+
+  useEffect(() => {
+    if (error) console.error("useChat error:", error);
+  }, [error]);
 
   // Focus textarea when opened
   useEffect(() => {
@@ -157,7 +176,14 @@ export default function ChatWidget({
             ].map((q) => (
               <button
                 key={q}
-                onClick={() => setInput(q)}
+                onClick={async () => {
+                  // If append exists, one-tap send; otherwise just prefill the box
+                  if (typeof append === "function") {
+                    await append({ role: "user", content: q });
+                  } else if (typeof setInput === "function") {
+                    setInput(q);
+                  }
+                }}
                 className="text-xs px-3 py-1.5 rounded-full border hover:bg-gray-50"
               >
                 {q}
@@ -170,16 +196,17 @@ export default function ChatWidget({
             onSubmit={handleSubmit}
             className="border-t border-gray-200 p-2 flex items-end gap-2"
           >
-            <input
-              value={input}
-              onChange={handleInputChange}
+            <textarea
+              value={effectiveInput}
+              onChange={effectiveOnChange}
               placeholder="Type your message…"
               rows={1}
               className="flex-1 resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
+
             <button
               type="submit"
-              disabled={isLoading || !input}
+              disabled={isLoading || !effectiveInput.trim()}
               className={clsx(
                 "rounded-xl px-3 py-2 text-sm text-white flex items-center gap-1 disabled:opacity-60 transition-colors"
               )}
