@@ -40,7 +40,7 @@ export async function POST(request) {
     // send email
     const { data, error: emailError } = await resend.emails.send({
       from: 'Martin Painting <onboarding@resend.dev>',
-      to: [quote.client_email],
+      to: 'joshua.martin1@edu.sait.ca',
       subject: `Your Quote #${quote.id} from Martin Painting`,
       html: `
         <!DOCTYPE html>
@@ -163,18 +163,7 @@ export async function POST(request) {
                   </tr>
                   ` : ''}
 
-                  <!-- CTA Button -->
-                  <tr>
-                    <td style="padding: 30px 40px;">
-                      <table width="100%" cellpadding="0" cellspacing="0">
-                        <tr>
-                          <td align="center">
-                            <a href="${quoteLink}" style="display: inline-block; padding: 14px 32px; background-color: #74A744; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600;">View Full Quote Online</a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
+                 
 
                   <!-- Contact Info -->
                   <tr>

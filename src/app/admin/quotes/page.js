@@ -1347,7 +1347,7 @@ Notes: ${quote.notes || "None"}
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons in View Modal */}
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => editQuote(selectedQuote)}
@@ -1356,6 +1356,21 @@ Notes: ${quote.notes || "None"}
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Quote
                 </button>
+                
+                {/*Send Button */}
+                <button
+                  onClick={() => sendQuoteEmail(selectedQuote.id)}
+                  className={`flex-1 px-4 py-2 rounded-lg transition-colors flex items-center justify-center ${
+                    selectedQuote.status === 'Sent'
+                      ? 'bg-green-50 text-green-600 cursor-not-allowed'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                  }`}
+                  disabled={selectedQuote.status === 'Sent'}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {selectedQuote.status === 'Sent' ? 'Sent ✓' : 'Send to Client'}
+                </button>
+                
                 <button
                   onClick={() => exportQuote(selectedQuote)}
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5d8636] transition-colors flex items-center justify-center"
