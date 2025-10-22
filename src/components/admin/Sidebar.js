@@ -2,7 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Calendar, FileText, MessageSquare, DollarSign, Settings } from 'lucide-react'
+import { Home, Calendar, FileText, MessageSquare, DollarSign, Settings, Star } from 'lucide-react'
 
 /**
  * Admin Sidebar Navigation Component
@@ -29,6 +29,7 @@ export default function Sidebar() {
   const isProjectsActive = pathname.startsWith('/admin/projects')
   const isQuotesActive = pathname.startsWith('/admin/quotes')
   const isPaymentsActive = pathname.startsWith('/admin/payments')
+  const isReviewsActive = pathname.startsWith('/admin/reviews')
   const isSettingsActive = pathname.startsWith('/admin/settings')
   
 
@@ -84,6 +85,13 @@ export default function Sidebar() {
            className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isPaymentsActive ? 'bg-[#3F652B]' : ''}`}>
           <DollarSign className="w-5 h-5 text-white" />
           <span>Payments</span>
+        </Link>
+
+        {/* Reviews Link */}
+        <Link href="/admin/reviews"
+            className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isReviewsActive ? 'bg-[#3F652B]' : ''}`}>
+          <Star className="w-5 h-5 text-white" />
+          <span>Reviews</span>
         </Link>
 
         {/* Settings Link */}
