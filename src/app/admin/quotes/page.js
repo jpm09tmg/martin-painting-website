@@ -1349,6 +1349,8 @@ Notes: ${quote.notes || "None"}
 
               {/* Action Buttons in View Modal */}
               <div className="flex gap-3 pt-4">
+                
+                {/*edit Button */}
                 <button
                   onClick={() => editQuote(selectedQuote)}
                   className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center"
@@ -1371,6 +1373,7 @@ Notes: ${quote.notes || "None"}
                   {selectedQuote.status === 'Sent' ? 'Sent ✓' : 'Send to Client'}
                 </button>
                 
+                {/*export Button */}
                 <button
                   onClick={() => exportQuote(selectedQuote)}
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5d8636] transition-colors flex items-center justify-center"
@@ -1378,6 +1381,8 @@ Notes: ${quote.notes || "None"}
                   <Download className="w-4 h-4 mr-2" />
                   Export Quote
                 </button>
+
+                {/*delete Button */}
                 <button
                   onClick={() => deleteQuote(selectedQuote.id)}
                   className="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center"

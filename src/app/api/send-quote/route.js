@@ -38,6 +38,7 @@ export async function POST(request) {
     `).join('') || '<tr><td colspan="5" style="padding: 12px; text-align: center; color: #6b7280;">No items</td></tr>';
 
     // send email
+    //can only send to my email for now with resend free plan
     const { data, error: emailError } = await resend.emails.send({
       from: 'Martin Painting <onboarding@resend.dev>',
       to: 'joshua.martin1@edu.sait.ca',
