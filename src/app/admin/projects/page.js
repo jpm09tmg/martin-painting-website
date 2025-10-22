@@ -20,7 +20,7 @@ import {
   Palette,       // Paint/color icon
   Home,          // House/home icon
 } from "lucide-react";
-import { supabase } from "@lib/supabase-client";
+import { supabase } from "@/src/lib/supabase-client";
 
 export default function ProjectsPage() {
   // ============================================
@@ -48,6 +48,10 @@ export default function ProjectsPage() {
   // Stores the project selected for viewing details
   const [selectedProject, setSelectedProject] = useState(null);
   
+  // Edit mode for project details modal
+  const [editMode, setEditMode] = useState(false);
+  const [editedProject, setEditedProject] = useState(null);
+  
   // Loading state - shows loading message while fetching data from database
   const [loading, setLoading] = useState(true);
   
@@ -73,7 +77,6 @@ export default function ProjectsPage() {
     status: "Planning",      // Default status for new projects
     start_date: "",          // When project starts
     end_date: "",            // When project ends
-    type: "Interior",        // Default project type
     description: "",         // Project notes and details
     quote_id: "",            // Optional link to existing quote
     appointment_id: "",      // Optional link to existing appointment
@@ -100,14 +103,14 @@ export default function ProjectsPage() {
     try {
       // Query Supabase with joins to get related data
       const { data, error } = await supabase
-        .from("projects")              // Select from projects table
+        .from("projects")
         .select(`
-          *,                           // Get all project columns
-          clients (*),                 // Join with clients table to get client info
-          quotes (*, quote_items (*)), // Join with quotes and their items
-          appointments (*)             // Join with appointments
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `)
-        .order("updated_at", { ascending: false }); // Sort by last updated (newest first)
+        .order("updated_at", { ascending: false });
 
       if (error) throw error; // If database returns error, throw it to catch block
 
@@ -292,7 +295,6 @@ export default function ProjectsPage() {
         status: newProject.status,
         start_date: newProject.start_date,
         end_date: newProject.end_date,
-        type: newProject.type,
         description: newProject.description,
         progress: 0,                            // New projects always start at 0%
       };
@@ -309,13 +311,13 @@ export default function ProjectsPage() {
 
       // Insert new project into database and return the created project with all joined data
       const { data, error } = await supabase
-        .from("projects")      // Target projects table
-        .insert([projectData]) // Insert new project (array because .insert() accepts multiple rows)
+        .from("projects")
+        .insert([projectData])
         .select(`
-          *,                           // Return all project columns
-          clients (*),                 // Include client data
-          quotes (*, quote_items (*)), // Include quote and quote items data
-          appointments (*)             // Include appointment data
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `);
 
       // If insertion fails, throw error
@@ -334,7 +336,6 @@ export default function ProjectsPage() {
         status: "Planning",
         start_date: "",
         end_date: "",
-        type: "Interior",
         description: "",
         quote_id: "",
         appointment_id: "",
@@ -404,7 +405,52 @@ export default function ProjectsPage() {
   // Opens project details modal with selected project
   const viewProjectDetails = (project) => {
     setSelectedProject(project);      // Store project to view
+    setEditedProject(project);        // Initialize edited project
+    setEditMode(false);               // Start in view mode
     setShowDetailsModal(true);        // Show details modal
+  };
+
+  // Enable edit mode in details modal
+  const handleEditProject = () => {
+    setEditMode(true);
+  };
+
+  // Cancel edit mode
+  const handleCancelEdit = () => {
+    setEditedProject(selectedProject); // Reset to original data
+    setEditMode(false);
+  };
+
+  // Save edited project
+  const handleSaveProject = async () => {
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({
+          client_id: editedProject.client_id,
+          project_address: editedProject.project_address,
+          start_date: editedProject.start_date,
+          end_date: editedProject.end_date,
+          description: editedProject.description,
+        })
+        .eq("id", editedProject.id);
+
+      if (error) throw error;
+
+      setMessage("Project updated successfully!");
+      setEditMode(false);
+      
+      // Reload projects
+      await loadProjects();
+      
+      // Update selected project with edited data
+      setSelectedProject(editedProject);
+
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error("Error updating project:", err);
+      setMessage(`Error updating project: ${err.message}`);
+    }
   };
 
   // ============================================
@@ -907,7 +953,7 @@ export default function ProjectsPage() {
                     {/* Loop through all clients and create option for each */}
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
-                        {client.first_name} {client.last_name}
+                        {client.first_name} {client.last_name} - {client.email}
                       </option>
                     ))}
                   </select>
@@ -930,23 +976,23 @@ export default function ProjectsPage() {
                   />
                 </div>
 
-                {/* Project Type Dropdown */}
-                <div>
+                {/* Description Textarea - Spans 2 columns */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Type
+                    Description
                   </label>
-                  <select
-                    value={newProject.type}
+                  <textarea
+                    rows={3}
+                    value={newProject.description}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, type: e.target.value })
+                      setNewProject({
+                        ...newProject,
+                        description: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                  >
-                    <option value="Interior">Interior</option>
-                    <option value="Exterior">Exterior</option>
-                    <option value="Commercial">Commercial</option>
-                    <option value="Specialty">Specialty</option>
-                  </select>
+                    placeholder="Project description and notes..."
+                  />
                 </div>
 
                 {/* Start Date Input */}
@@ -1026,25 +1072,6 @@ export default function ProjectsPage() {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Description Textarea - Spans 2 columns */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newProject.description}
-                    onChange={(e) =>
-                      setNewProject({
-                        ...newProject,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Project description and notes..."
-                  />
                 </div>
               </div>
 
@@ -1139,18 +1166,45 @@ export default function ProjectsPage() {
             {/* Modal Header - Sticky at top */}
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-semibold text-gray-900">
-                Project Details
+                {editMode ? "Edit Project" : "Project Details"}
               </h2>
-              {/* Close button */}
-              <button
-                onClick={() => {
-                  setShowDetailsModal(false);
-                  setSelectedProject(null);
-                }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                {!editMode ? (
+                  <>
+                    <button
+                      onClick={handleEditProject}
+                      className="px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDetailsModal(false);
+                        setSelectedProject(null);
+                        setEditMode(false);
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleSaveProject}
+                      className="px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors text-sm"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="p-6">
@@ -1197,11 +1251,28 @@ export default function ProjectsPage() {
                   <div className="flex items-center text-sm">
                     <User className="w-4 h-4 mr-2 text-gray-500" />
                     <span className="font-medium text-gray-700 w-24">Name:</span>
-                    <span className="text-gray-900">
-                      {selectedProject.clients
-                        ? `${selectedProject.clients.first_name} ${selectedProject.clients.last_name}`
-                        : "N/A"}
-                    </span>
+                    {editMode ? (
+                      <select
+                        value={editedProject.client_id}
+                        onChange={(e) =>
+                          setEditedProject({ ...editedProject, client_id: e.target.value })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">Select Client...</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.first_name} {client.last_name} - {client.email}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-gray-900">
+                        {selectedProject.clients
+                          ? `${selectedProject.clients.first_name} ${selectedProject.clients.last_name}`
+                          : "N/A"}
+                      </span>
+                    )}
                   </div>
                   
                   {/* Client email (only if exists) */}
@@ -1256,9 +1327,21 @@ export default function ProjectsPage() {
                   <div className="flex items-start text-sm">
                     <MapPin className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
                     <span className="font-medium text-gray-700 w-24">Address:</span>
-                    <span className="text-gray-900 flex-1">
-                      {selectedProject.project_address || "N/A"}
-                    </span>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        value={editedProject.project_address || ""}
+                        onChange={(e) =>
+                          setEditedProject({ ...editedProject, project_address: e.target.value })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                        placeholder="Project address"
+                      />
+                    ) : (
+                      <span className="text-gray-900 flex-1">
+                        {selectedProject.project_address || "N/A"}
+                      </span>
+                    )}
                   </div>
                   
                   {/* Project type (only if exists) */}
@@ -1274,34 +1357,68 @@ export default function ProjectsPage() {
                   <div className="flex items-center text-sm">
                     <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                     <span className="font-medium text-gray-700 w-24">Start Date:</span>
-                    <span className="text-gray-900">
-                      {selectedProject.start_date || "TBD"}
-                    </span>
+                    {editMode ? (
+                      <input
+                        type="date"
+                        value={editedProject.start_date || ""}
+                        onChange={(e) =>
+                          setEditedProject({ ...editedProject, start_date: e.target.value })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      />
+                    ) : (
+                      <span className="text-gray-900">
+                        {selectedProject.start_date || "TBD"}
+                      </span>
+                    )}
                   </div>
                   
                   {/* End date */}
                   <div className="flex items-center text-sm">
                     <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                     <span className="font-medium text-gray-700 w-24">End Date:</span>
-                    <span className="text-gray-900">
-                      {selectedProject.end_date || "TBD"}
-                    </span>
+                    {editMode ? (
+                      <input
+                        type="date"
+                        value={editedProject.end_date || ""}
+                        onChange={(e) =>
+                          setEditedProject({ ...editedProject, end_date: e.target.value })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      />
+                    ) : (
+                      <span className="text-gray-900">
+                        {selectedProject.end_date || "TBD"}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* ============================================ */}
-              {/* DESCRIPTION SECTION (only if exists) */}
+              {/* DESCRIPTION SECTION */}
               {/* ============================================ */}
-              {selectedProject.description && (
+              {(selectedProject.description || editMode) && (
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
                     Description
                   </h3>
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                      {selectedProject.description}
-                    </p>
+                    {editMode ? (
+                      <textarea
+                        rows={4}
+                        value={editedProject.description || ""}
+                        onChange={(e) =>
+                          setEditedProject({ ...editedProject, description: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                        placeholder="Project description and notes..."
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                        {selectedProject.description}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
