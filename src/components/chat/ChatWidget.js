@@ -133,7 +133,6 @@ export default function ChatWidget({
               <X className="h-4 w-4" />
             </button>
           </div>
-
           {/* Messages */}
           <div className="px-4 py-3 overflow-auto flex-1 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%3232%22 fill=%22none%22><rect width=%2232%22 height=%2232%22 fill=%22%23ffffff%22/><path d=%22M16 0v32M0 16h32%22 stroke=%22%23f2f2f2%22 stroke-width=%221%22/></svg>')]">
             <ul className="flex flex-col gap-2">
@@ -166,7 +165,6 @@ export default function ChatWidget({
               )}
             </ul>
           </div>
-
           {/* Quick suggestions */}
           <div className="px-3 pb-2 pt-1 flex flex-wrap gap-2">
             {[
@@ -179,9 +177,35 @@ export default function ChatWidget({
                 onClick={async () => {
                   // If append exists, one-tap send; otherwise just prefill the box
                   if (typeof append === "function") {
+                    // Native SDK path
                     await append({ role: "user", content: q });
-                  } else if (typeof setInput === "function") {
-                    setInput(q);
+                  } else {
+                    // Fallback: put it into the input and auto-submit
+                    if (typeof setInput === "function") setInput(q);
+                    else setLocalInput(q);
+                    // small microtask so input state updates before submit
+                    queueMicrotask(() => {
+                      const fakeEvent = { preventDefault: () => {} };
+                      if (typeof handleSubmit === "function")
+                        handleSubmit(fakeEvent);
+                      else {
+                        // Manual send fallback (same as above)
+                        fetch("/api/chat", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            messages: [
+                              ...messages,
+                              {
+                                role: "user",
+                                content: q,
+                                id: crypto.randomUUID?.() || String(Date.now()),
+                              },
+                            ],
+                          }),
+                        }).catch(console.error);
+                      }
+                    });
                   }
                 }}
                 className="text-xs px-3 py-1.5 rounded-full border hover:bg-gray-50"
@@ -190,13 +214,38 @@ export default function ChatWidget({
               </button>
             ))}
           </div>
-
           {/* Input field */}
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              // Always prevent the browser reload
+              e.preventDefault();
+              // If the SDK provided a handler, use it
+              if (typeof handleSubmit === "function") {
+                return handleSubmit(e);
+              }
+              // Otherwise do a minimal manual send so the chat still works
+              (async () => {
+                try {
+                  const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      messages, // from useChat
+                    }),
+                  });
+                  // If you want to show the echo in UI when SDK isn't managing state:
+                  // const reader = res.body.getReader(); // (stream handling optional)
+                  // For a simple fallback you could also just clear input:
+                  if (typeof setInput === "function") setInput("");
+                } catch (err) {
+                  console.error("Manual send failed:", err);
+                }
+              })();
+            }}
             className="border-t border-gray-200 p-2 flex items-end gap-2"
           >
             <textarea
+              name="input"
               value={effectiveInput}
               onChange={effectiveOnChange}
               placeholder="Type your message…"
