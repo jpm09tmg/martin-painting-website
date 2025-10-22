@@ -73,7 +73,6 @@ export default function ProjectsPage() {
     status: "Planning",      // Default status for new projects
     start_date: "",          // When project starts
     end_date: "",            // When project ends
-    type: "Interior",        // Default project type
     description: "",         // Project notes and details
     quote_id: "",            // Optional link to existing quote
     appointment_id: "",      // Optional link to existing appointment
@@ -292,7 +291,6 @@ export default function ProjectsPage() {
         status: newProject.status,
         start_date: newProject.start_date,
         end_date: newProject.end_date,
-        type: newProject.type,
         description: newProject.description,
         progress: 0,                            // New projects always start at 0%
       };
@@ -334,7 +332,6 @@ export default function ProjectsPage() {
         status: "Planning",
         start_date: "",
         end_date: "",
-        type: "Interior",
         description: "",
         quote_id: "",
         appointment_id: "",
@@ -907,7 +904,7 @@ export default function ProjectsPage() {
                     {/* Loop through all clients and create option for each */}
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
-                        {client.first_name} {client.last_name}
+                        {client.first_name} {client.last_name} - {client.email}
                       </option>
                     ))}
                   </select>
@@ -930,23 +927,23 @@ export default function ProjectsPage() {
                   />
                 </div>
 
-                {/* Project Type Dropdown */}
-                <div>
+                {/* Description Textarea - Spans 2 columns */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Type
+                    Description
                   </label>
-                  <select
-                    value={newProject.type}
+                  <textarea
+                    rows={3}
+                    value={newProject.description}
                     onChange={(e) =>
-                      setNewProject({ ...newProject, type: e.target.value })
+                      setNewProject({
+                        ...newProject,
+                        description: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                  >
-                    <option value="Interior">Interior</option>
-                    <option value="Exterior">Exterior</option>
-                    <option value="Commercial">Commercial</option>
-                    <option value="Specialty">Specialty</option>
-                  </select>
+                    placeholder="Project description and notes..."
+                  />
                 </div>
 
                 {/* Start Date Input */}
@@ -1026,25 +1023,6 @@ export default function ProjectsPage() {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Description Textarea - Spans 2 columns */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newProject.description}
-                    onChange={(e) =>
-                      setNewProject({
-                        ...newProject,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
-                    placeholder="Project description and notes..."
-                  />
                 </div>
               </div>
 
