@@ -20,7 +20,7 @@ import {
   Palette,       // Paint/color icon
   Home,          // House/home icon
 } from "lucide-react";
-import { supabase } from "@lib/supabase-client";
+import { supabase } from "@/src/lib/supabase-client";
 
 export default function ProjectsPage() {
   // ============================================
@@ -100,14 +100,14 @@ export default function ProjectsPage() {
     try {
       // Query Supabase with joins to get related data
       const { data, error } = await supabase
-        .from("projects")              // Select from projects table
+        .from("projects")
         .select(`
-          *,                           // Get all project columns
-          clients (*),                 // Join with clients table to get client info
-          quotes (*, quote_items (*)), // Join with quotes and their items
-          appointments (*)             // Join with appointments
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `)
-        .order("updated_at", { ascending: false }); // Sort by last updated (newest first)
+        .order("updated_at", { ascending: false });
 
       if (error) throw error; // If database returns error, throw it to catch block
 
@@ -309,13 +309,13 @@ export default function ProjectsPage() {
 
       // Insert new project into database and return the created project with all joined data
       const { data, error } = await supabase
-        .from("projects")      // Target projects table
-        .insert([projectData]) // Insert new project (array because .insert() accepts multiple rows)
+        .from("projects")
+        .insert([projectData])
         .select(`
-          *,                           // Return all project columns
-          clients (*),                 // Include client data
-          quotes (*, quote_items (*)), // Include quote and quote items data
-          appointments (*)             // Include appointment data
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
         `);
 
       // If insertion fails, throw error
