@@ -34,3 +34,15 @@ Result: Recommended folder structure partially adopted. Grouped customer-facing 
 
 Asked for recommendation for improvements using other highly rated painter service websites as reference.
 Result: Transferred sections into components with own pages for scalability. Features pending.
+
+<!-- Chatbot Creation 1.0 -->
+
+Using AI SDK and Openai, asked for guidance on creating an integrated chatbot widget that floats at the bottom right of the pages.
+Result: Widget shows properly, with Widget floating in bottom right corner. Issues with input field (not typing), missing tokens, and empty message variable.
+
+<!-- Chatbot Creation 1.1 -->
+
+Analyze and identify possible sources of issue
+Result: Implemented suggestions and fixes; issues persists.
+
+<!-- Chatbot Creation 2.0 -->
