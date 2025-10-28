@@ -5,7 +5,9 @@ import Hero from "@/src/components/sections/Hero";
 import ValueProp from "@/src/components/sections/ValueProp";
 import ServicesGrid from "@/src/components/sections/ServicesGrid";
 import ProjectsStrip from "@/src/components/sections/ProjectsStrip";
+import Testimonials from "@/src/components/sections/Testimonials";
 import CtaStrip from "@/src/components/sections/CtaStrip";
+import ReviewForm from "@/src/components/sections/ReviewForm";
 
 export default function Home() {
   return (
@@ -15,7 +17,9 @@ export default function Home() {
       <ValueProp />
       <ServicesGrid />
       <ProjectsStrip />
+      <Testimonials />
       <CtaStrip />
+      <ReviewForm />
       <Footer />
     </div>
   );
