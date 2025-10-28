@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase-client";
 import {
   Search,
@@ -11,10 +12,14 @@ import {
   Plus,
   Save,
   X,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [clients, setClients] = useState([]);
+  const [appointmentCounts, setAppointmentCounts] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -36,13 +41,28 @@ export default function ClientsPage() {
 
   const loadClients = async () => {
     try {
-      const { data, error } = await supabase
+      // Load clients
+      const { data: clientsData, error: clientsError } = await supabase
         .from("clients")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setClients(data || []);
+      if (clientsError) throw clientsError;
+      setClients(clientsData || []);
+
+      // Load appointment counts for each client
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from("appointments")
+        .select("client_id");
+
+      if (appointmentsError) throw appointmentsError;
+
+      // Count appointments per client
+      const counts = {};
+      appointmentsData?.forEach((apt) => {
+        counts[apt.client_id] = (counts[apt.client_id] || 0) + 1;
+      });
+      setAppointmentCounts(counts);
     } catch (err) {
       console.error("Error loading clients:", err.message);
     } finally {
@@ -130,6 +150,19 @@ export default function ClientsPage() {
     } catch (err) {
       setMessage(`Error: ${err.message}`);
     }
+  };
+
+  // Navigate to appointments page filtered by client
+  const viewClientAppointments = (client) => {
+    // Store client filter in sessionStorage so appointments page can read it
+    sessionStorage.setItem(
+      "appointmentClientFilter",
+      JSON.stringify({
+        id: client.id,
+        name: `${client.first_name} ${client.last_name}`,
+      })
+    );
+    router.push("/admin/appointments");
   };
 
   if (loading) {
@@ -256,45 +289,83 @@ export default function ClientsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Added
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Appointments
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredClients.map((client) => (
-                  <tr
-                    key={client.id}
-                    onClick={() => openEditForm(client)}
-                    className="hover:bg-gray-50 cursor-pointer"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {client.first_name} {client.last_name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Mail className="w-4 h-4 text-gray-400 mr-2" />
-                        {client.email || "Not provided"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                        {client.phone || "Not provided"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
-                        <span className="truncate max-w-xs">
-                          {client.address || "Not provided"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(client.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {filteredClients.map((client) => {
+                  const appointmentCount = appointmentCounts[client.id] || 0;
+                  
+                  return (
+                    <tr key={client.id} className="hover:bg-gray-50">
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="text-sm font-medium text-gray-900">
+                          {client.first_name} {client.last_name}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                          {client.email || "Not provided"}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                          {client.phone || "Not provided"}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                          <span className="truncate max-w-xs">
+                            {client.address || "Not provided"}
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        {new Date(client.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {appointmentCount > 0 ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              viewClientAppointments(client);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                            title="View appointments"
+                          >
+                            <FileText className="w-4 h-4" />
+                            {appointmentCount}
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No appointments
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
