@@ -51,6 +51,9 @@ const AdminAppointments = () => {
   // Stores the confirmed time selected by admin
   const [confirmedTime, setConfirmedTime] = useState("");
   
+  // Stores active client filter (from clients page navigation)
+  const [clientFilter, setClientFilter] = useState(null);
+  
   // View mode toggle: 'list' shows appointments in a list, 'calendar' shows monthly calendar view
   const [viewMode, setViewMode] = useState("list");
   
@@ -67,6 +70,20 @@ const AdminAppointments = () => {
   // useEffect runs once when component loads (empty dependency array [])
   useEffect(() => {
     fetchAppointments(); // Fetch all appointments from database
+    
+    // Check if we have a client filter from sessionStorage
+    const storedFilter = sessionStorage.getItem("appointmentClientFilter");
+    if (storedFilter) {
+      try {
+        const filterData = JSON.parse(storedFilter);
+        setClientFilter(filterData);
+        setFilter("all"); // Show all statuses when filtering by client
+        // Clear the filter from storage after reading
+        sessionStorage.removeItem("appointmentClientFilter");
+      } catch (e) {
+        console.error("Error parsing client filter:", e);
+      }
+    }
   }, []);
 
   // ============================================
@@ -312,7 +329,7 @@ const AdminAppointments = () => {
   // FILTER AND SEARCH LOGIC
   // ============================================
   
-  // Filter appointments based on selected filter and search term
+  // Filter appointments based on selected filter, search term, and client filter
   const filteredAppointments = appointments.filter((appointment) => {
     // Determine if appointment matches the selected filter
     let matchesFilter;
@@ -337,8 +354,11 @@ const AdminAppointments = () => {
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
     
-    // Return true only if both filter AND search conditions are met
-    return matchesFilter && matchesSearch;
+    // Check if appointment matches the client filter (if active)
+    const matchesClient = clientFilter ? appointment.client_id === clientFilter.id : true;
+    
+    // Return true only if all conditions are met
+    return matchesFilter && matchesSearch && matchesClient;
   });
 
   // ============================================
@@ -481,6 +501,22 @@ const AdminAppointments = () => {
           <p className="text-gray-600">
             Manage customer appointments and consultations
           </p>
+          {/* Show active client filter badge */}
+          {clientFilter && (
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm">
+              <User className="w-4 h-4" />
+              <span>
+                Showing appointments for: <strong>{clientFilter.name}</strong>
+              </span>
+              <button
+                onClick={() => setClientFilter(null)}
+                className="ml-1 hover:bg-blue-100 rounded p-0.5"
+                title="Clear filter"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Toggle button to switch between list and calendar view */}
@@ -937,10 +973,10 @@ const AdminAppointments = () => {
       {/* APPOINTMENT DETAILS MODAL - Opened from calendar view */}
       {/* ============================================ */}
       {selectedAppointment && (
-        // Modal overlay - dark background covering entire screen
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        // Modal overlay - blurred background covering entire screen
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
@@ -1113,10 +1149,10 @@ const AdminAppointments = () => {
       {/* CONFIRMATION MODAL - Set/edit appointment date and time */}
       {/* ============================================ */}
       {editingAppointment && (
-        // Modal overlay - dark background covering entire screen
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        // Modal overlay - blurred background covering entire screen
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container */}
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Confirm Appointment
             </h2>

@@ -782,8 +782,8 @@ Notes: ${quote.notes || "None"}
 
       {/* Quote Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 {isEditing
@@ -1158,8 +1158,8 @@ Notes: ${quote.notes || "None"}
 
       {/* View Quote Modal */}
       {showViewModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 Quote #{selectedQuote.id}

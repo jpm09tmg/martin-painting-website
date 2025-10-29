@@ -10,6 +10,13 @@ Result: Claude provided the updated page for client page
 I'd rather have a table so I asked Claude to just change it into a simple table.
 Result: Table that is hooked to database (Can't edit form yet)
 
+<!-- Admin: Clients Page Update 10-28 -->
+Asked Claude to show the appointment count per client and then to link to the appointments page
+Result: Claude did as asked, with an extra column on the clients table for the number of appointments the client has
+Asked Claude to validate email to prevent duplicates
+Result: did as asked but message only shows up on the main page instead of the modal so I asked it to add it in the modal too
+Result: Claude added message inside modal too
+
 <!-- Admin: Payments Page Update -->
 Asked Claude to copy stat cards and general format of Clients page that I just asked to change. 
 Result: similar table from clients as well
