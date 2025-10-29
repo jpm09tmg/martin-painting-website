@@ -973,10 +973,10 @@ const AdminAppointments = () => {
       {/* APPOINTMENT DETAILS MODAL - Opened from calendar view */}
       {/* ============================================ */}
       {selectedAppointment && (
-        // Modal overlay - dark background covering entire screen
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        // Modal overlay - blurred background covering entire screen
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
@@ -1149,10 +1149,10 @@ const AdminAppointments = () => {
       {/* CONFIRMATION MODAL - Set/edit appointment date and time */}
       {/* ============================================ */}
       {editingAppointment && (
-        // Modal overlay - dark background covering entire screen
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        // Modal overlay - blurred background covering entire screen
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container */}
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Confirm Appointment
             </h2>
