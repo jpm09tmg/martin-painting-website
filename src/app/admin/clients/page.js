@@ -65,6 +65,7 @@ export default function ClientsPage() {
       setAppointmentCounts(counts);
     } catch (err) {
       console.error("Error loading clients:", err.message);
+      setMessage(`Error loading clients: ${err.message}. Please refresh the page.`);
     } finally {
       setLoading(false);
     }
@@ -86,6 +87,11 @@ export default function ClientsPage() {
       ...formData,
       [name]: value,
     });
+    
+    // Clear error message when user starts typing (especially for email field)
+    if (message.includes("Error") && name === "email") {
+      setMessage("");
+    }
   };
 
   const resetForm = () => {
@@ -97,6 +103,7 @@ export default function ClientsPage() {
       address: "",
     });
     setEditingClient(null);
+    setMessage(""); // Clear any messages when resetting form
   };
 
   const openEditForm = (client) => {
@@ -108,6 +115,7 @@ export default function ClientsPage() {
       address: client.address || "",
     });
     setEditingClient(client);
+    setMessage(""); // Clear any previous messages
     setShowForm(true);
   };
 
@@ -116,7 +124,23 @@ export default function ClientsPage() {
 
     try {
       if (editingClient) {
-        // Update existing client
+        // Update existing client - check if email is being changed to one that already exists
+        if (formData.email && formData.email !== editingClient.email) {
+          const { data: existingClient } = await supabase
+            .from("clients")
+            .select("id, first_name, last_name")
+            .eq("email", formData.email)
+            .neq("id", editingClient.id)
+            .single();
+
+          if (existingClient) {
+            setMessage(
+              `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. Please use a different email.`
+            );
+            return;
+          }
+        }
+
         const { error } = await supabase
           .from("clients")
           .update({
@@ -131,7 +155,23 @@ export default function ClientsPage() {
         if (error) throw error;
         setMessage("Client updated successfully!");
       } else {
-        // Insert new client
+        // Insert new client - check for duplicate email first
+        if (formData.email) {
+          const { data: existingClient } = await supabase
+            .from("clients")
+            .select("id, first_name, last_name")
+            .eq("email", formData.email)
+            .single();
+
+          if (existingClient) {
+            setMessage(
+              `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. ` +
+              `Please edit the existing client instead of creating a new one.`
+            );
+            return;
+          }
+        }
+
         const { error } = await supabase.from("clients").insert({
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -232,8 +272,8 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Message */}
-      {message && (
+      {/* Message - For non-modal errors and notifications */}
+      {message && !showForm && (
         <div
           className={`mb-6 p-4 rounded-lg ${
             message.includes("Error")
@@ -393,6 +433,19 @@ export default function ClientsPage() {
             </div>
 
             <div className="p-6 space-y-4">
+              {/* Error Message Inside Modal */}
+              {message && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    message.includes("Error")
+                      ? "bg-red-50 text-red-800 border border-red-200"
+                      : "bg-green-50 text-green-800 border border-green-200"
+                  }`}
+                >
+                  <p className="text-sm">{message}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
