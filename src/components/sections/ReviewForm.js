@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Star, X, MessageSquare } from "lucide-react";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@/src/lib/db/supabase-client";
 
 export default function ReviewForm() {
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +52,9 @@ export default function ReviewForm() {
 
       if (error) throw error;
 
-      setMessage("Thank you for your review! We'll review it and post it shortly.");
+      setMessage(
+        "Thank you for your review! We'll review it and post it shortly."
+      );
       setFormData({ author_name: "", service_type: "", quote: "", rating: 5 });
 
       setTimeout(() => {
@@ -76,7 +78,9 @@ export default function ReviewForm() {
     <>
       <section className="w-full bg-[#74A744] py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Share Your Experience</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Share Your Experience
+          </h2>
           <p className="text-white/90 text-lg mb-6">
             We'd love to hear about your experience with Martin Painting!
           </p>
@@ -94,15 +98,22 @@ export default function ReviewForm() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center bg-[#74A744]">
-              <h2 className="text-2xl font-bold text-white">Share Your Experience</h2>
-              <button onClick={closeModal} className="text-white hover:text-gray-200">
+              <h2 className="text-2xl font-bold text-white">
+                Share Your Experience
+              </h2>
+              <button
+                onClick={closeModal}
+                className="text-white hover:text-gray-200"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Name *
+                </label>
                 <input
                   type="text"
                   name="author_name"
@@ -116,7 +127,9 @@ export default function ReviewForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">What service did you use? *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What service did you use? *
+                </label>
                 <select
                   name="service_type"
                   value={formData.service_type}
@@ -126,13 +139,17 @@ export default function ReviewForm() {
                 >
                   <option value="">Select a service...</option>
                   {serviceOptions.map((service) => (
-                    <option key={service} value={service}>{service}</option>
+                    <option key={service} value={service}>
+                      {service}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">How would you rate our work? *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  How would you rate our work? *
+                </label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -159,7 +176,9 @@ export default function ReviewForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tell us about your experience *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tell us about your experience *
+                </label>
                 <textarea
                   name="quote"
                   value={formData.quote}
@@ -170,11 +189,19 @@ export default function ReviewForm() {
                   placeholder="Share details about your experience..."
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] text-gray-900 resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1">{formData.quote.length} / 1000 characters</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.quote.length} / 1000 characters
+                </p>
               </div>
 
               {message && (
-                <div className={`p-4 rounded-lg ${message.includes("Error") ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}>
+                <div
+                  className={`p-4 rounded-lg ${
+                    message.includes("Error")
+                      ? "bg-red-50 text-red-800"
+                      : "bg-green-50 text-green-800"
+                  }`}
+                >
                   <p>{message}</p>
                 </div>
               )}

@@ -18,52 +18,52 @@ import {
   AlertCircle,
   Filter,
   Search,
-  ChevronLeft,      // Left arrow for previous month
-  ChevronRight,     // Right arrow for next month
-  List,             // Icon for list view
-  X,                // Close/exit icon
+  ChevronLeft, // Left arrow for previous month
+  ChevronRight, // Right arrow for next month
+  List, // Icon for list view
+  X, // Close/exit icon
 } from "lucide-react";
-import { supabase } from "../../../lib/supabase-client";
+import { supabase } from "../../../lib/db/supabase-client";
 
 const AdminAppointments = () => {
   // ============================================
   // STATE MANAGEMENT - All component state variables
   // ============================================
-  
+
   // Stores all appointments fetched from database
   const [appointments, setAppointments] = useState([]);
-  
+
   // Current filter selection (active, pending, confirmed, etc.)
   const [filter, setFilter] = useState("active");
-  
+
   // Search term for filtering appointments by name, email, or address
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Loading state - shows spinner while fetching data
   const [loading, setLoading] = useState(true);
-  
+
   // Stores the appointment currently being edited/confirmed (null when modal is closed)
   const [editingAppointment, setEditingAppointment] = useState(null);
-  
+
   // Stores the confirmed date selected by admin
   const [confirmedDate, setConfirmedDate] = useState("");
-  
+
   // Stores the confirmed time selected by admin
   const [confirmedTime, setConfirmedTime] = useState("");
-  
+
   // View mode toggle: 'list' shows appointments in a list, 'calendar' shows monthly calendar view
   const [viewMode, setViewMode] = useState("list");
-  
+
   // Currently displayed month/year in calendar view
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+
   // Stores appointment clicked from calendar (for detail modal)
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   // ============================================
   // LOAD APPOINTMENTS ON COMPONENT MOUNT
   // ============================================
-  
+
   // useEffect runs once when component loads (empty dependency array [])
   useEffect(() => {
     fetchAppointments(); // Fetch all appointments from database
@@ -72,7 +72,7 @@ const AdminAppointments = () => {
   // ============================================
   // FETCH APPOINTMENTS FROM DATABASE
   // ============================================
-  
+
   // Async function to load appointments with customer details
   const fetchAppointments = async () => {
     try {
@@ -98,23 +98,23 @@ const AdminAppointments = () => {
       // Transform database data to match component structure
       // Add status field if missing and map database columns to display properties
       const appointmentsWithStatus = data.map((apt) => ({
-        ...apt,                                      // Spread all original properties
-        status: apt.status || "pending",            // Default status to 'pending' if not set
-        
+        ...apt, // Spread all original properties
+        status: apt.status || "pending", // Default status to 'pending' if not set
+
         // Map joined client data to easier-to-use property names
         firstName: apt.clients?.first_name,
         lastName: apt.clients?.last_name,
         email: apt.clients?.email,
         phone: apt.clients?.phone,
         address: apt.clients?.address,
-        
+
         // Map database snake_case to camelCase for consistency
         propertyType: apt.property_type,
         locationType: apt.location_type,
-        preferredDate: apt.preferred_date,          // Customer's requested date
-        preferredTime: apt.preferred_time,          // Customer's requested time
-        appointmentDate: apt.appointment_date,      // Admin confirmed date
-        appointmentTime: apt.appointment_time,      // Admin confirmed time
+        preferredDate: apt.preferred_date, // Customer's requested date
+        preferredTime: apt.preferred_time, // Customer's requested time
+        appointmentDate: apt.appointment_date, // Admin confirmed date
+        appointmentTime: apt.appointment_time, // Admin confirmed time
         projectDetails: apt.details,
         createdAt: apt.created_at,
       }));
@@ -132,21 +132,21 @@ const AdminAppointments = () => {
   // ============================================
   // CALENDAR FUNCTIONS - Generate and navigate calendar
   // ============================================
-  
+
   // Generates array of all days to display in calendar grid (42 days = 6 rows x 7 columns)
   const getCalendarDays = () => {
-    const year = currentDate.getFullYear();   // Get current year from state
-    const month = currentDate.getMonth();     // Get current month (0-11)
+    const year = currentDate.getFullYear(); // Get current year from state
+    const month = currentDate.getMonth(); // Get current month (0-11)
 
     // First day of the month (e.g., May 1, 2024)
     const firstDay = new Date(year, month, 1);
-    
+
     // Last day of the month (e.g., May 31, 2024)
     const lastDay = new Date(year, month + 1, 0);
-    
+
     // Total number of days in this month
     const daysInMonth = lastDay.getDate();
-    
+
     // Day of week for first day (0=Sunday, 1=Monday, etc.)
     const startingDayOfWeek = firstDay.getDay();
 
@@ -159,8 +159,8 @@ const AdminAppointments = () => {
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       days.push({
-        day: prevMonthLastDay - i,           // Day number
-        isCurrentMonth: false,               // Mark as not current month (grayed out)
+        day: prevMonthLastDay - i, // Day number
+        isCurrentMonth: false, // Mark as not current month (grayed out)
         date: new Date(year, month - 1, prevMonthLastDay - i), // Actual date object
       });
     }
@@ -170,9 +170,9 @@ const AdminAppointments = () => {
     // ============================================
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({
-        day: i,                              // Day number
-        isCurrentMonth: true,                // Mark as current month (full color)
-        date: new Date(year, month, i),      // Actual date object
+        day: i, // Day number
+        isCurrentMonth: true, // Mark as current month (full color)
+        date: new Date(year, month, i), // Actual date object
       });
     }
 
@@ -183,9 +183,9 @@ const AdminAppointments = () => {
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       days.push({
-        day: i,                              // Day number
-        isCurrentMonth: false,               // Mark as not current month (grayed out)
-        date: new Date(year, month + 1, i),  // Actual date object
+        day: i, // Day number
+        isCurrentMonth: false, // Mark as not current month (grayed out)
+        date: new Date(year, month + 1, i), // Actual date object
       });
     }
 
@@ -198,7 +198,7 @@ const AdminAppointments = () => {
   const getAppointmentsForDate = (date) => {
     // Convert date to YYYY-MM-DD string for comparison
     const dateStr = date.toISOString().split("T")[0];
-    
+
     // Filter appointments that match this date
     return appointments.filter((apt) => {
       // Use confirmed date if exists, otherwise use requested date
@@ -210,7 +210,7 @@ const AdminAppointments = () => {
   // ============================================
   // Calendar Navigation Functions
   // ============================================
-  
+
   // Go to previous month
   const previousMonth = () => {
     setCurrentDate(
@@ -241,14 +241,14 @@ const AdminAppointments = () => {
     month: "long",
     year: "numeric",
   });
-  
+
   // Array of weekday names for calendar header
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // ============================================
   // UTILITY FUNCTIONS - Format dates and get icons/colors
   // ============================================
-  
+
   // Format date string without timezone issues
   // Dates from database are in YYYY-MM-DD format, we need to display them without timezone conversion
   const formatDate = (dateString) => {
@@ -275,7 +275,7 @@ const AdminAppointments = () => {
       day: "numeric",
     });
   };
-  
+
   // Returns the appropriate icon component for each appointment status
   const getStatusIcon = (status) => {
     switch (status) {
@@ -311,7 +311,7 @@ const AdminAppointments = () => {
   // ============================================
   // FILTER AND SEARCH LOGIC
   // ============================================
-  
+
   // Filter appointments based on selected filter and search term
   const filteredAppointments = appointments.filter((appointment) => {
     // Determine if appointment matches the selected filter
@@ -333,10 +333,8 @@ const AdminAppointments = () => {
       appointment.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.address
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    
+      appointment.address?.toLowerCase().includes(searchTerm.toLowerCase());
+
     // Return true only if both filter AND search conditions are met
     return matchesFilter && matchesSearch;
   });
@@ -344,15 +342,15 @@ const AdminAppointments = () => {
   // ============================================
   // UPDATE APPOINTMENT STATUS
   // ============================================
-  
+
   // Function to update an appointment's status in the database
   const updateStatus = async (id, newStatus) => {
     try {
       // Update status in Supabase database
       const { error } = await supabase
-        .from("appointments")          // Target appointments table
+        .from("appointments") // Target appointments table
         .update({ status: newStatus }) // Set new status value
-        .eq("id", id);                 // Only update where id matches
+        .eq("id", id); // Only update where id matches
 
       if (error) throw error;
 
@@ -368,11 +366,11 @@ const AdminAppointments = () => {
   // ============================================
   // OPEN CONFIRMATION MODAL
   // ============================================
-  
+
   // Opens the modal to set/edit appointment date and time
   const openConfirmModal = (appointment) => {
     setEditingAppointment(appointment); // Store which appointment is being edited
-    
+
     // Pre-fill the date/time inputs with existing confirmed values,
     // or fall back to customer's preferred date/time
     setConfirmedDate(
@@ -386,7 +384,7 @@ const AdminAppointments = () => {
   // ============================================
   // CONFIRM APPOINTMENT WITH DATE/TIME
   // ============================================
-  
+
   // Saves the confirmed date/time and updates status to 'confirmed'
   const confirmAppointment = async () => {
     if (!editingAppointment) return; // Safety check - exit if no appointment selected
@@ -396,9 +394,9 @@ const AdminAppointments = () => {
       const { error } = await supabase
         .from("appointments")
         .update({
-          appointment_date: confirmedDate,    // Admin's confirmed date
-          appointment_time: confirmedTime,    // Admin's confirmed time
-          status: "confirmed",                // Change status to confirmed
+          appointment_date: confirmedDate, // Admin's confirmed date
+          appointment_time: confirmedTime, // Admin's confirmed time
+          status: "confirmed", // Change status to confirmed
         })
         .eq("id", editingAppointment.id);
 
@@ -419,12 +417,12 @@ const AdminAppointments = () => {
   // ============================================
   // CALCULATE STATISTICS FOR DASHBOARD
   // ============================================
-  
+
   // Calculates counts for stats cards (today, this week, completed, cancelled)
   const getStatsData = () => {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
-    
+
     // Calculate date 7 days from now
     const thisWeek = new Date();
     thisWeek.setDate(thisWeek.getDate() + 7);
@@ -432,16 +430,16 @@ const AdminAppointments = () => {
     return {
       // Count appointments scheduled for today
       today: appointments.filter((apt) => apt.appointmentDate === today).length,
-      
+
       // Count appointments within the next 7 days
       thisWeek: appointments.filter(
         (apt) => apt.appointmentDate <= thisWeek.toISOString().split("T")[0]
       ).length,
-      
+
       // Count completed appointments
       completed: appointments.filter((apt) => apt.status === "completed")
         .length,
-      
+
       // Count cancelled appointments
       cancelled: appointments.filter((apt) => apt.status === "cancelled")
         .length,
@@ -471,7 +469,6 @@ const AdminAppointments = () => {
   // ============================================
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      
       {/* ============================================ */}
       {/* PAGE HEADER WITH VIEW TOGGLE */}
       {/* ============================================ */}
@@ -482,7 +479,7 @@ const AdminAppointments = () => {
             Manage customer appointments and consultations
           </p>
         </div>
-        
+
         {/* Toggle button to switch between list and calendar view */}
         <button
           onClick={() => setViewMode(viewMode === "list" ? "calendar" : "list")}
@@ -563,7 +560,6 @@ const AdminAppointments = () => {
       {/* ============================================ */}
       {viewMode === "calendar" ? (
         <div className="bg-white rounded-lg shadow-lg p-6">
-          
           {/* Calendar Header - Month/Year and Navigation */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -574,12 +570,12 @@ const AdminAppointments = () => {
               >
                 <ChevronLeft className="w-5 h-5 text-gray-700" />
               </button>
-              
+
               {/* Current Month and Year Display */}
               <h2 className="text-2xl font-semibold text-gray-900 min-w-[200px] text-center">
                 {monthYear}
               </h2>
-              
+
               {/* Next Month Button */}
               <button
                 onClick={nextMonth}
@@ -588,7 +584,7 @@ const AdminAppointments = () => {
                 <ChevronRight className="w-5 h-5 text-gray-700" />
               </button>
             </div>
-            
+
             {/* Today Button - Jump to current month */}
             <button
               onClick={goToToday}
@@ -602,7 +598,6 @@ const AdminAppointments = () => {
           {/* CALENDAR GRID - 7 columns (days) x 6 rows */}
           {/* ============================================ */}
           <div className="grid grid-cols-7 gap-2">
-            
             {/* Weekday Headers (Sun, Mon, Tue, etc.) */}
             {weekDays.map((day) => (
               <div
@@ -617,7 +612,7 @@ const AdminAppointments = () => {
             {getCalendarDays().map((dayInfo, index) => {
               // Get appointments for this specific day
               const dayAppointments = getAppointmentsForDate(dayInfo.date);
-              
+
               // Check if this day is today
               const isTodayDate = isToday(dayInfo.date);
 
@@ -663,7 +658,7 @@ const AdminAppointments = () => {
                         {apt.firstName} {apt.lastName}
                       </button>
                     ))}
-                    
+
                     {/* Show "+X more" if there are more than 3 appointments */}
                     {dayAppointments.length > 3 && (
                       <div className="text-xs text-gray-500 text-center">
@@ -681,11 +676,10 @@ const AdminAppointments = () => {
           {/* ============================================ */}
           {/* LIST VIEW - Traditional list of appointments */}
           {/* ============================================ */}
-          
+
           {/* Filters and Search Bar */}
           <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
             <div className="flex flex-col md:flex-row gap-4">
-              
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -739,10 +733,8 @@ const AdminAppointments = () => {
                   className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-                    
                     {/* Appointment Details Section */}
                     <div className="flex-1">
-                      
                       {/* Status Badge and Creation Date */}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="flex items-center gap-2">
@@ -764,7 +756,6 @@ const AdminAppointments = () => {
 
                       {/* Three-column grid for appointment information */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        
                         {/* Customer Info Column */}
                         <div>
                           <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -839,7 +830,7 @@ const AdminAppointments = () => {
                                 {appointment.preferredTime}
                               </p>
                             </div>
-                            
+
                             {/* Show confirmed date/time only if it exists */}
                             {appointment.appointmentDate && (
                               <div className="pt-2 border-t">
@@ -877,7 +868,6 @@ const AdminAppointments = () => {
                     {/* ACTION BUTTONS - Status-specific buttons */}
                     {/* ============================================ */}
                     <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col gap-2">
-                      
                       {/* Buttons for PENDING appointments */}
                       {appointment.status === "pending" && (
                         <>
@@ -889,7 +879,7 @@ const AdminAppointments = () => {
                             <Calendar className="w-4 h-4 mr-1" />
                             Set Date & Confirm
                           </button>
-                          
+
                           {/* Decline button - changes status to cancelled */}
                           <button
                             onClick={() =>
@@ -912,7 +902,7 @@ const AdminAppointments = () => {
                           >
                             Edit Date/Time
                           </button>
-                          
+
                           {/* Mark complete button - changes status to completed */}
                           <button
                             onClick={() =>
@@ -941,7 +931,6 @@ const AdminAppointments = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
               <h3 className="text-xl font-semibold text-gray-900">
@@ -960,7 +949,6 @@ const AdminAppointments = () => {
             {/* APPOINTMENT DETAILS - All information */}
             {/* ============================================ */}
             <div className="p-6 space-y-4">
-              
               {/* Customer Name */}
               <div className="flex items-start">
                 <User className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
@@ -1070,12 +1058,11 @@ const AdminAppointments = () => {
             {/* MODAL ACTION BUTTONS - Status-specific */}
             {/* ============================================ */}
             <div className="p-6 border-t flex gap-3">
-              
               {/* Show Confirm button only for pending appointments */}
               {selectedAppointment.status === "pending" && (
                 <button
                   onClick={() => {
-                    setSelectedAppointment(null);      // Close detail modal
+                    setSelectedAppointment(null); // Close detail modal
                     openConfirmModal(selectedAppointment); // Open confirm modal
                   }}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -1083,20 +1070,20 @@ const AdminAppointments = () => {
                   Confirm Appointment
                 </button>
               )}
-              
+
               {/* Show Mark Complete button only for confirmed appointments */}
               {selectedAppointment.status === "confirmed" && (
                 <button
                   onClick={() => {
                     updateStatus(selectedAppointment.id, "completed"); // Update status
-                    setSelectedAppointment(null);                      // Close modal
+                    setSelectedAppointment(null); // Close modal
                   }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Mark Complete
                 </button>
               )}
-              
+
               {/* Close button - always visible */}
               <button
                 onClick={() => setSelectedAppointment(null)}
@@ -1150,7 +1137,6 @@ const AdminAppointments = () => {
 
             {/* Date/Time Input Fields */}
             <div className="space-y-4 mb-6">
-              
               {/* Confirmed Date Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1186,15 +1172,15 @@ const AdminAppointments = () => {
               {/* Cancel button - closes modal without saving */}
               <button
                 onClick={() => {
-                  setEditingAppointment(null);  // Close modal
-                  setConfirmedDate("");         // Clear date input
-                  setConfirmedTime("");         // Clear time input
+                  setEditingAppointment(null); // Close modal
+                  setConfirmedDate(""); // Clear date input
+                  setConfirmedTime(""); // Clear time input
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>
-              
+
               {/* Confirm button - saves date/time and updates status */}
               <button
                 onClick={confirmAppointment}
