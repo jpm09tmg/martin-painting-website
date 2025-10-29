@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                       </>
                     )}
 
-                    
+                    {/* Approved: show Remove and Delete buttons */}
                     {review.status === "approved" && (
                       <>
                         <button
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
                       </>
                     )}
 
-                    
+                    {/* Removed: show Re-approve and Delete buttons */}
                     {review.status === "removed" && (
                       <>
                         <button
