@@ -917,10 +917,11 @@ export default function ProjectsPage() {
       {/* ADD PROJECT MODAL - Form to create new project */}
       {/* ============================================ */}
       {showAddModal && (
-        // Modal overlay - dark background covering entire screen
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        // Modal overlay - blurred background covering entire screen
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -1121,9 +1122,9 @@ export default function ProjectsPage() {
       {/* ============================================ */}
       {showDeleteConfirm && projectToDelete && (
         // Modal overlay
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content */}
-          <div className="bg-white rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-2xl border border-gray-200">
             <div className="p-6">
               {/* Warning icon */}
               <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
@@ -1176,9 +1177,10 @@ export default function ProjectsPage() {
       {/* ============================================ */}
       {showDetailsModal && selectedProject && (
         // Modal overlay
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content - scrollable */}
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            
             {/* Modal Header - Sticky at top */}
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-semibold text-gray-900">
