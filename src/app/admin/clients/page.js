@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/db/supabase-client";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../../lib/supabase-client";
 import {
   Search,
   User,
