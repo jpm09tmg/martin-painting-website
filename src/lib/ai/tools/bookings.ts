@@ -1,5 +1,5 @@
 import { bookingInput } from "../schemas";
-import { createServerSupabaseClient } from "@/lib/db/supabase"; // your helper
+import { createClientServer } from "@/src/lib/db/supabase"; // your helper
 
 export const bookingsTools = {
   createBooking: {
@@ -7,7 +7,7 @@ export const bookingsTools = {
     parameters: bookingInput,
     execute: async (args: unknown) => {
       const input = bookingInput.parse(args); // validate
-      const supabase = createServerSupabaseClient();
+      const supabase = createClientServer();
 
       const { data, error } = await supabase
         .from("bookings")
