@@ -1,27 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase-client";
+import { supabase } from "../lib/db/supabase-client";
 import { Star, CheckCircle, Trash2, Clock, Eye, EyeOff } from "lucide-react";
 
 export default function AdminDashboard() {
+  // State management: stores all reviews, loading status, messages, and current filter
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState("pending");
 
+  // Automatically reload reviews whenever the filter changes
   useEffect(() => {
     loadReviews();
   }, [filter]);
 
+  // Fetch reviews from database based on current filter
   const loadReviews = async () => {
     setLoading(true);
     try {
+      // Build query: get all reviews, sorted by newest first
       let query = supabase
         .from("testimonials")
         .select("*")
         .order("submitted_at", { ascending: false });
+      
+      // Apply filter if not showing "all" reviews
       if (filter !== "all") query = query.eq("status", filter);
+      
       const { data, error } = await query;
       if (error) throw error;
       setReviews(data || []);
@@ -32,6 +39,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Approve a review: change status to "approved" and mark it live on website
   const approveReview = async (id) => {
     try {
       const { error } = await supabase
@@ -39,6 +47,8 @@ export default function AdminDashboard() {
         .update({ status: "approved", approved_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
+      
+      // Show success message and refresh the list
       setMessage("Review approved and posted!");
       loadReviews();
       setTimeout(() => setMessage(""), 3000);
@@ -47,6 +57,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Remove a review: hide from website but keep in database
   const removeReview = async (id) => {
     if (!confirm("Remove this review from website?")) return;
     try {
@@ -55,6 +66,7 @@ export default function AdminDashboard() {
         .update({ status: "removed" })
         .eq("id", id);
       if (error) throw error;
+      
       setMessage("Review removed from website.");
       loadReviews();
       setTimeout(() => setMessage(""), 3000);
@@ -63,11 +75,16 @@ export default function AdminDashboard() {
     }
   };
 
+  // Permanently delete a review from database (cannot be undone)
   const deleteReview = async (id) => {
     if (!confirm("Permanently delete? Cannot be undone!")) return;
     try {
-      const { error } = await supabase.from("testimonials").delete().eq("id", id);
+      const { error } = await supabase
+        .from("testimonials")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
+      
       setMessage("Review deleted permanently.");
       loadReviews();
       setTimeout(() => setMessage(""), 3000);
@@ -76,6 +93,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Returns a colored badge component based on review status
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
@@ -104,6 +122,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Show loading spinner while fetching data
   if (loading)
     return (
       <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -113,12 +132,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Page header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Customer Reviews</h1>
         <p className="text-gray-600">Manage customer reviews</p>
       </div>
 
+      {/* Statistics cards: shows counts for pending, approved, and removed reviews */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Pending reviews card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
@@ -132,6 +154,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Approved reviews card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -145,6 +169,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Removed reviews card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-gray-100 rounded-lg">
@@ -160,6 +186,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Filter buttons: allows switching between pending, approved, removed, and all reviews */}
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
         <div className="flex gap-2">
           <button
@@ -205,6 +232,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Success/error message alert (shows for 3 seconds) */}
       {message && (
         <div
           className={`mb-6 p-4 rounded-lg ${
@@ -217,6 +245,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Reviews list: displays all reviews or "no reviews found" message */}
       <div className="bg-white rounded-lg shadow-sm border">
         {reviews.length === 0 ? (
           <div className="p-8 text-center">
@@ -224,9 +253,11 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
+            {/* Loop through each review and display as a card */}
             {reviews.map((review) => (
               <div key={review.id} className="p-6 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
+                  {/* Review content: name, service type, rating, quote, and date */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="font-semibold text-gray-900 text-lg">
@@ -237,6 +268,8 @@ export default function AdminDashboard() {
                       </span>
                       {getStatusBadge(review.status)}
                     </div>
+
+                    {/* Star rating display */}
                     <div className="flex items-center mb-3">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -252,12 +285,17 @@ export default function AdminDashboard() {
                         ({review.rating}/5)
                       </span>
                     </div>
+
                     <p className="text-gray-700 mb-3">"{review.quote}"</p>
                     <div className="text-xs text-gray-500">
-                      Submitted: {new Date(review.submitted_at).toLocaleString()}
+                      Submitted:{" "}
+                      {new Date(review.submitted_at).toLocaleString()}
                     </div>
                   </div>
+
+                  {/* Action buttons: change based on review status */}
                   <div className="flex flex-col gap-2 ml-6">
+                    {/* Pending: show Approve and Delete buttons */}
                     {review.status === "pending" && (
                       <>
                         <button
@@ -276,6 +314,8 @@ export default function AdminDashboard() {
                         </button>
                       </>
                     )}
+
+                    {/* Approved: show Remove and Delete buttons */}
                     {review.status === "approved" && (
                       <>
                         <button
@@ -294,6 +334,8 @@ export default function AdminDashboard() {
                         </button>
                       </>
                     )}
+
+                    {/* Removed: show Re-approve and Delete buttons */}
                     {review.status === "removed" && (
                       <>
                         <button
