@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { supabase } from "../../../lib/db/supabase-client";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase-client";
 import {
@@ -132,7 +133,7 @@ export default function ClientsPage() {
             .eq("email", formData.email)
             .neq("id", editingClient.id)
             .single();
-
+https://github.com/jpm09tmg/martin-painting-website/pull/71/conflict?name=src%252Fapp%252Fadmin%252Flayout.js&ancestor_oid=8f76924153c9b6ffe6c6e7030077e8938a01c6d4&base_oid=9f168216d8097e1418ddfa7e7ef9fbfa3bec8914&head_oid=be0773e611a04ca07e0b7c8ac28c02bcb7338c62
           if (existingClient) {
             setMessage(
               `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. Please use a different email.`

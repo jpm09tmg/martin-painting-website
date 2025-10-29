@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase-client";
+import { supabase } from "../lib/db/supabase-client";
 import { Star, CheckCircle, Trash2, Clock, Eye, EyeOff } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -79,7 +79,10 @@ export default function AdminDashboard() {
   const deleteReview = async (id) => {
     if (!confirm("Permanently delete? Cannot be undone!")) return;
     try {
-      const { error } = await supabase.from("testimonials").delete().eq("id", id);
+      const { error } = await supabase
+        .from("testimonials")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
       
       setMessage("Review deleted permanently.");
@@ -285,7 +288,8 @@ export default function AdminDashboard() {
 
                     <p className="text-gray-700 mb-3">"{review.quote}"</p>
                     <div className="text-xs text-gray-500">
-                      Submitted: {new Date(review.submitted_at).toLocaleString()}
+                      Submitted:{" "}
+                      {new Date(review.submitted_at).toLocaleString()}
                     </div>
                   </div>
 

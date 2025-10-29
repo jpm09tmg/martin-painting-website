@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Header from "@/src/components/layout/Header";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@/src/lib/db/supabase-client";
 
 export default function BookAppointment() {
   const [formData, setFormData] = useState({

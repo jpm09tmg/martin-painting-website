@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { textLink } from "@/src/components/ui/buttons";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@/src/lib/db/supabase-client";
 
 // Revalidate every minute so you see new uploads without a rebuild
 export const revalidate = 60;
