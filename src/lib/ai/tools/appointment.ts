@@ -1,5 +1,5 @@
 import { bookingInput } from "../schemas";
-import { createClientServer } from "@/src/lib/db/supabase"; // your helper
+import { createClientServer } from "@/src/lib/db/supabase";
 
 export const bookingsTools = {
   createBooking: {
