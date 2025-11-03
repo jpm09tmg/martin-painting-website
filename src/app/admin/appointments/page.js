@@ -548,7 +548,7 @@ const AdminAppointments = () => {
             <Calendar className="w-8 h-8 text-blue-500 mr-3" />
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Todays Appointments</p>
+              <p className="text-sm text-gray-600">Today's Appointments</p>
             </div>
           </div>
         </div>
@@ -936,7 +936,7 @@ const AdminAppointments = () => {
                           {/* Edit date/time button - reopens confirmation modal */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm text-xs"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
                           >
                             Edit Date/Time
                           </button>
