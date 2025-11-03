@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/db/supabase-client";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../../lib/supabase-client";
 import {
   Search,
   User,
@@ -11,10 +13,14 @@ import {
   Plus,
   Save,
   X,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [clients, setClients] = useState([]);
+  const [appointmentCounts, setAppointmentCounts] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -36,15 +42,31 @@ export default function ClientsPage() {
 
   const loadClients = async () => {
     try {
-      const { data, error } = await supabase
+      // Load clients
+      const { data: clientsData, error: clientsError } = await supabase
         .from("clients")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setClients(data || []);
+      if (clientsError) throw clientsError;
+      setClients(clientsData || []);
+
+      // Load appointment counts for each client
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from("appointments")
+        .select("client_id");
+
+      if (appointmentsError) throw appointmentsError;
+
+      // Count appointments per client
+      const counts = {};
+      appointmentsData?.forEach((apt) => {
+        counts[apt.client_id] = (counts[apt.client_id] || 0) + 1;
+      });
+      setAppointmentCounts(counts);
     } catch (err) {
       console.error("Error loading clients:", err.message);
+      setMessage(`Error loading clients: ${err.message}. Please refresh the page.`);
     } finally {
       setLoading(false);
     }
@@ -66,6 +88,11 @@ export default function ClientsPage() {
       ...formData,
       [name]: value,
     });
+    
+    // Clear error message when user starts typing (especially for email field)
+    if (message.includes("Error") && name === "email") {
+      setMessage("");
+    }
   };
 
   const resetForm = () => {
@@ -77,6 +104,7 @@ export default function ClientsPage() {
       address: "",
     });
     setEditingClient(null);
+    setMessage(""); // Clear any messages when resetting form
   };
 
   const openEditForm = (client) => {
@@ -88,6 +116,7 @@ export default function ClientsPage() {
       address: client.address || "",
     });
     setEditingClient(client);
+    setMessage(""); // Clear any previous messages
     setShowForm(true);
   };
 
@@ -96,7 +125,23 @@ export default function ClientsPage() {
 
     try {
       if (editingClient) {
-        // Update existing client
+        // Update existing client - check if email is being changed to one that already exists
+        if (formData.email && formData.email !== editingClient.email) {
+          const { data: existingClient } = await supabase
+            .from("clients")
+            .select("id, first_name, last_name")
+            .eq("email", formData.email)
+            .neq("id", editingClient.id)
+            .single();
+https://github.com/jpm09tmg/martin-painting-website/pull/71/conflict?name=src%252Fapp%252Fadmin%252Flayout.js&ancestor_oid=8f76924153c9b6ffe6c6e7030077e8938a01c6d4&base_oid=9f168216d8097e1418ddfa7e7ef9fbfa3bec8914&head_oid=be0773e611a04ca07e0b7c8ac28c02bcb7338c62
+          if (existingClient) {
+            setMessage(
+              `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. Please use a different email.`
+            );
+            return;
+          }
+        }
+
         const { error } = await supabase
           .from("clients")
           .update({
@@ -111,7 +156,23 @@ export default function ClientsPage() {
         if (error) throw error;
         setMessage("Client updated successfully!");
       } else {
-        // Insert new client
+        // Insert new client - check for duplicate email first
+        if (formData.email) {
+          const { data: existingClient } = await supabase
+            .from("clients")
+            .select("id, first_name, last_name")
+            .eq("email", formData.email)
+            .single();
+
+          if (existingClient) {
+            setMessage(
+              `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. ` +
+              `Please edit the existing client instead of creating a new one.`
+            );
+            return;
+          }
+        }
+
         const { error } = await supabase.from("clients").insert({
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -130,6 +191,19 @@ export default function ClientsPage() {
     } catch (err) {
       setMessage(`Error: ${err.message}`);
     }
+  };
+
+  // Navigate to appointments page filtered by client
+  const viewClientAppointments = (client) => {
+    // Store client filter in sessionStorage so appointments page can read it
+    sessionStorage.setItem(
+      "appointmentClientFilter",
+      JSON.stringify({
+        id: client.id,
+        name: `${client.first_name} ${client.last_name}`,
+      })
+    );
+    router.push("/admin/appointments");
   };
 
   if (loading) {
@@ -199,8 +273,8 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Message */}
-      {message && (
+      {/* Message - For non-modal errors and notifications */}
+      {message && !showForm && (
         <div
           className={`mb-6 p-4 rounded-lg ${
             message.includes("Error")
@@ -256,45 +330,83 @@ export default function ClientsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Added
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Appointments
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredClients.map((client) => (
-                  <tr
-                    key={client.id}
-                    onClick={() => openEditForm(client)}
-                    className="hover:bg-gray-50 cursor-pointer"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {client.first_name} {client.last_name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Mail className="w-4 h-4 text-gray-400 mr-2" />
-                        {client.email || "Not provided"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                        {client.phone || "Not provided"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
-                        <span className="truncate max-w-xs">
-                          {client.address || "Not provided"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(client.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {filteredClients.map((client) => {
+                  const appointmentCount = appointmentCounts[client.id] || 0;
+                  
+                  return (
+                    <tr key={client.id} className="hover:bg-gray-50">
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="text-sm font-medium text-gray-900">
+                          {client.first_name} {client.last_name}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                          {client.email || "Not provided"}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                          {client.phone || "Not provided"}
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        <div className="flex items-center text-sm text-gray-900">
+                          <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                          <span className="truncate max-w-xs">
+                            {client.address || "Not provided"}
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer"
+                        onClick={() => openEditForm(client)}
+                      >
+                        {new Date(client.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {appointmentCount > 0 ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              viewClientAppointments(client);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                            title="View appointments"
+                          >
+                            <FileText className="w-4 h-4" />
+                            {appointmentCount}
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No appointments
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -303,8 +415,8 @@ export default function ClientsPage() {
 
       {/* Add or Edit Client Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[95vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 {editingClient ? "Edit Client" : "Add New Client"}
@@ -322,6 +434,19 @@ export default function ClientsPage() {
             </div>
 
             <div className="p-6 space-y-4">
+              {/* Error Message Inside Modal */}
+              {message && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    message.includes("Error")
+                      ? "bg-red-50 text-red-800 border border-red-200"
+                      : "bg-green-50 text-green-800 border border-green-200"
+                  }`}
+                >
+                  <p className="text-sm">{message}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
