@@ -20,7 +20,7 @@ import {
   Palette, // Paint/color icon
   Home, // House/home icon
 } from "lucide-react";
-import { supabase } from "@/src/lib/db/supabase-client";
+import { supabase } from "../../../lib/db/supabase-client";
 
 export default function ProjectsPage() {
   // ============================================
@@ -179,6 +179,7 @@ export default function ProjectsPage() {
         .select(
           "id, appointment_date, client_id, clients(first_name, last_name)"
         ) // Get specific columns and client info
+        .eq("status", "confirmed") // Only show confirmed appointments
         .order("appointment_date", { ascending: false }); // Sort by date (newest first)
 
       if (error) throw error;
@@ -1257,6 +1258,44 @@ export default function ProjectsPage() {
               </div>
 
               {/* ============================================ */}
+              {/* PROGRESS BAR SECTION */}
+              {/* ============================================ */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Progress
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  {/* Progress percentage display */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Completion Status
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {selectedProject.progress || 0}%
+                    </span>
+                  </div>
+
+                  {/* Animated progress bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        selectedProject.progress === 100
+                          ? "bg-green-500" // 100% = Green
+                          : selectedProject.progress >= 75
+                          ? "bg-[#74A744]" // 75-99% = Brand green
+                          : selectedProject.progress >= 50
+                          ? "bg-blue-500" // 50-74% = Blue
+                          : selectedProject.progress >= 25
+                          ? "bg-yellow-500" // 25-49% = Yellow
+                          : "bg-red-500" // 0-24% = Red
+                      }`}
+                      style={{ width: `${selectedProject.progress || 0}%` }} // Dynamic width
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ============================================ */}
               {/* CLIENT INFORMATION SECTION */}
               {/* ============================================ */}
               <div className="mb-6">
@@ -1736,44 +1775,6 @@ export default function ProjectsPage() {
                   </div>
                 </div>
               )}
-
-              {/* ============================================ */}
-              {/* PROGRESS BAR SECTION */}
-              {/* ============================================ */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Progress
-                </h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  {/* Progress percentage display */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Completion Status
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {selectedProject.progress || 0}%
-                    </span>
-                  </div>
-
-                  {/* Animated progress bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        selectedProject.progress === 100
-                          ? "bg-green-500" // 100% = Green
-                          : selectedProject.progress >= 75
-                          ? "bg-[#74A744]" // 75-99% = Brand green
-                          : selectedProject.progress >= 50
-                          ? "bg-blue-500" // 50-74% = Blue
-                          : selectedProject.progress >= 25
-                          ? "bg-yellow-500" // 25-49% = Yellow
-                          : "bg-red-500" // 0-24% = Red
-                      }`}
-                      style={{ width: `${selectedProject.progress || 0}%` }} // Dynamic width
-                    ></div>
-                  </div>
-                </div>
-              </div>
 
               {/* ============================================ */}
               {/* CLOSE BUTTON */}

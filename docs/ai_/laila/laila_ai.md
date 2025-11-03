@@ -29,6 +29,10 @@ Result: AI helped me link the joined tables so that editing one field changes th
 Asked Claude to create dropdown menu by getting clients from table in database.
 Result: Claude did as asked, just changing the client input field into a select with options from the table.
 
+<!-- Admin: Appointments Page Update 11-03 -->
+Asked Claude to create confirmation modal to decline appointments and/or mark appointments as complete
+Result: Claude did as asked
+
 <!-- Admin: Quotes Page Update -->
 Asked Claude to update the page so that it uses the joined clients + appointments table, and we only need to pick from a dropdown menu
 Result: AI helped create as I asked, but it wouldn't connect to quote_items table as I forgot I was using a test table instead
