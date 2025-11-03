@@ -132,7 +132,6 @@ export default function ClientsPage() {
             .eq("email", formData.email)
             .neq("id", editingClient.id)
             .single();
-
           if (existingClient) {
             setMessage(
               `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. Please use a different email.`
