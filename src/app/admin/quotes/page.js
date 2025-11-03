@@ -115,7 +115,8 @@ export default function AdminQuoteForm() {
     try {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*")
+        .select("id, appointment_date, client_id, clients(first_name, last_name)")
+        .eq("status", "confirmed") // Only show confirmed appointments
         .order("appointment_date", { ascending: false });
 
       if (error) throw error;
@@ -848,9 +849,9 @@ Notes: ${quote.notes || "None"}
                       <option value="">No appointment selected</option>
                       {appointments.map((appointment) => (
                         <option key={appointment.id} value={appointment.id}>
-                          {appointment.appointment_date ||
-                            appointment.preferred_date}{" "}
-                          - Appointment #{appointment.id}
+                          {appointment.appointment_date} -{" "}
+                          {appointment.clients?.first_name}{" "}
+                          {appointment.clients?.last_name}
                         </option>
                       ))}
                     </select>

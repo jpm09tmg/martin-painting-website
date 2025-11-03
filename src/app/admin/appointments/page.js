@@ -63,6 +63,10 @@ const AdminAppointments = () => {
   // Stores appointment clicked from calendar (for detail modal)
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => null);
+
   // ============================================
   // LOAD APPOINTMENTS ON COMPONENT MOUNT
   // ============================================
@@ -362,6 +366,23 @@ const AdminAppointments = () => {
   });
 
   // ============================================
+  // CONFIRMATION DIALOG
+  // ============================================
+
+  const openConfirmDialog = (action) => {
+    setConfirmAction(() => action);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
+    }
+    setShowConfirmDialog(false);
+    setConfirmAction(() => null);
+  };
+
+  // ============================================
   // UPDATE APPOINTMENT STATUS
   // ============================================
 
@@ -548,7 +569,7 @@ const AdminAppointments = () => {
             <Calendar className="w-8 h-8 text-blue-500 mr-3" />
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Todays Appointments</p>
+              <p className="text-sm text-gray-600">Today's Appointments</p>
             </div>
           </div>
         </div>
@@ -921,7 +942,9 @@ const AdminAppointments = () => {
                           {/* Decline button - changes status to cancelled */}
                           <button
                             onClick={() =>
-                              updateStatus(appointment.id, "cancelled")
+                              openConfirmDialog(() =>
+                                updateStatus(appointment.id, "cancelled")
+                              )
                             }
                             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm"
                           >
@@ -936,7 +959,7 @@ const AdminAppointments = () => {
                           {/* Edit date/time button - reopens confirmation modal */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm text-xs"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
                           >
                             Edit Date/Time
                           </button>
@@ -944,7 +967,9 @@ const AdminAppointments = () => {
                           {/* Mark complete button - changes status to completed */}
                           <button
                             onClick={() =>
-                              updateStatus(appointment.id, "completed")
+                              openConfirmDialog(() =>
+                                updateStatus(appointment.id, "completed")
+                              )
                             }
                             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
                           >
@@ -1114,8 +1139,10 @@ const AdminAppointments = () => {
               {selectedAppointment.status === "confirmed" && (
                 <button
                   onClick={() => {
-                    updateStatus(selectedAppointment.id, "completed"); // Update status
-                    setSelectedAppointment(null); // Close modal
+                    openConfirmDialog(() => {
+                      updateStatus(selectedAppointment.id, "completed"); // Update status
+                      setSelectedAppointment(null); // Close modal
+                    });
                   }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -1227,6 +1254,39 @@ const AdminAppointments = () => {
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Confirm Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================ */}
+      {/* CONFIRMATION DIALOG */}
+      {/* ============================================ */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirm Action
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to proceed with this action?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmDialog(false);
+                  setConfirmAction(() => null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Confirm
               </button>
             </div>
           </div>
