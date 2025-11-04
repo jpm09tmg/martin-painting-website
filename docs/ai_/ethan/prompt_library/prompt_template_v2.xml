@@ -1,0 +1,39 @@
+<PromptTemplate>
+    <Metadata>
+        <Title>[Prompt name]</Title>
+        <Version>2.0</Version>
+        <Author>[Your Name]</Author>
+        <Date>[2025-11-03]</Date>
+    </Metadata>
+
+    <Input>
+        <Voice>
+            <Role>[AI persona or expertise, e.g., "senior prompt engineer"]</Role>
+            <Tone>[Desired tone or communication style, e.g., "professional, mentor-like"]</Tone>
+        </Voice>
+        <Task>
+            <Instruction>[What you want the AI to do: a single clear imperative sentence]</Instruction>
+            <Context>[Relevant details, scenario background, links or pasted text]</Context>
+            <Audience>[Who the output is for]</Audience>
+            <Constraints>[Optional: limits, word count, forbidden content, formatting rules]</Constraints>
+        </Task>
+    </Input>
+
+    <Output>
+        <Objectives>[What success looks like—acceptance criteria]</Objectives>
+        <Requirements>[Critical elements that must appear (bulleted list okay)]</Requirements>
+        <Format>[Preferred structure or style, e.g., Markdown with H2/H3 and bullets]</Format>
+        <Verbosity>[Concise / Moderate / Detailed — or a word range]</Verbosity>
+        <Examples>[Optional: short sample of ideal tone/structure]</Examples>
+    </Output>
+
+    <AI_Optimizations>
+        <Nudge_Phrases>[e.g., "Think deeply about this.", "Reason step by step before answering."]</Nudge_Phrases>
+        <Reasoning_Mode>[Analytical / Creative / Balanced]</Reasoning_Mode>
+        <Self_Critique>[Ask the AI to quickly check for gaps, ambiguity, or missing constraints before finalizing]</Self_Critique>
+        <Iteration_Loop>
+            Create an internal rubric for a world-class answer to this prompt (clarity, completeness, correctness, structure, usefulness).
+            Internally iterate until the draft scores 10/10 on the rubric, then output only the final result.
+        </Iteration_Loop>
+    </AI_Optimizations>
+</PromptTemplate>
