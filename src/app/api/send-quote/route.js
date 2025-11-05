@@ -12,6 +12,7 @@ export async function POST(request) {
   try {
     const { quoteId } = await request.json();
 
+    // fetches quote from Supabase with client data
     const { data: quote, error } = await supabase
       .from('quotes')
       .select(`
@@ -224,6 +225,7 @@ export async function POST(request) {
       })
       .eq('id', quoteId);
 
+      // error handling for update
     if (updateError) {
       console.error('Error updating quote status:', updateError);
       throw new Error('Failed to update quote status');
