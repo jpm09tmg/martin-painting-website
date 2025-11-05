@@ -116,7 +116,7 @@ export default function AdminQuoteForm() {
       const { data, error } = await supabase
         .from("appointments")
         .select("id, appointment_date, client_id, clients(first_name, last_name)")
-        .eq("status", "confirmed") // Only show confirmed appointments
+        .in("status", ["confirmed", "completed"]) // Show confirmed and completed appointments
         .order("appointment_date", { ascending: false });
 
       if (error) throw error;

@@ -179,7 +179,7 @@ export default function ProjectsPage() {
         .select(
           "id, appointment_date, client_id, clients(first_name, last_name)"
         ) // Get specific columns and client info
-        .eq("status", "confirmed") // Only show confirmed appointments
+        .in("status", ["confirmed", "completed"]) // Show confirmed and completed appointments
         .order("appointment_date", { ascending: false }); // Sort by date (newest first)
 
       if (error) throw error;
@@ -311,11 +311,15 @@ export default function ProjectsPage() {
       // Only add quote_id if user selected a quote (not empty)
       if (newProject.quote_id && newProject.quote_id !== "") {
         projectData.quote_id = newProject.quote_id;
+      } else {
+        projectData.quote_id = null; // Explicitly set to null for database
       }
 
       // Only add appointment_id if user selected an appointment (not empty)
       if (newProject.appointment_id && newProject.appointment_id !== "") {
         projectData.appointment_id = newProject.appointment_id;
+      } else {
+        projectData.appointment_id = null; // Explicitly set to null for database
       }
 
       // Insert new project into database and return the created project with all joined data
