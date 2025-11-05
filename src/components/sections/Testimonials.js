@@ -92,8 +92,8 @@ export default function Testimonials() {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-          TESTIMONIALS
+        <h2 className="text-3xl font-normal text-center mb-12 text-gray-800">
+          Hear from Our Clients
         </h2>
 
         <div className="max-w-4xl mx-auto">
