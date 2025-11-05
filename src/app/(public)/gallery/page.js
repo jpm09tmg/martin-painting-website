@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Header from "@/src/components/layout/Header";
 import Footer from "@/src/components/layout/Footer";
-import { supabase } from "@/src/lib/supabase-client"; // Supabase integration
+import { supabase } from "@/src/lib/db/supabase-client"; // Supabase integration
 
 // folder mapping for filtering through supabase gallery bucket
 const FOLDERS = {

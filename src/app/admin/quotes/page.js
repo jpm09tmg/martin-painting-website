@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "../../../lib/supabase-client";
+import { supabase } from "../../../lib/db/supabase-client";
 import {
   Plus,
   Search,
@@ -115,7 +115,8 @@ export default function AdminQuoteForm() {
     try {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*")
+        .select("id, appointment_date, client_id, clients(first_name, last_name)")
+        .eq("status", "confirmed") // Only show confirmed appointments
         .order("appointment_date", { ascending: false });
 
       if (error) throw error;
@@ -126,15 +127,17 @@ export default function AdminQuoteForm() {
   };
 
   const filteredQuotes = quotes.filter((quote) => {
-    const clientName = quote.clients 
+    const clientName = quote.clients
       ? `${quote.clients.first_name} ${quote.clients.last_name}`
-      : '';
-    const clientEmail = quote.clients?.email || '';
+      : "";
+    const clientEmail = quote.clients?.email || "";
     const matchesSearch =
       clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       clientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.project_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.project_description?.toLowerCase().includes(searchTerm.toLowerCase());
+      quote.project_description
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || quote.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -227,10 +230,12 @@ export default function AdminQuoteForm() {
 
     try {
       let quote;
-      
+
       // Calculate total amount from items
-      const totalAmount = formData.items
-        .reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+      const totalAmount = formData.items.reduce(
+        (sum, item) => sum + (parseFloat(item.total) || 0),
+        0
+      );
 
       if (isEditing && selectedQuote) {
         // Update existing quote
@@ -264,27 +269,29 @@ export default function AdminQuoteForm() {
         // Insert new quote
         const { data: newQuote, error: quoteError } = await supabase
           .from("quotes")
-          .insert([{
-            client_id: formData.client_id,
-            appointment_id: formData.appointment_id || null,
-            project_address: formData.projectAddress,
-            project_type: formData.projectType,
-            property_type: formData.propertyType,
-            project_description: formData.projectDescription,
-            quote_valid_until: formData.quoteValidUntil || null,
-            notes: formData.notes,
-            status: formData.status,
-            total_amount: totalAmount,
-          }])
+          .insert([
+            {
+              client_id: formData.client_id,
+              appointment_id: formData.appointment_id || null,
+              project_address: formData.projectAddress,
+              project_type: formData.projectType,
+              property_type: formData.propertyType,
+              project_description: formData.projectDescription,
+              quote_valid_until: formData.quoteValidUntil || null,
+              notes: formData.notes,
+              status: formData.status,
+              total_amount: totalAmount,
+            },
+          ])
           .select()
           .single();
 
         if (quoteError) throw quoteError;
-        
+
         if (!newQuote || !newQuote.id) {
           throw new Error("Failed to get quote ID after insert");
         }
-        
+
         quote = newQuote;
       }
 
@@ -344,7 +351,7 @@ export default function AdminQuoteForm() {
       await supabase.from("quote_items").delete().eq("quote_id", quoteId);
 
       // Delete quote
-      const { error} = await supabase
+      const { error } = await supabase
         .from("quotes")
         .delete()
         .eq("id", quoteId);
@@ -358,32 +365,32 @@ export default function AdminQuoteForm() {
     }
   };
 
-const sendQuoteEmail = async (quoteId) => {
-  setMessage('Sending quote...');
-  
-  try {
-    const response = await fetch('/api/send-quote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quoteId })
-    });
+  const sendQuoteEmail = async (quoteId) => {
+    setMessage("Sending quote...");
 
-    const result = await response.json();
+    try {
+      const response = await fetch("/api/send-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quoteId }),
+      });
 
-    if (result.success) {
-      setMessage('Quote sent successfully to client');
-      loadQuotes();
-      setShowViewModal(false);
-      
-      // clear success message after 5 seconds
-      setTimeout(() => setMessage(''), 5000);
-    } else {
-      setMessage(`Error: ${result.error}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage("Quote sent successfully to client");
+        loadQuotes();
+        setShowViewModal(false);
+
+        // clear success message after 5 seconds
+        setTimeout(() => setMessage(""), 5000);
+      } else {
+        setMessage(`Error: ${result.error}`);
+      }
+    } catch (error) {
+      setMessage(`Error sending quote: ${error.message}`);
     }
-  } catch (error) {
-    setMessage(`Error sending quote: ${error.message}`);
-  }
-};
+  };
 
   const editQuote = (quote) => {
     setFormData({
@@ -424,18 +431,18 @@ const sendQuoteEmail = async (quoteId) => {
 
   const exportQuote = (quote) => {
     const total = calculateQuoteTotal(quote.quote_items);
-    const clientName = quote.clients 
+    const clientName = quote.clients
       ? `${quote.clients.first_name} ${quote.clients.last_name}`
-      : 'Unknown Client';
+      : "Unknown Client";
     const quoteData = `
 MARTIN PAINTING - QUOTE #${quote.id}
 
 Client: ${clientName}
-Email: ${quote.clients?.email || 'N/A'}
-Phone: ${quote.clients?.phone || 'N/A'}
-Client Address: ${quote.clients?.address || 'N/A'}
+Email: ${quote.clients?.email || "N/A"}
+Phone: ${quote.clients?.phone || "N/A"}
+Client Address: ${quote.clients?.address || "N/A"}
 
-Project Address: ${quote.project_address || 'N/A'}
+Project Address: ${quote.project_address || "N/A"}
 Project Details:
 Type: ${quote.project_type} - ${quote.property_type}
 Description: ${quote.project_description}
@@ -462,10 +469,7 @@ Notes: ${quote.notes || "None"}
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Quote_${quote.id}_${clientName.replace(
-      /\s+/g,
-      "_"
-    )}.txt`;
+    a.download = `Quote_${quote.id}_${clientName.replace(/\s+/g, "_")}.txt`;
     a.click();
   };
 
@@ -665,23 +669,23 @@ Notes: ${quote.notes || "None"}
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
                       <span className="font-medium">
-                        {quote.clients 
+                        {quote.clients
                           ? `${quote.clients.first_name} ${quote.clients.last_name}`
-                          : 'Unknown Client'}
+                          : "Unknown Client"}
                       </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Mail className="w-4 h-4 mr-2" />
-                      <span>{quote.clients?.email || 'N/A'}</span>
+                      <span>{quote.clients?.email || "N/A"}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Phone className="w-4 h-4 mr-2" />
-                      <span>{quote.clients?.phone || 'N/A'}</span>
+                      <span>{quote.clients?.phone || "N/A"}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="w-4 h-4 mr-2" />
                       <span className="line-clamp-1">
-                        {quote.clients?.address || 'N/A'}
+                        {quote.clients?.address || "N/A"}
                       </span>
                     </div>
                     {quote.project_address && (
@@ -709,16 +713,19 @@ Notes: ${quote.notes || "None"}
                     </div>
                   </div>
 
-                    {/* action buttons */}
+                  {/* action buttons */}
                   <div className="flex gap-2">
-                    <button 
-                      onClick={() => {setSelectedQuote(quote); setShowViewModal(true)}}
+                    <button
+                      onClick={() => {
+                        setSelectedQuote(quote);
+                        setShowViewModal(true);
+                      }}
                       className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View
                     </button>
-                    <button 
+                    <button
                       onClick={() => editQuote(quote)}
                       className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center"
                     >
@@ -727,20 +734,20 @@ Notes: ${quote.notes || "None"}
                     </button>
 
                     {/* Send Button */}
-                    <button 
+                    <button
                       onClick={() => sendQuoteEmail(quote.id)}
                       className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-center ${
-                      quote.status === 'Sent' 
-                      ? 'bg-green-50 text-green-600 cursor-not-allowed' 
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                        quote.status === "Sent"
+                          ? "bg-green-50 text-green-600 cursor-not-allowed"
+                          : "bg-green-100 text-green-700 hover:bg-green-200"
                       }`}
-                      disabled={quote.status === 'Sent'}
+                      disabled={quote.status === "Sent"}
                     >
                       <Mail className="w-4 h-4 mr-1" />
-                      {quote.status === 'Sent' ? 'Sent ✓' : 'Send'}
+                      {quote.status === "Sent" ? "Sent ✓" : "Send"}
                     </button>
 
-                    <button 
+                    <button
                       onClick={() => exportQuote(quote)}
                       className="flex-1 px-3 py-2 bg-[#74A744] text-white text-sm rounded-lg hover:bg-[#5F9136] transition-colors flex items-center justify-center"
                     >
@@ -782,8 +789,8 @@ Notes: ${quote.notes || "None"}
 
       {/* Quote Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 {isEditing
@@ -822,7 +829,8 @@ Notes: ${quote.notes || "None"}
                       <option value="">Select a client...</option>
                       {clients.map((client) => (
                         <option key={client.id} value={client.id}>
-                          {client.first_name} {client.last_name} - {client.email}
+                          {client.first_name} {client.last_name} -{" "}
+                          {client.email}
                         </option>
                       ))}
                     </select>
@@ -841,7 +849,9 @@ Notes: ${quote.notes || "None"}
                       <option value="">No appointment selected</option>
                       {appointments.map((appointment) => (
                         <option key={appointment.id} value={appointment.id}>
-                          {appointment.appointment_date || appointment.preferred_date} - Appointment #{appointment.id}
+                          {appointment.appointment_date} -{" "}
+                          {appointment.clients?.first_name}{" "}
+                          {appointment.clients?.last_name}
                         </option>
                       ))}
                     </select>
@@ -1158,8 +1168,8 @@ Notes: ${quote.notes || "None"}
 
       {/* View Quote Modal */}
       {showViewModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 Quote #{selectedQuote.id}
@@ -1191,27 +1201,27 @@ Notes: ${quote.notes || "None"}
                   <div>
                     <span className="text-gray-600">Name:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients 
+                      {selectedQuote.clients
                         ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
-                        : 'Unknown Client'}
+                        : "Unknown Client"}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Email:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients?.email || 'N/A'}
+                      {selectedQuote.clients?.email || "N/A"}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Phone:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients?.phone || 'N/A'}
+                      {selectedQuote.clients?.phone || "N/A"}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Address:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients?.address || 'N/A'}
+                      {selectedQuote.clients?.address || "N/A"}
                     </span>
                   </div>
                 </div>
@@ -1226,7 +1236,7 @@ Notes: ${quote.notes || "None"}
                   <div className="md:col-span-2">
                     <span className="text-gray-600">Project Address:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.project_address || 'Not specified'}
+                      {selectedQuote.project_address || "Not specified"}
                     </span>
                   </div>
                   <div>
@@ -1349,7 +1359,6 @@ Notes: ${quote.notes || "None"}
 
               {/* Action Buttons in View Modal */}
               <div className="flex gap-3 pt-4">
-                
                 {/*edit Button */}
                 <button
                   onClick={() => editQuote(selectedQuote)}
@@ -1358,21 +1367,23 @@ Notes: ${quote.notes || "None"}
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Quote
                 </button>
-                
+
                 {/*Send Button */}
                 <button
                   onClick={() => sendQuoteEmail(selectedQuote.id)}
                   className={`flex-1 px-4 py-2 rounded-lg transition-colors flex items-center justify-center ${
-                    selectedQuote.status === 'Sent'
-                      ? 'bg-green-50 text-green-600 cursor-not-allowed'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    selectedQuote.status === "Sent"
+                      ? "bg-green-50 text-green-600 cursor-not-allowed"
+                      : "bg-green-100 text-green-700 hover:bg-green-200"
                   }`}
-                  disabled={selectedQuote.status === 'Sent'}
+                  disabled={selectedQuote.status === "Sent"}
                 >
                   <Mail className="w-4 h-4 mr-2" />
-                  {selectedQuote.status === 'Sent' ? 'Sent ✓' : 'Send to Client'}
+                  {selectedQuote.status === "Sent"
+                    ? "Sent ✓"
+                    : "Send to Client"}
                 </button>
-                
+
                 {/*export Button */}
                 <button
                   onClick={() => exportQuote(selectedQuote)}
