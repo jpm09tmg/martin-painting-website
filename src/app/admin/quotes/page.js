@@ -1409,3 +1409,6 @@ Notes: ${quote.notes || "None"}
     </div>
   );
 }
+
+// TODO: Consider adding pagination if quote list grows large
+// TODO: Add confirmation modal instead of browser confirm

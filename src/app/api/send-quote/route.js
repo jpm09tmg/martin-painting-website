@@ -12,21 +12,36 @@ export async function POST(request) {
   try {
     const { quoteId } = await request.json();
 
-    // fetch quote from Supabase
+    // fetches quote from Supabase with client data
     const { data: quote, error } = await supabase
       .from('quotes')
-      .select('*, quote_items(*)')
+      .select(`
+        *, 
+        quote_items(*),
+        clients(
+          first_name,
+          last_name,
+          email
+        )
+      `)
       .eq('id', quoteId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching quote:', error);
+      throw error;
+    }
+
+    const clientName = quote.clients 
+      ? `${quote.clients.first_name} ${quote.clients.last_name}`
+      : 'Valued Customer';
 
     // calculate total
     const total = quote.quote_items?.reduce((sum, item) => 
       sum + (parseFloat(item.total) || 0), 0
     ) || 0;
 
-    // items HTML
+    // items html generation
     const itemsHTML = quote.quote_items?.map(item => `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937;">${item.item_name}</td>
@@ -38,7 +53,6 @@ export async function POST(request) {
     `).join('') || '<tr><td colspan="5" style="padding: 12px; text-align: center; color: #6b7280;">No items</td></tr>';
 
     // send email
-    //can only send to my email for now with resend free plan
     const { data, error: emailError } = await resend.emails.send({
       from: 'Martin Painting <onboarding@resend.dev>',
       to: 'joshua.martin1@edu.sait.ca',
@@ -68,7 +82,7 @@ export async function POST(request) {
                   <tr>
                     <td style="padding: 40px 40px 20px 40px;">
                       <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 24px;">Your Quote is Ready!</h2>
-                      <p style="margin: 0; color: #6b7280; font-size: 16px; line-height: 1.5;">Hi ${quote.client_name},</p>
+                      <p style="margin: 0; color: #6b7280; font-size: 16px; line-height: 1.5;">Hi ${clientName},</p>
                       <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 16px; line-height: 1.5;">
                         Thank you for requesting a quote. We've prepared a detailed estimate for your ${quote.project_type?.toLowerCase() || 'painting'} painting project.
                       </p>
@@ -119,7 +133,7 @@ export async function POST(request) {
                     </td>
                   </tr>
 
-                  <!-- quote Items -->
+                  <!-- Quote Items -->
                   <tr>
                     <td style="padding: 30px 40px 20px 40px;">
                       <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px;">Quote Breakdown</h3>
@@ -155,7 +169,7 @@ export async function POST(request) {
                   ` : ''}
 
                   ${quote.notes ? `
-                  <!-- notes -->
+                  <!-- Notes -->
                   <tr>
                     <td style="padding: 20px 40px;">
                       <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 18px;">Additional Notes</h3>
@@ -163,8 +177,6 @@ export async function POST(request) {
                     </td>
                   </tr>
                   ` : ''}
-
-                 
 
                   <!-- Contact Info -->
                   <tr>
@@ -200,16 +212,26 @@ export async function POST(request) {
       `
     });
 
-    if (emailError) throw emailError;
+    if (emailError) {
+      console.error('Error sending email:', emailError);
+      throw emailError;
+    }
 
-    // Update quote status to "Sent"
-    await supabase
+    // updates quote status to "Sent"
+    const { error: updateError } = await supabase
       .from('quotes')
       .update({ 
-        status: 'Sent',
-        sent_at: new Date().toISOString()
+        status: 'Sent'
       })
       .eq('id', quoteId);
+
+      // error handling for update
+    if (updateError) {
+      console.error('Error updating quote status:', updateError);
+      throw new Error('Failed to update quote status');
+    }
+
+    console.log(`Quote #${quoteId} status updated to Sent`);
 
     return Response.json({ 
       success: true, 
