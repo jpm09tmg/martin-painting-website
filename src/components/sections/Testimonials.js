@@ -86,7 +86,7 @@ export default function Testimonials() {
   }, [currentIndex, allTestimonials.length]);
 
   if (allTestimonials.length === 0) {
-    return null; // Don't show anything if no testimonials but will show the default ones
+    return null;
   }
 
   return (
@@ -97,7 +97,7 @@ export default function Testimonials() {
         </h2>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8 md:p-12 relative">
+          <div className="bg-[#f0f4f0] rounded-lg shadow-lg p-8 md:p-12 relative">
             {/* Navigation Arrows */}
             <button
               onClick={prevSlide}
