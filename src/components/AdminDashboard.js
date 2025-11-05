@@ -27,18 +27,21 @@ export default function AdminDashboard() {
         .order("submitted_at", { ascending: false });
       
       // Apply filter if not showing "all" reviews
-      if (filter !== "all") query = query.eq("status", filter);
+      if (filter !== "all") {
+        query = query.eq("status", filter);
+      }
       
       const { data, error } = await query;
       if (error) throw error;
+      
       setReviews(data || []);
     } catch (err) {
-      setMessage(`Error: ${err.message}`);
+      setMessage(`Error loading reviews: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
-
+      
   // Approve a review: change status to "approved" and mark it live on website
   const approveReview = async (id) => {
     try {
