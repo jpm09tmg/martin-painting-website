@@ -179,7 +179,7 @@ export default function ProjectsPage() {
         .select(
           "id, appointment_date, client_id, clients(first_name, last_name)"
         ) // Get specific columns and client info
-        .eq("status", "confirmed") // Only show confirmed appointments
+        .in("status", ["confirmed", "completed"]) // Show confirmed and completed appointments
         .order("appointment_date", { ascending: false }); // Sort by date (newest first)
 
       if (error) throw error;
