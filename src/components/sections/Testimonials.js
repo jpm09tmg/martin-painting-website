@@ -117,15 +117,23 @@ export default function Testimonials() {
 
             {/* Testimonial Content */}
             <div className="flex flex-col md:flex-row items-center gap-8">
-              {/* Icon */}
+              {/* Paint Brush Icon */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#2c5f7f] flex items-center justify-center bg-white">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#6b9e3e] flex items-center justify-center bg-white">
                   <svg
-                    className="w-12 h-12 md:w-16 md:h-16 text-[#2c5f7f]"
-                    fill="currentColor"
+                    className="w-12 h-12 md:w-16 md:h-16 text-[#6b9e3e]"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     viewBox="0 0 24 24"
                   >
-                    <path d="M7 2h10v2H7V2zm0 18h10v2H7v-2zM5 6h14v12H5V6zm2 2v8h10V8H7z" />
+                    {/* Paint Roller Icon */}
+                    <rect x="2" y="2" width="20" height="8" rx="2" />
+                    <path d="M12 10v12" />
+                    <path d="M8 22h8" />
+                    <path d="M10 18h4" />
                   </svg>
                 </div>
               </div>
