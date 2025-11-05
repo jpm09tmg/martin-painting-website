@@ -117,23 +117,65 @@ export default function Testimonials() {
 
             {/* Testimonial Content */}
             <div className="flex flex-col md:flex-row items-center gap-8">
-              {/* Paint Brush Icon */}
+              {/* Premium Paint Brush Icon */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#6b9e3e] flex items-center justify-center bg-white">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#6b9e3e] flex items-center justify-center bg-gradient-to-br from-white to-gray-50 shadow-lg">
                   <svg
-                    className="w-12 h-12 md:w-16 md:h-16 text-[#6b9e3e]"
+                    className="w-12 h-12 md:w-16 md:h-16"
+                    viewBox="0 0 64 64"
                     fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    viewBox="0 0 24 24"
                   >
-                    {/* Paint Roller Icon */}
-                    <rect x="2" y="2" width="20" height="8" rx="2" />
-                    <path d="M12 10v12" />
-                    <path d="M8 22h8" />
-                    <path d="M10 18h4" />
+                    {/* Brush Handle - wooden texture */}
+                    <defs>
+                      <linearGradient id="woodGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style={{stopColor: "#8B4513", stopOpacity: 1}} />
+                        <stop offset="50%" style={{stopColor: "#A0522D", stopOpacity: 1}} />
+                        <stop offset="100%" style={{stopColor: "#8B4513", stopOpacity: 1}} />
+                      </linearGradient>
+                      <linearGradient id="metalGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style={{stopColor: "#E8E8E8", stopOpacity: 1}} />
+                        <stop offset="50%" style={{stopColor: "#B8B8B8", stopOpacity: 1}} />
+                        <stop offset="100%" style={{stopColor: "#989898", stopOpacity: 1}} />
+                      </linearGradient>
+                      <linearGradient id="bristleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style={{stopColor: "#7db84d", stopOpacity: 1}} />
+                        <stop offset="100%" style={{stopColor: "#5a8a33", stopOpacity: 1}} />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Wooden Handle with rounded top */}
+                    <rect x="26" y="7" width="12" height="33" fill="url(#woodGradient)" rx="6"/>
+                    {/* Wood grain detail */}
+                    <ellipse cx="29" cy="15" rx="1" ry="3" fill="#6B3410" opacity="0.3"/>
+                    <ellipse cx="35" cy="22" rx="1" ry="4" fill="#6B3410" opacity="0.3"/>
+                    {/* Handle highlight */}
+                    <rect x="28" y="9" width="2.5" height="28" fill="#D2691E" opacity="0.4" rx="1.25"/>
+                    
+                    {/* Metal Ferrule - realistic metallic look */}
+                    <rect x="23.5" y="38" width="17" height="8" fill="url(#metalGradient)" rx="1.5"/>
+                    {/* Ferrule bands */}
+                    <rect x="23.5" y="38" width="17" height="1.5" fill="#F0F0F0" opacity="0.8"/>
+                    <rect x="23.5" y="44.5" width="17" height="1.5" fill="#808080" opacity="0.6"/>
+                    {/* Ferrule shine */}
+                    <rect x="24" y="39" width="2" height="5" fill="white" opacity="0.3" rx="1"/>
+                    
+                    {/* Paint Brush Bristles - fuller, more realistic */}
+                    <path d="M23.5 46 L21.5 56.5 C21.5 57.5 22.5 58.5 23.5 58.5 L25.5 58.5 L25.5 46 Z" fill="url(#bristleGradient)"/>
+                    <path d="M26.5 46 L26.5 58.5 L28.5 58.5 L28.5 46 Z" fill="#6b9e3e"/>
+                    <path d="M29.5 46 L29.5 58.5 L31 58.5 L31 46 Z" fill="url(#bristleGradient)"/>
+                    <path d="M32 46 L32 58.5 L33.5 58.5 L33.5 46 Z" fill="#6b9e3e"/>
+                    <path d="M34.5 46 L34.5 58.5 L36.5 58.5 L36.5 46 Z" fill="url(#bristleGradient)"/>
+                    <path d="M37.5 46 L37.5 58.5 L38.5 58.5 C39.5 58.5 40.5 57.5 40.5 56.5 L38.5 46 Z" fill="#6b9e3e"/>
+                    
+                    {/* Bristle separation lines for texture */}
+                    <line x1="26" y1="46" x2="26" y2="58" stroke="#5a8a33" strokeWidth="0.3" opacity="0.5"/>
+                    <line x1="29" y1="46" x2="29" y2="58" stroke="#5a8a33" strokeWidth="0.3" opacity="0.5"/>
+                    <line x1="32" y1="46" x2="32" y2="58" stroke="#5a8a33" strokeWidth="0.3" opacity="0.5"/>
+                    <line x1="35" y1="46" x2="35" y2="58" stroke="#5a8a33" strokeWidth="0.3" opacity="0.5"/>
+                    <line x1="38" y1="46" x2="38" y2="58" stroke="#5a8a33" strokeWidth="0.3" opacity="0.5"/>
+                    
+                    {/* Bristle tips - worn/used look */}
+                    <ellipse cx="31" cy="57.5" rx="9" ry="1.5" fill="#4a7028" opacity="0.6"/>
                   </svg>
                 </div>
               </div>
