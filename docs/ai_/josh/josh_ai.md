@@ -10,3 +10,6 @@ Estimate logic wasnt quite working so I asked claude to have a look. Claude help
 
 Asked for help formatting my html template to be used in our emails. Claude provided an html template that is properly formatted
 
+<!-- admin quote page -->
+
+Needed help getting my send function to work so i asked Claude to help troubleshoot. Claude returned a debugged send function
