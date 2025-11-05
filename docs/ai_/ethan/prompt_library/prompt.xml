@@ -1,0 +1,45 @@
+<Input>
+    <Voice>
+        <Role>
+            Set the role of the AI
+        </Role>
+
+        <Tone>
+            Desired tone of the AI's response
+        </Tone>
+    </Voice>
+
+    <Task>
+        <Intention>
+            What you want the AI to do
+        </Intention>
+        
+        <Context>
+            Here is the context
+        </Context>
+    </Task>
+</Input>
+
+<Output>
+    <Format>
+        Desired format of the output
+    </Format>
+
+    <Requirements>
+        Specific requirements of the task
+    </Requirements>
+
+    <Objectives>
+        Goal of the task
+    </Objectives>
+</Output>
+
+<AI_Optimizations>
+    <Nudge_Phrases>
+        Phrase to prompt AI to use specific models
+    </Nudge_Phrases>
+
+    <Perfection_Loop>
+        Improve response iteratively
+    </Perfection_Loop>
+</AI_Optimizations>
