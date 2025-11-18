@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LogOut } from "lucide-react";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@/src/lib/db/supabase-client";
 import { useRouter } from "next/navigation";
 
 export default function AdminHeader() {

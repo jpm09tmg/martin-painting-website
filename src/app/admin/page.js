@@ -5,25 +5,25 @@
 // ============================================
 import { useState, useEffect } from "react";
 import Link from "next/link"; // Next.js Link component for client-side navigation
-import { supabase } from "../../lib/supabase-client";
+import { supabase } from "../../lib/db/supabase-client";
 
 /**
  * ============================================
  * ADMIN DASHBOARD - Main Overview Page
  * ============================================
- * 
+ *
  * PURPOSE:
  * This is the central hub for managing Martin Painting business operations.
  * It serves as the homepage when admin logs in, showing a bird's-eye view
  * of all important metrics and recent activity.
- * 
+ *
  * KEY FEATURES:
  * - Real-time statistics from database (projects, appointments, completions)
  * - Recent projects list with progress bars and status badges
  * - Upcoming appointments with customer details
  * - Quick navigation links to detailed pages
  * - Responsive grid layout for mobile/desktop
- * 
+ *
  * DATABASE CONNECTIONS:
  * - Fetches from 'appointments' table
  * - Fetches from 'projects' table
@@ -33,20 +33,20 @@ export default function AdminDashboard() {
   // ============================================
   // STATE MANAGEMENT - Component state variables
   // ============================================
-  
+
   // Stores all appointments fetched from database
   const [appointments, setAppointments] = useState([]);
-  
+
   // Stores all projects fetched from database
   const [projects, setProjects] = useState([]);
-  
+
   // Loading state - shows loading message while fetching data
   const [loading, setLoading] = useState(true);
 
   // ============================================
   // LOAD DATA ON COMPONENT MOUNT
   // ============================================
-  
+
   // useEffect runs once when component loads (empty dependency array [])
   useEffect(() => {
     loadDashboardData(); // Fetch all dashboard data from database
@@ -55,18 +55,18 @@ export default function AdminDashboard() {
   // ============================================
   // LOAD DASHBOARD DATA FROM DATABASE
   // ============================================
-  
+
   /**
    * Fetches appointments and projects from Supabase database
-   * 
+   *
    * APPOINTMENTS:
    * - Gets 10 most recent appointments (ordered by creation date)
    * - Used for statistics and upcoming appointments section
-   * 
+   *
    * PROJECTS:
    * - Gets 5 most recent projects (ordered by creation date)
    * - Displayed in "Recent Projects" section with progress bars
-   * 
+   *
    * ERROR HANDLING:
    * - Each query has independent error handling
    * - If one fails, the other still loads
@@ -79,10 +79,10 @@ export default function AdminDashboard() {
       // ============================================
       const { data: appointmentsData, error: appointmentsError } =
         await supabase
-          .from("appointments")                          // Select from appointments table
-          .select("*")                                   // Get all columns
-          .order("created_at", { ascending: false })     // Sort by creation date (newest first)
-          .limit(10);                                    // Only get 10 most recent
+          .from("appointments") // Select from appointments table
+          .select("*") // Get all columns
+          .order("created_at", { ascending: false }) // Sort by creation date (newest first)
+          .limit(10); // Only get 10 most recent
 
       // Handle appointments error
       if (appointmentsError) {
@@ -96,10 +96,10 @@ export default function AdminDashboard() {
       // LOAD PROJECTS
       // ============================================
       const { data: projectsData, error: projectsError } = await supabase
-        .from("projects")                            // Select from projects table
-        .select("*")                                 // Get all columns
-        .order("created_at", { ascending: false })   // Sort by creation date (newest first)
-        .limit(5);                                   // Only get 5 most recent
+        .from("projects") // Select from projects table
+        .select("*") // Get all columns
+        .order("created_at", { ascending: false }) // Sort by creation date (newest first)
+        .limit(5); // Only get 5 most recent
 
       // Handle projects error
       if (projectsError) {
@@ -122,10 +122,10 @@ export default function AdminDashboard() {
   // ============================================
   // FILTER UPCOMING APPOINTMENTS
   // ============================================
-  
+
   /**
    * Filters appointments to show only pending ones
-   * 
+   *
    * LOGIC:
    * - Only shows appointments with "pending" status
    * - These are appointments that haven't been confirmed or completed yet
@@ -133,31 +133,31 @@ export default function AdminDashboard() {
    * - Full list available on appointments page
    */
   const upcomingAppointments = appointments
-    .filter((apt) => apt.status === "pending")  // Only pending appointments
-    .slice(0, 2);                                // Take first 2 results
+    .filter((apt) => apt.status === "pending") // Only pending appointments
+    .slice(0, 2); // Take first 2 results
 
   // ============================================
   // CALCULATE STATISTICS
   // ============================================
-  
+
   /**
    * Computes real-time statistics from loaded data
-   * 
+   *
    * METRICS:
    * - totalProjects: Count of all projects
    * - totalAppointments: Count of all appointments
    * - completedThisMonth: Appointments marked complete in current month
    * - pendingAppointments: Count of pending appointments (max 2 shown)
-   * 
+   *
    * NOTE: These numbers update automatically when data reloads
    */
   const stats = {
     // Total number of projects in database
     totalProjects: projects.length,
-    
+
     // Total number of appointments in database
     totalAppointments: appointments.length,
-    
+
     // Count appointments completed in current month
     // Filters by: status='completed' AND same month as today
     completedThisMonth: appointments.filter(
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
         apt.status === "completed" &&
         new Date(apt.created_at).getMonth() === new Date().getMonth()
     ).length,
-    
+
     // Count of pending appointments (limited to 2 for display)
     pendingAppointments: upcomingAppointments.length,
   };
@@ -173,28 +173,28 @@ export default function AdminDashboard() {
   // ============================================
   // UTILITY FUNCTIONS - Formatting and styling helpers
   // ============================================
-  
+
   /**
    * Formats date string into readable format
-   * 
+   *
    * INPUT: "2024-05-20T10:30:00Z" (ISO date string)
    * OUTPUT: "May 20, 2024" (human-readable)
-   * 
+   *
    * USAGE: Used for displaying appointment dates in a friendly format
    */
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",  // "May" instead of "05"
-      day: "numeric",  // "20" instead of "20th"
+      month: "short", // "May" instead of "05"
+      day: "numeric", // "20" instead of "20th"
       year: "numeric", // "2024"
     });
   };
 
   /**
    * Returns CSS classes for status badge colors
-   * 
+   *
    * PURPOSE: Visual differentiation of project statuses
-   * 
+   *
    * COLOR SCHEME:
    * - Planning: Yellow (project not started yet)
    * - In Progress: Blue (active work happening)
@@ -205,15 +205,15 @@ export default function AdminDashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case "Planning":
-        return "bg-yellow-100 text-yellow-800";   // Yellow background with dark yellow text
+        return "bg-yellow-100 text-yellow-800"; // Yellow background with dark yellow text
       case "In Progress":
-        return "bg-blue-100 text-blue-800";       // Blue background with dark blue text
+        return "bg-blue-100 text-blue-800"; // Blue background with dark blue text
       case "Completed":
-        return "bg-green-100 text-green-800";     // Green background with dark green text
+        return "bg-green-100 text-green-800"; // Green background with dark green text
       case "On Hold":
-        return "bg-red-100 text-red-800";         // Red background with dark red text
+        return "bg-red-100 text-red-800"; // Red background with dark red text
       default:
-        return "bg-gray-100 text-gray-800";       // Gray as fallback
+        return "bg-gray-100 text-gray-800"; // Gray as fallback
     }
   };
 
@@ -222,12 +222,10 @@ export default function AdminDashboard() {
   // ============================================
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}
       <div className="flex-1 p-8 bg-gray-50">
-        
         {/* ============================================ */}
         {/* PAGE HEADER - Title and welcome message */}
         {/* ============================================ */}
@@ -235,7 +233,8 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600">
             {/* Using &apos; instead of ' to avoid JSX syntax issues */}
-            Welcome back! Here&apos;s what&apos;s happening with Martin Painting.
+            Welcome back! Here&apos;s what&apos;s happening with Martin
+            Painting.
           </p>
         </div>
 
@@ -250,7 +249,6 @@ export default function AdminDashboard() {
           - Gap of 6 units between cards
         */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          
           {/* ============================================ */}
           {/* STAT CARD 1: Total Projects */}
           {/* ============================================ */}
@@ -380,7 +378,6 @@ export default function AdminDashboard() {
           - Empty state if no projects exist
         */}
         <div className="bg-white rounded-lg shadow mb-8">
-          
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -396,7 +393,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
           </div>
-          
+
           {/* Section Content */}
           <div className="p-6">
             {/* ============================================ */}
@@ -431,7 +428,7 @@ export default function AdminDashboard() {
                         {project.status}
                       </span>
                     </div>
-                    
+
                     {/* Project details */}
                     <div className="text-sm text-gray-600 space-y-1">
                       {/* Client name */}
@@ -449,7 +446,7 @@ export default function AdminDashboard() {
                         <span className="font-medium">Budget:</span> $
                         {project.budget?.toLocaleString()}
                       </p>
-                      
+
                       {/* ============================================ */}
                       {/* PROGRESS BAR - Visual completion indicator */}
                       {/* ============================================ */}
@@ -519,7 +516,6 @@ export default function AdminDashboard() {
           - Empty state if no pending appointments
         */}
         <div className="bg-white rounded-lg shadow mb-8">
-          
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -535,7 +531,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
           </div>
-          
+
           {/* Section Content */}
           <div className="p-6">
             {/* ============================================ */}
@@ -557,7 +553,6 @@ export default function AdminDashboard() {
                     className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between">
-                      
                       {/* ============================================ */}
                       {/* LEFT SIDE - Customer info with avatar */}
                       {/* ============================================ */}
@@ -577,7 +572,7 @@ export default function AdminDashboard() {
                             />
                           </svg>
                         </div>
-                        
+
                         {/* Customer details */}
                         <div>
                           {/* Customer name */}
@@ -599,7 +594,7 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                       </div>
-                      
+
                       {/* ============================================ */}
                       {/* RIGHT SIDE - Appointment date/time and status */}
                       {/* ============================================ */}

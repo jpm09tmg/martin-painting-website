@@ -1,22 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "@/src/lib/supabase-client";
-import { Search, Calendar, DollarSign } from 'lucide-react';
+import { supabase } from "@/src/lib/db/supabase-client";
+import { Search, Calendar, DollarSign } from "lucide-react";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchPayments = async () => {
       const { data, error } = await supabase
-        .from('payments')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+        .from("payments")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       if (error) {
-        console.error('Error fetching payments:', error);
+        console.error("Error fetching payments:", error);
       } else {
         setPayments(data || []);
       }
@@ -28,36 +28,41 @@ export default function PaymentsPage() {
 
   const handleStatusChange = async (id, newStatus) => {
     const { error } = await supabase
-      .from('payments')
+      .from("payments")
       .update({ status: newStatus })
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
       console.error("Failed to update status: ", error);
     } else {
-      setPayments(prev => prev.map(p => (p.id === id ? { ...p, status: newStatus } : p)));
+      setPayments((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
+      );
     }
   };
 
   const handlePaymentMethodChange = async (id, newMethod) => {
     const { error } = await supabase
-      .from('payments')
+      .from("payments")
       .update({ payment_method: newMethod })
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (error) {
       console.error("Failed to update payment method: ", error);
     } else {
-      setPayments(prev => prev.map(p => (p.id === id ? { ...p, payment_method: newMethod } : p)));
+      setPayments((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, payment_method: newMethod } : p))
+      );
     }
   };
 
   const term = searchTerm.toLowerCase();
-  const filteredPayments = payments.filter(p =>
-    p.project?.toLowerCase().includes(term) ||
-    p.client?.toLowerCase().includes(term) ||
-    p.status?.toLowerCase().includes(term) ||
-    p.payment_method?.toLowerCase().includes(term)
+  const filteredPayments = payments.filter(
+    (p) =>
+      p.project?.toLowerCase().includes(term) ||
+      p.client?.toLowerCase().includes(term) ||
+      p.status?.toLowerCase().includes(term) ||
+      p.payment_method?.toLowerCase().includes(term)
   );
 
   const unpaidAmount = payments.reduce((sum, p) => {
@@ -94,7 +99,9 @@ export default function PaymentsPage() {
           <div className="flex items-center">
             <DollarSign className="w-8 h-8 text-blue-500 mr-3" />
             <div>
-              <p className="text-2xl font-bold text-gray-900">{payments.length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {payments.length}
+              </p>
               <p className="text-sm text-gray-600">Total Payments</p>
             </div>
           </div>
@@ -104,7 +111,9 @@ export default function PaymentsPage() {
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-[#74A744] mr-3" />
             <div>
-              <p className="text-2xl font-bold text-gray-900">${unpaidAmount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                ${unpaidAmount.toFixed(2)}
+              </p>
               <p className="text-sm text-gray-600">Unpaid Amount</p>
             </div>
           </div>
@@ -128,26 +137,42 @@ export default function PaymentsPage() {
         {filteredPayments.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No payments found</p>
-            <p className="text-sm text-gray-400">Payment records will appear here when added to the database</p>
+            <p className="text-sm text-gray-400">
+              Payment records will appear here when added to the database
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total ($)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid ($)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Project
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total ($)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Paid ($)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment Method
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPayments.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{p.project}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {p.project}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{p.client}</div>
@@ -160,8 +185,10 @@ export default function PaymentsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
-                        value={p.payment_method || ''}
-                        onChange={(e) => handlePaymentMethodChange(p.id, e.target.value)}
+                        value={p.payment_method || ""}
+                        onChange={(e) =>
+                          handlePaymentMethodChange(p.id, e.target.value)
+                        }
                         className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#74A744]"
                       >
                         <option value="">Select...</option>
@@ -173,13 +200,15 @@ export default function PaymentsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         value={p.status}
-                        onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                        onChange={(e) =>
+                          handleStatusChange(p.id, e.target.value)
+                        }
                         className={`px-2 py-1 rounded text-xs font-semibold ${
-                          p.status === 'Paid' 
-                            ? 'bg-green-100 text-green-800' 
-                            : p.status === 'Partial' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-gray-100 text-gray-700'
+                          p.status === "Paid"
+                            ? "bg-green-100 text-green-800"
+                            : p.status === "Partial"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                       >
                         <option value="Paid">Paid</option>

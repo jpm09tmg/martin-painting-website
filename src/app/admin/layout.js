@@ -1,43 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/src/lib/supabase-client";
+import { supabase } from "@/src/lib/db/supabase-client";
+import { useAuth } from "../providers/AuthProvider";
 import AdminHeader from "../../components/admin/adminHeader";
 import Sidebar from "../../components/admin/Sidebar";
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null);
+  const { session, loading } = useAuth();
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      const currentSession = data.session;
-      setSession(currentSession);
-      setLoading(false);
-
-      // Redirect before rendering layout so it doesn't flicker
-      if (!currentSession) {
-        router.push("/login");
-      }
-    };
-    getSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        if (!session) {
-          router.push("/login");
-        }
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [router]);
+    // Redirect to login if not authenticated
+    if (!loading && !session) {
+      router.push("/login");
+    }
+  }, [session, loading, router]);
 
   if (loading) return <p className="text-center mt-20">Loading...</p>;
 
