@@ -683,8 +683,12 @@ const AdminAppointments = () => {
                       const dayAppointments = getAppointmentsForDate(dayInfo.date);
 
                       if (dayAppointments.length === 0) {
-                        alert("No appointments scheduled for this date");
-                      }
+                        alert(`No appointments scheduled for ${dayInfo.date.toLocaleDateString('en-US', { 
+                           month: 'long', 
+                           day: 'numeric', 
+                           year: 'numeric' 
+                        })}`);
+                      }                    
                     }
                   }}
                   className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
