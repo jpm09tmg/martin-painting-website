@@ -580,10 +580,12 @@ const AdminAppointments = () => {
       {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {/* Today's Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
               <p className="text-sm text-gray-600">Today's Appointments</p>
             </div>
@@ -591,10 +593,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* This Week Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-500 mr-3" />
-            <div>
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.thisWeek}
               </p>
@@ -604,10 +608,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Completed Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.completed}
               </p>
@@ -617,10 +623,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Cancelled Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <XCircle className="w-8 h-8 text-red-500 mr-3" />
-            <div>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.cancelled}
               </p>
@@ -767,7 +775,7 @@ const AdminAppointments = () => {
           {/* ============================================ */}
 
           {/* Filters and Search Bar */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
@@ -806,7 +814,7 @@ const AdminAppointments = () => {
           <div className="space-y-4">
             {/* Empty State - No appointments found */}
             {filteredAppointments.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm border text-center">
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No appointments found</p>
                 <p className="text-sm text-gray-400">
@@ -819,7 +827,7 @@ const AdminAppointments = () => {
               filteredAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                     {/* Appointment Details Section */}

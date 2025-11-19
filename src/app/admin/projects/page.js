@@ -708,7 +708,7 @@ export default function ProjectsPage() {
               {filteredProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow"
+                  className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
                 >
                   <div className="p-6">
                     {/* Project Header - Name and Status/Type badges */}

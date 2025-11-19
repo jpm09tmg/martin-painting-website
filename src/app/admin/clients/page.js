@@ -263,10 +263,12 @@ export default function ClientsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <User className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <User className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {clients.length}
               </p>
@@ -275,10 +277,12 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-[#74A744] mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {
                   clients.filter((c) => {
@@ -309,7 +313,7 @@ export default function ClientsPage() {
       )}
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex items-center gap-2">
           <Search className="w-4 h-4 text-gray-500" />
           <input
@@ -323,7 +327,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Clients Table */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {filteredClients.length === 0 ? (
           <div className="p-8 text-center">
             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
