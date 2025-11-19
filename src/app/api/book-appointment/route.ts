@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BookingInput } from "@/src/lib/ai/schemas";
-import { bookAppointment } from "@/src/lib/ai/services";
+import { bookAppointment } from "@/src/lib/ai/tools/services";
 
 export async function POST(req: NextRequest) {
   try {
