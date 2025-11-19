@@ -67,6 +67,22 @@ const AdminAppointments = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(() => null);
 
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   // ============================================
   // LOAD APPOINTMENTS ON COMPONENT MOUNT
   // ============================================
@@ -834,7 +850,7 @@ const AdminAppointments = () => {
                             <div className="flex items-center gap-1">
                               <Phone className="w-3 h-3 text-gray-400" />
                               <span className="text-gray-600">
-                                {appointment.phone}
+                                {formatPhoneNumber(appointment.phone)}
                               </span>
                             </div>
                           </div>
@@ -1042,7 +1058,7 @@ const AdminAppointments = () => {
                 <div>
                   <p className="text-sm text-gray-600">Phone</p>
                   <p className="font-medium text-gray-900">
-                    {selectedAppointment.phone}
+                    {formatPhoneNumber(selectedAppointment.phone)}
                   </p>
                 </div>
               </div>
@@ -1183,7 +1199,7 @@ const AdminAppointments = () => {
                 {editingAppointment.email}
               </p>
               <p className="text-sm text-gray-600">
-                {editingAppointment.phone}
+                {formatPhoneNumber(editingAppointment.phone)}
               </p>
             </div>
 

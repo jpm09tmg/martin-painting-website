@@ -490,6 +490,22 @@ export default function ProjectsPage() {
   // UTILITY FUNCTIONS - Get colors for different statuses and types
   // ============================================
 
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   // Returns CSS classes for status badge colors
   const getStatusColor = (status) => {
     switch (status) {
@@ -743,7 +759,7 @@ export default function ProjectsPage() {
                       {project.clients?.phone && (
                         <div className="flex items-center text-sm text-gray-600">
                           <Phone className="w-4 h-4 mr-2" />
-                          <span>{project.clients.phone}</span>
+                          <span>{formatPhoneNumber(project.clients.phone)}</span>
                         </div>
                       )}
 
@@ -1383,7 +1399,7 @@ export default function ProjectsPage() {
                         Phone:
                       </span>
                       <span className="text-gray-900">
-                        {selectedProject.clients.phone}
+                        {formatPhoneNumber(selectedProject.clients.phone)}
                       </span>
                     </div>
                   )}

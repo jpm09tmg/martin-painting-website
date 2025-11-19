@@ -143,6 +143,22 @@ export default function AdminQuoteForm() {
     return matchesSearch && matchesStatus;
   });
 
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   const calculateQuoteTotal = (items) => {
     return (
       items?.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0) || 0
@@ -439,7 +455,7 @@ MARTIN PAINTING - QUOTE #${quote.id}
 
 Client: ${clientName}
 Email: ${quote.clients?.email || "N/A"}
-Phone: ${quote.clients?.phone || "N/A"}
+Phone: ${quote.clients?.phone ? formatPhoneNumber(quote.clients.phone) : "N/A"}
 Client Address: ${quote.clients?.address || "N/A"}
 
 Project Address: ${quote.project_address || "N/A"}
@@ -680,7 +696,7 @@ Notes: ${quote.notes || "None"}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Phone className="w-4 h-4 mr-2" />
-                      <span>{quote.clients?.phone || "N/A"}</span>
+                      <span>{quote.clients?.phone ? formatPhoneNumber(quote.clients.phone) : "N/A"}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="w-4 h-4 mr-2" />
@@ -1215,7 +1231,7 @@ Notes: ${quote.notes || "None"}
                   <div>
                     <span className="text-gray-600">Phone:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients?.phone || "N/A"}
+                      {selectedQuote.clients?.phone ? formatPhoneNumber(selectedQuote.clients.phone) : "N/A"}
                     </span>
                   </div>
                   <div>
