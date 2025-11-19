@@ -144,7 +144,7 @@ export default function AdminDashboard() {
       {/* Statistics cards: shows counts for pending, approved, and removed reviews */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Pending reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Approved reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Removed reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-gray-100 rounded-lg">
               <EyeOff className="w-6 h-6 text-gray-600" />
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Filter buttons: allows switching between pending, approved, removed, and all reviews */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("pending")}
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Reviews list: displays all reviews or "no reviews found" message */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {reviews.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No reviews found</p>

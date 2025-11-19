@@ -665,7 +665,7 @@ Notes: ${quote.notes || "None"}
             return (
               <div
                 key={quote.id}
-                className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow"
+                className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
