@@ -265,8 +265,10 @@ export default function ClientsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <User className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <User className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {clients.length}
               </p>
@@ -277,8 +279,10 @@ export default function ClientsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-[#74A744] mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {
                   clients.filter((c) => {

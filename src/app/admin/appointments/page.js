@@ -582,8 +582,10 @@ const AdminAppointments = () => {
         {/* Today's Appointments Card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
               <p className="text-sm text-gray-600">Today's Appointments</p>
             </div>
@@ -593,8 +595,10 @@ const AdminAppointments = () => {
         {/* This Week Card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-500 mr-3" />
-            <div>
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.thisWeek}
               </p>
@@ -606,8 +610,10 @@ const AdminAppointments = () => {
         {/* Completed Appointments Card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.completed}
               </p>
@@ -619,8 +625,10 @@ const AdminAppointments = () => {
         {/* Cancelled Appointments Card */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <XCircle className="w-8 h-8 text-red-500 mr-3" />
-            <div>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.cancelled}
               </p>
