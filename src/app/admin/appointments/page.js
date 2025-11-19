@@ -681,6 +681,10 @@ const AdminAppointments = () => {
                   onClick={() => {
                     if (dayInfo.isCurrentMonth) {
                       const dayAppointments = getAppointmentsForDate(dayInfo.date);
+
+                      if (dayAppointments.length === 0) {
+                        alert("No appointments scheduled for this date");
+                      }
                     }
                   }}
                   className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
