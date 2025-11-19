@@ -1,0 +1,36 @@
+<PromptTemplate>
+    <Metadata>
+        <Title>[Prompt name]</Title>
+        <Version>1.0</Version>
+        <Author>[Your Name]</Author>
+        <Date>[YYYY-MM-DD]</Date>
+    </Metadata>
+
+    <Input>
+        <Voice>
+            <Role>[AI persona or expertise]</Role>
+            <Tone>[Desired tone or communication style]</Tone>
+        </Voice>
+        <Task>
+            <Instruction>[Primary action or goal]</Instruction>
+            <Context>[Relevant details, scenario background]</Context>
+            <Audience>[Who the output is for]</Audience>
+            <Constraints>[Optional: limits, style, banned words, etc.]</Constraints>
+        </Task>
+    </Input>
+
+    <Output>
+        <Objectives>[What success looks like]</Objectives>
+        <Requirements>[Critical elements that must appear]</Requirements>
+        <Format>[Preferred structure or style]</Format>
+        <Verbosity>[Concise / Moderate / Detailed (word range)]</Verbosity>
+        <Examples>[Optional: ideal tone or layout sample]</Examples>
+    </Output>
+
+    <AI_Optimizations>
+        <Nudge_Phrases>[e.g., “Think deeply about this.”]</Nudge_Phrases>
+        <Reasoning_Mode>[Analytical / Creative / Balanced]</Reasoning_Mode>
+        <Self_Critique>[Prompt AI to evaluate its own answer]</Self_Critique>
+        <Iteration_Loop>[Full rubric-based perfection pass]</Iteration_Loop>
+    </AI_Optimizations>
+</PromptTemplate>
