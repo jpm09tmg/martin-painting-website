@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { streamText, UIMessage, convertToModelMessages, tool } from 'ai';
-import { bookAppointment } from "@/src/lib/ai/tools/appointment";
+// import { bookAppointment } from "@/src/lib/ai/tools/appointment";
 import { z } from "zod";
 
 export const maxDuration = 120;
