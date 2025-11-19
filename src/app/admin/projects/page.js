@@ -456,11 +456,28 @@ export default function ProjectsPage() {
       setMessage("Project updated successfully!");
       setEditMode(false);
 
-      // Reload projects
-      await loadProjects();
+      // Fetch the updated project with all relationships
+      const { data: updatedProject, error: fetchError } = await supabase
+        .from("projects")
+        .select(
+          `
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
+        `
+        )
+        .eq("id", editedProject.id)
+        .single();
 
-      // Update selected project with edited data
-      setSelectedProject(editedProject);
+      if (fetchError) throw fetchError;
+
+      // Update the modal with fresh data
+      setSelectedProject(updatedProject);
+      setEditedProject(updatedProject);
+
+      // Reload projects list in background
+      await loadProjects();
 
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
