@@ -678,8 +678,10 @@ const AdminAppointments = () => {
               return (
                 <div
                   key={index}
-                  onClick={() =>{
-                    
+                  onClick={() => {
+                    if (dayInfo.isCurrentMonth) {
+                      const dayAppointments = getAppointmentsForDate(dayInfo.date);
+                    }
                   }}
                   className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
 
