@@ -19,11 +19,36 @@ export default function BookAppointment() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Format phone number as user types
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    
+    // Format phone number field
+    if (name === "phone") {
+      setFormData({
+        ...formData,
+        [name]: formatPhoneNumber(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -51,7 +76,7 @@ export default function BookAppointment() {
             .update({
               first_name: formData.firstName,
               last_name: formData.lastName,
-              phone: formData.phone,
+              phone: formData.phone.replace(/\D/g, ""), // Store digits only
               address: formData.address,
             })
             .eq("id", clientId);
@@ -67,7 +92,7 @@ export default function BookAppointment() {
               first_name: formData.firstName,
               last_name: formData.lastName,
               email: formData.email,
-              phone: formData.phone,
+              phone: formData.phone.replace(/\D/g, ""), // Store digits only
               address: formData.address,
             },
           ])

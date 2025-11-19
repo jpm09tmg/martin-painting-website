@@ -436,15 +436,19 @@ export default function ProjectsPage() {
   // Save edited project
   const handleSaveProject = async () => {
     try {
+      const updateData = {
+        client_id: editedProject.client_id,
+        project_address: editedProject.project_address,
+        start_date: editedProject.start_date,
+        end_date: editedProject.end_date,
+        description: editedProject.description,
+        quote_id: editedProject.quote_id || null,
+        appointment_id: editedProject.appointment_id || null,
+      };
+
       const { error } = await supabase
         .from("projects")
-        .update({
-          client_id: editedProject.client_id,
-          project_address: editedProject.project_address,
-          start_date: editedProject.start_date,
-          end_date: editedProject.end_date,
-          description: editedProject.description,
-        })
+        .update(updateData)
         .eq("id", editedProject.id);
 
       if (error) throw error;
@@ -452,11 +456,28 @@ export default function ProjectsPage() {
       setMessage("Project updated successfully!");
       setEditMode(false);
 
-      // Reload projects
-      await loadProjects();
+      // Fetch the updated project with all relationships
+      const { data: updatedProject, error: fetchError } = await supabase
+        .from("projects")
+        .select(
+          `
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
+        `
+        )
+        .eq("id", editedProject.id)
+        .single();
 
-      // Update selected project with edited data
-      setSelectedProject(editedProject);
+      if (fetchError) throw fetchError;
+
+      // Update the modal with fresh data
+      setSelectedProject(updatedProject);
+      setEditedProject(updatedProject);
+
+      // Reload projects list in background
+      await loadProjects();
 
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
@@ -468,6 +489,22 @@ export default function ProjectsPage() {
   // ============================================
   // UTILITY FUNCTIONS - Get colors for different statuses and types
   // ============================================
+
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
 
   // Returns CSS classes for status badge colors
   const getStatusColor = (status) => {
@@ -722,7 +759,7 @@ export default function ProjectsPage() {
                       {project.clients?.phone && (
                         <div className="flex items-center text-sm text-gray-600">
                           <Phone className="w-4 h-4 mr-2" />
-                          <span>{project.clients.phone}</span>
+                          <span>{formatPhoneNumber(project.clients.phone)}</span>
                         </div>
                       )}
 
@@ -1362,7 +1399,7 @@ export default function ProjectsPage() {
                         Phone:
                       </span>
                       <span className="text-gray-900">
-                        {selectedProject.clients.phone}
+                        {formatPhoneNumber(selectedProject.clients.phone)}
                       </span>
                     </div>
                   )}
@@ -1493,6 +1530,63 @@ export default function ProjectsPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Related Quote - Only show in edit mode */}
+                  {editMode && (
+                    <div className="flex items-center text-sm">
+                      <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">
+                        Quote:
+                      </span>
+                      <select
+                        value={editedProject.quote_id || ""}
+                        onChange={(e) =>
+                          setEditedProject({
+                            ...editedProject,
+                            quote_id: e.target.value,
+                          })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">None</option>
+                        {quotes.map((quote) => (
+                          <option key={quote.id} value={quote.id}>
+                            ${quote.total_amount?.toLocaleString()} -{" "}
+                            {quote.clients?.first_name} {quote.clients?.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Related Appointment - Only show in edit mode */}
+                  {editMode && (
+                    <div className="flex items-center text-sm">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">
+                        Appointment:
+                      </span>
+                      <select
+                        value={editedProject.appointment_id || ""}
+                        onChange={(e) =>
+                          setEditedProject({
+                            ...editedProject,
+                            appointment_id: e.target.value,
+                          })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">None</option>
+                        {appointments.map((appointment) => (
+                          <option key={appointment.id} value={appointment.id}>
+                            {appointment.appointment_date} -{" "}
+                            {appointment.clients?.first_name}{" "}
+                            {appointment.clients?.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 

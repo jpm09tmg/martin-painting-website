@@ -81,12 +81,36 @@ export default function ClientsPage() {
     return matchesSearch;
   });
 
+  // Format phone number as user types
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // Format phone number field
+    if (name === "phone") {
+      setFormData({
+        ...formData,
+        [name]: formatPhoneNumber(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
     
     // Clear error message when user starts typing (especially for email field)
     if (message.includes("Error") && name === "email") {
@@ -111,7 +135,7 @@ export default function ClientsPage() {
       firstName: client.first_name || "",
       lastName: client.last_name || "",
       email: client.email || "",
-      phone: client.phone || "",
+      phone: client.phone ? formatPhoneNumber(client.phone) : "", // Format for display
       address: client.address || "",
     });
     setEditingClient(client);
@@ -146,7 +170,7 @@ export default function ClientsPage() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
-            phone: formData.phone,
+            phone: formData.phone.replace(/\D/g, ""), // Store digits only
             address: formData.address,
           })
           .eq("id", editingClient.id);
@@ -175,7 +199,7 @@ export default function ClientsPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone.replace(/\D/g, ""), // Store digits only
           address: formData.address,
         });
 
@@ -362,7 +386,7 @@ export default function ClientsPage() {
                       >
                         <div className="flex items-center text-sm text-gray-900">
                           <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                          {client.phone || "Not provided"}
+                          {client.phone ? formatPhoneNumber(client.phone) : "Not provided"}
                         </div>
                       </td>
                       <td
