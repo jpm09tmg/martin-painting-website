@@ -678,7 +678,7 @@ const AdminAppointments = () => {
               return (
                 <div
                   key={index}
-                  className={`min-h-[100px] border rounded-lg p-2 ${
+                  className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
                     // Gray background for days not in current month
                     dayInfo.isCurrentMonth ? "bg-white" : "bg-gray-50"
                   } ${
