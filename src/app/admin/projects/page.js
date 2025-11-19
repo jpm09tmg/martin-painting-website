@@ -436,15 +436,19 @@ export default function ProjectsPage() {
   // Save edited project
   const handleSaveProject = async () => {
     try {
+      const updateData = {
+        client_id: editedProject.client_id,
+        project_address: editedProject.project_address,
+        start_date: editedProject.start_date,
+        end_date: editedProject.end_date,
+        description: editedProject.description,
+        quote_id: editedProject.quote_id || null,
+        appointment_id: editedProject.appointment_id || null,
+      };
+
       const { error } = await supabase
         .from("projects")
-        .update({
-          client_id: editedProject.client_id,
-          project_address: editedProject.project_address,
-          start_date: editedProject.start_date,
-          end_date: editedProject.end_date,
-          description: editedProject.description,
-        })
+        .update(updateData)
         .eq("id", editedProject.id);
 
       if (error) throw error;
@@ -1493,6 +1497,63 @@ export default function ProjectsPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Related Quote - Only show in edit mode */}
+                  {editMode && (
+                    <div className="flex items-center text-sm">
+                      <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">
+                        Quote:
+                      </span>
+                      <select
+                        value={editedProject.quote_id || ""}
+                        onChange={(e) =>
+                          setEditedProject({
+                            ...editedProject,
+                            quote_id: e.target.value,
+                          })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">None</option>
+                        {quotes.map((quote) => (
+                          <option key={quote.id} value={quote.id}>
+                            ${quote.total_amount?.toLocaleString()} -{" "}
+                            {quote.clients?.first_name} {quote.clients?.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Related Appointment - Only show in edit mode */}
+                  {editMode && (
+                    <div className="flex items-center text-sm">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-gray-700 w-24">
+                        Appointment:
+                      </span>
+                      <select
+                        value={editedProject.appointment_id || ""}
+                        onChange={(e) =>
+                          setEditedProject({
+                            ...editedProject,
+                            appointment_id: e.target.value,
+                          })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                      >
+                        <option value="">None</option>
+                        {appointments.map((appointment) => (
+                          <option key={appointment.id} value={appointment.id}>
+                            {appointment.appointment_date} -{" "}
+                            {appointment.clients?.first_name}{" "}
+                            {appointment.clients?.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 
