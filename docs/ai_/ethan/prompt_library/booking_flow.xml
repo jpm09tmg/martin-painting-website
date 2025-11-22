@@ -1,0 +1,133 @@
+<PromptTemplate>
+  <Metadata>
+    <Title>Codegen — Martin Painting Chatbot Booking Flow (Parity with Appointment Page)</Title>
+    <Version>2.0</Version>
+    <Author>Ethan Go</Author>
+    <Date>[2025-11-05]</Date>
+  </Metadata>
+
+  <Input>
+    <Voice>
+      <Role>Senior Full-Stack TypeScript Engineer (Next.js + Supabase + AI SDK)</Role>
+      <Tone>Practical, explicit, implementation-first</Tone>
+    </Voice>
+
+    <Task>
+      <Instruction>
+        Generate production-ready TypeScript/React code and file-level diffs to implement a chatbot-driven booking flow that mirrors the existing `/appointments` page behavior and data shape. Output complete files with paths, explain where they go, and provide minimal tests and a local run checklist.
+      </Instruction>
+
+      <Context>
+        Repo has:
+        - `src/app/appointments/page.js` — existing form page that collects:
+          `firstName, lastName, email, phone, address, propertyType, locationType, appointmentDate, appointmentTime, details?`
+          and writes to Supabase: upsert client by email, then insert an appointment with `status="pending"` (preferred date/time mirrored by the page).
+        - `src/components/chat/ChatLauncher.js` — renders `<ChatWidget />` with brand color and greeting.
+        - `src/components/chat/ChatWidget.jsx` — uses `@ai-sdk/react` `useChat` pointed at `/api/chat`.
+
+        Goal:
+        - Make the **chat** path collect/validate the same fields as the page, in the same order/logic, then persist via Supabase with the **same semantics**:
+          - Upsert client (email is the lookup key; update name/phone/address if changed).
+          - Insert appointment `{ property_type, location_type, preferred_date, preferred_time, details?, client_id, status: "pending" }`.
+        - Keep time zone assumptions to **America/Edmonton**; `appointmentDate` cannot be in the past.
+        - Allowed time slots (use these unless the page shows otherwise in code): `["9:00 AM","10:00 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM"]`.
+        - Keep chatbot turns short; gather 1–2 fields per turn; accept batched user replies and only ask what’s missing.
+
+        You may **not** modify database schema. Assume Supabase tables:
+        - `clients(id, created_at, first_name, last_name, email [unique], phone, address)`
+        - `appointments(id, created_at, client_id, preferred_date, preferred_time, appointment_date, appointment_time, status, details, property_type, location_type)`
+
+        Provided files of interest (read-only reference):
+        - `src/app/appointments/page.js`
+        - `src/components/chat/ChatLauncher.js`
+        - `src/components/chat/ChatWidget.jsx`
+
+      </Context>
+
+      <Audience>
+        Me (the repo maintainer) — I’ll copy the files and follow your checklist to run locally and test.
+      </Audience>
+
+      <Constraints>
+        - TypeScript in server code and schemas; React components may remain JS if that’s what the file is already.
+        - Don’t invent fields or tables; use the exact field names listed above.
+        - Validate before writing; never write partial, invalid, or past dates.
+        - If an email exists, **update** the client with newest profile values before inserting appointment.
+        - Return a success message that matches page tone: “Appointment request submitted successfully! We’ll contact you soon to confirm.”
+        - Provide **file paths**, **full file contents**, and **minimal diffs** for existing files that require change.
+        - Include a quick **test plan** and a **manual test script** I can follow.
+      </Constraints>
+    </Task>
+  </Input>
+
+  <Output>
+    <Objectives>
+      - Implement a cohesive chat booking flow with strict parity to the Appointment page.
+      - Create a callable server function for booking (pure TS, easy to unit test).
+      - Expose an API route the chat can POST to.
+      - (Optional but preferred) Add a tool wrapper compatible with AI SDK function calling.
+      - Provide a runbook to verify end-to-end locally.
+    </Objectives>
+
+    <Requirements>
+      - **Files to create (or overwrite):**
+        1) `src/lib/validation/booking.ts`: Zod schema for chat payload (aligns with page fields).
+        2) `src/lib/services/booking.ts`: `bookAppointment(payload)` that does Supabase upsert+insert.
+        3) `src/app/api/book-appointment/route.ts`: `POST` handler that validates with Zod and calls `bookAppointment`.
+        4) `src/app/api/chat/tools/bookAppointment.ts` (optional): AI-SDK compatible “tool” with the input schema & executor calling the same service.
+      - **Minimal edits to existing files (show diffs):**
+        - `src/components/chat/ChatWidget.jsx`: Add a canned suggestion like “Book a consultation” (if not present), and show how the client can POST to `/api/book-appointment` when the model responds with a structured payload (or use the tool approach).
+        - `src/components/chat/ChatLauncher.js`: no code change unless necessary; if you add suggestions, show the updated props snippet.
+      - **Code style:**
+        - Strong typing with Zod inference.
+        - Narrow Supabase selects (`.select('id')`) and `.single()` where appropriate.
+        - Graceful error responses (400 on validation, 500 on failure).
+      - **Testing:**
+        - `__tests__/booking.test.ts` (or inline notes if you can’t scaffold Jest): unit cover `bookAppointment` happy path & email-exists path.
+      - **Docs:**
+        - “How to Run Locally” (env vars, commands), “Manual Test Script” (step-by-step tracer), and “Failure Modes & Fixes”.
+
+      - **Security & Robustness:**
+        - Sanitize/normalize email/phone; basic email syntax check via Zod.
+        - Ensure date is `>=` today (Edmonton TZ).
+        - Ensure time ∈ allowed list; map to a canonical string before insert.
+    </Requirements>
+
+    <Format>
+      Use this structure, in order:
+      1) **File Tree (new/changed)**
+      2) **New Files — Full Contents** (fenced code blocks with file paths)
+      3) **Diffs for Modified Files** (unified diff format)
+      4) **How to Run Locally** (commands, env)
+      5) **Manual Test Script** (copy/paste steps & expected outputs)
+      6) **Notes (Assumptions & Extensibility)**
+    </Format>
+
+    <Verbosity>Moderate</Verbosity>
+
+    <Examples>
+      - Show the `bookAppointment(payload)` service function performing:
+        a) fetch existing client by email,
+        b) insert or update client,
+        c) insert appointment with `status: "pending"`,
+        d) return `{ appointmentId, status, preferredDate, preferredTime }`.
+      - Show Zod schema that matches the chat slots and page fields.
+      - Show API `POST` that returns validation errors clearly.
+    </Examples>
+  </Output>
+
+  <AI_Optimizations>
+    <Nudge_Phrases>
+      Think step-by-step; mirror the page’s behavior exactly.
+      Provide complete files, not fragments.
+      Prefer pure functions for testability; keep Supabase I/O in a thin service layer.
+    </Nudge_Phrases>
+    <Reasoning_Mode>Analytical</Reasoning_Mode>
+    <Self_Critique>
+      Verify field names and types match the page; check date/time validations; ensure the success message matches the page; avoid any schema drift.
+    </Self_Critique>
+    <Iteration_Loop>
+      Create an internal rubric (parity with page, correctness, completeness, testability, clarity). Iterate until the result scores 10/10; output only the final answer.
+    </Iteration_Loop>
+  </AI_Optimizations>
+</PromptTemplate>
