@@ -67,6 +67,22 @@ const AdminAppointments = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(() => null);
 
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   // ============================================
   // LOAD APPOINTMENTS ON COMPONENT MOUNT
   // ============================================
@@ -564,10 +580,12 @@ const AdminAppointments = () => {
       {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {/* Today's Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
               <p className="text-sm text-gray-600">Today's Appointments</p>
             </div>
@@ -575,10 +593,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* This Week Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-500 mr-3" />
-            <div>
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.thisWeek}
               </p>
@@ -588,10 +608,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Completed Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.completed}
               </p>
@@ -601,10 +623,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Cancelled Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <XCircle className="w-8 h-8 text-red-500 mr-3" />
-            <div>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.cancelled}
               </p>
@@ -678,7 +702,21 @@ const AdminAppointments = () => {
               return (
                 <div
                   key={index}
-                  className={`min-h-[100px] border rounded-lg p-2 ${
+                  onClick={() => {
+                    if (dayInfo.isCurrentMonth) {
+                      const dayAppointments = getAppointmentsForDate(dayInfo.date);
+
+                      if (dayAppointments.length === 0) {
+                        alert(`No appointments scheduled for ${dayInfo.date.toLocaleDateString('en-US', { 
+                           month: 'long', 
+                           day: 'numeric', 
+                           year: 'numeric' 
+                        })}`);
+                      }                    
+                    }
+                  }}
+                  className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
+
                     // Gray background for days not in current month
                     dayInfo.isCurrentMonth ? "bg-white" : "bg-gray-50"
                   } ${
@@ -737,7 +775,7 @@ const AdminAppointments = () => {
           {/* ============================================ */}
 
           {/* Filters and Search Bar */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
@@ -776,7 +814,7 @@ const AdminAppointments = () => {
           <div className="space-y-4">
             {/* Empty State - No appointments found */}
             {filteredAppointments.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm border text-center">
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No appointments found</p>
                 <p className="text-sm text-gray-400">
@@ -789,7 +827,7 @@ const AdminAppointments = () => {
               filteredAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                     {/* Appointment Details Section */}
@@ -834,7 +872,7 @@ const AdminAppointments = () => {
                             <div className="flex items-center gap-1">
                               <Phone className="w-3 h-3 text-gray-400" />
                               <span className="text-gray-600">
-                                {appointment.phone}
+                                {formatPhoneNumber(appointment.phone)}
                               </span>
                             </div>
                           </div>
@@ -1042,7 +1080,7 @@ const AdminAppointments = () => {
                 <div>
                   <p className="text-sm text-gray-600">Phone</p>
                   <p className="font-medium text-gray-900">
-                    {selectedAppointment.phone}
+                    {formatPhoneNumber(selectedAppointment.phone)}
                   </p>
                 </div>
               </div>
@@ -1183,7 +1221,7 @@ const AdminAppointments = () => {
                 {editingAppointment.email}
               </p>
               <p className="text-sm text-gray-600">
-                {editingAppointment.phone}
+                {formatPhoneNumber(editingAppointment.phone)}
               </p>
             </div>
 

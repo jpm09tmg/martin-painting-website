@@ -81,12 +81,36 @@ export default function ClientsPage() {
     return matchesSearch;
   });
 
+  // Format phone number as user types
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // Format phone number field
+    if (name === "phone") {
+      setFormData({
+        ...formData,
+        [name]: formatPhoneNumber(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
     
     // Clear error message when user starts typing (especially for email field)
     if (message.includes("Error") && name === "email") {
@@ -111,7 +135,7 @@ export default function ClientsPage() {
       firstName: client.first_name || "",
       lastName: client.last_name || "",
       email: client.email || "",
-      phone: client.phone || "",
+      phone: client.phone ? formatPhoneNumber(client.phone) : "", // Format for display
       address: client.address || "",
     });
     setEditingClient(client);
@@ -146,7 +170,7 @@ export default function ClientsPage() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
-            phone: formData.phone,
+            phone: formData.phone.replace(/\D/g, ""), // Store digits only
             address: formData.address,
           })
           .eq("id", editingClient.id);
@@ -175,7 +199,7 @@ export default function ClientsPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone.replace(/\D/g, ""), // Store digits only
           address: formData.address,
         });
 
@@ -239,10 +263,12 @@ export default function ClientsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <User className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <User className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {clients.length}
               </p>
@@ -251,10 +277,12 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-[#74A744] mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {
                   clients.filter((c) => {
@@ -285,7 +313,7 @@ export default function ClientsPage() {
       )}
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex items-center gap-2">
           <Search className="w-4 h-4 text-gray-500" />
           <input
@@ -299,7 +327,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Clients Table */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {filteredClients.length === 0 ? (
           <div className="p-8 text-center">
             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -362,7 +390,7 @@ export default function ClientsPage() {
                       >
                         <div className="flex items-center text-sm text-gray-900">
                           <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                          {client.phone || "Not provided"}
+                          {client.phone ? formatPhoneNumber(client.phone) : "Not provided"}
                         </div>
                       </td>
                       <td
