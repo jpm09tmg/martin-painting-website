@@ -45,7 +45,7 @@ export default function ContactPage() {
         setSubmitStatus('success');
         setStatusMessage('Thank you for your message! We\'ll get back to you soon.');
         
-        // Clear form
+        // this clears the form
         setFormData({
           name: "",
           email: "",
@@ -53,7 +53,7 @@ export default function ContactPage() {
           message: ""
         });
 
-        // Clear success message after 5 seconds
+        // this clears success message after 5 seconds
         setTimeout(() => {
           setSubmitStatus(null);
           setStatusMessage("");
@@ -66,7 +66,7 @@ export default function ContactPage() {
       setSubmitStatus('error');
       setStatusMessage(error.message || 'Failed to send message. Please try again.');
       
-      // Clear error message after 5 seconds
+      // this clears error message after 5 seconds
       setTimeout(() => {
         setSubmitStatus(null);
         setStatusMessage("");
