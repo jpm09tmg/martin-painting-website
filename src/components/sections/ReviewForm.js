@@ -79,10 +79,10 @@ export default function ReviewForm() {
     <>
       <section className="w-full bg-background-dark py-24">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl font-bold text-text mb-4">
             Share Your Experience
           </h2>
-          <p className="text-white/90 text-lg mb-6">
+          <p className="text-text-muted text-lg mb-6">
             We&apos;d love to hear about your experience with Martin Painting!
           </p>
           <button
