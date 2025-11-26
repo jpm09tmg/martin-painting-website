@@ -82,7 +82,7 @@ export default function ReviewForm() {
             Share Your Experience
           </h2>
           <p className="text-white/90 text-lg mb-6">
-            We'd love to hear about your experience with Martin Painting!
+            We&apos;d love to hear about your experience with Martin Painting!
           </p>
           <button
             onClick={() => setShowModal(true)}

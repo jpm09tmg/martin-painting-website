@@ -90,18 +90,18 @@ export default function Testimonials() {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="h-[620px] py-24 bg-background-dark">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-normal text-center mb-12 text-gray-800">
+        <h2 className="text-3xl font-normal text-center mb-12 text-text">
           Hear from Our Clients
         </h2>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#f0f4f0] rounded-lg shadow-lg p-8 md:p-12 relative">
+          <div className="bg-background-light rounded-lg shadow-lg p-8 md:p-12 relative">
             {/* Navigation Arrows */}
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/10 rounded-full p-2 shadow-md hover:bg-background-light transition-colors"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-6 h-6 text-gray-600" />
@@ -109,7 +109,7 @@ export default function Testimonials() {
 
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/10 rounded-full p-2 shadow-md hover:bg-background-light transition-colors"
               aria-label="Next testimonial"
             >
               <ChevronRight className="w-6 h-6 text-gray-600" />
@@ -119,7 +119,7 @@ export default function Testimonials() {
             <div className="flex flex-col md:flex-row items-center gap-8">
               {/* Premium Paint Brush Icon */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#6b9e3e] flex items-center justify-center bg-gradient-to-br from-white to-gray-50 shadow-lg">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-border flex items-center justify-center bg-gradient-to-br from-white to-gray-50 shadow-lg">
                   <svg
                     className="w-12 h-12 md:w-16 md:h-16"
                     viewBox="0 0 64 64"
@@ -364,10 +364,10 @@ export default function Testimonials() {
                   ))}
                 </div>
 
-                <p className="text-gray-700 text-lg italic mb-6 leading-relaxed">
-                  "{allTestimonials[currentIndex].quote}"
+                <p className="text-text text-lg italic mb-6 leading-relaxed">
+                  &quot;{allTestimonials[currentIndex].quote}&quot;
                 </p>
-                <p className="text-[#2c5f7f] font-semibold text-lg">
+                <p className="text-text-muted font-semibold text-lg">
                   {allTestimonials[currentIndex].author_name} (
                   {allTestimonials[currentIndex].service_type})
                 </p>
