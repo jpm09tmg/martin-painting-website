@@ -82,7 +82,7 @@ export default async function ServicesGrid() {
   ];
 
   return (
-    <section className="w-full bg-background-dark py-20">
+    <section className="w-full bg-background-dark py-24">
       <div className="max-w-7xl mx-auto px-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-normal text-text mb-4">Our Services</h2>

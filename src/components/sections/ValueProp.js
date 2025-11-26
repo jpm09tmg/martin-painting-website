@@ -4,10 +4,10 @@ import { btnPrimary, btnOutline } from "@/src/components/ui/buttons";
 
 export default function ValueProp() {
   return (
-    <section className="w-full h-[600px] bg-background-dark relative overflow-hidden">
+    <section className="w-full py-24 bg-background-dark relative">
       <div className="absolute inset-0  pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-20 h-full flex items-center gap-10">
+      <div className="relative z-8 max-w-7xl mx-auto px-20 h-full flex items-center gap-8">
         <div className="flex-1 max-w-2xl">
           <h1 className="text-5xl font-normal text-[#171717] leading-tight mb-6">
             Transform Your Space with Professional Painting

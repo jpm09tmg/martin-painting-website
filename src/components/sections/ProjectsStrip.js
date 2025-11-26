@@ -19,13 +19,13 @@ export default function ProjectsStrip() {
   ];
 
   return (
-    <section className="w-full bg-[#F1F4E8] py-20">
+    <section className="w-full bg-background-dark py-24">
       <div className="max-w-7xl mx-auto px-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-normal text-[#171717] mb-4">
+          <h2 className="text-3xl font-normal text-text mb-4">
             Recent Projects
           </h2>
-          <p className="text-xl text-[#525252]">
+          <p className="text-xl text-text-muted">
             See our latest painting transformations
           </p>
         </div>
