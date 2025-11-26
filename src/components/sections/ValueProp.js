@@ -4,7 +4,7 @@ import { btnPrimary, btnOutline } from "@/src/components/ui/buttons";
 
 export default function ValueProp() {
   return (
-    <section className="w-full py-24 bg-background-dark relative">
+    <section className="w-full py-24 bg-background relative">
       <div className="absolute inset-0  pointer-events-none" />
 
       <div className="relative z-8 max-w-7xl mx-auto px-20 h-full flex items-center gap-8">

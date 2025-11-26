@@ -3,7 +3,7 @@ import { btnPrimary } from "@/src/components/ui/buttons";
 
 export default function CtaStrip() {
   return (
-    <section className="w-full bg-background-dark py-20">
+    <section className="w-full bg-background py-20">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl font-normal text-text mb-4">
           Ready to Transform Your Space?
