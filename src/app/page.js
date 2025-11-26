@@ -11,18 +11,16 @@ import ReviewForm from "@/src/components/sections/ReviewForm";
 
 export default function Home() {
   return (
-    <body className="dark">
-      <div className="w-full min-h-screen bg-background">
-        <Header currentPage="home" />
-        <Hero />
-        <ValueProp />
-        <ServicesGrid />
-        <ProjectsStrip />
-        <Testimonials />
-        <CtaStrip />
-        <ReviewForm />
-        <Footer />
-      </div>
-    </body>
+    <div className="w-full min-h-screen bg-background">
+      <Header currentPage="home" />
+      <Hero />
+      <ValueProp />
+      <ServicesGrid />
+      <ProjectsStrip />
+      <Testimonials />
+      <CtaStrip />
+      <ReviewForm />
+      <Footer />
+    </div>
   );
 }
