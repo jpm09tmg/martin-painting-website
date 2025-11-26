@@ -133,6 +133,7 @@ export async function POST(request) {
                     </td>
                   </tr>
 
+                  
                   <!-- Quote Items -->
                   <tr>
                     <td style="padding: 30px 40px 20px 40px;">
@@ -233,12 +234,14 @@ export async function POST(request) {
 
     console.log(`Quote #${quoteId} status updated to Sent`);
 
+    //success response
     return Response.json({ 
       success: true, 
       message: 'Quote sent successfully',
       data 
     });
 
+    // error handling
   } catch (error) {
     console.error('Error sending quote:', error);
     return Response.json({ 

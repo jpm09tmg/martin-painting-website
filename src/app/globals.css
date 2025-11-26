@@ -1,26 +1,189 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* hsl (fallback color) */
+  --bg-dark: hsl(212 100% 2%);
+  --bg: hsl(200 100% 3%);
+  --bg-light: hsl(195 100% 5%);
+
+  --text: hsl(194 100% 88%);
+  --text-muted: hsl(193 64% 62%);
+
+  --highlight: hsl(190 100% 17%);
+  --border: hsl(191 100% 12%);
+  --border-muted: hsl(194 100% 8%);
+
+  --primary: hsl(192 81% 54%);
+  --secondary: hsl(15 89% 71%);
+
+  --danger: hsl(8 68% 66%);
+  --warning: hsl(52 59% 44%);
+  --success: hsl(152 45% 49%);
+  --info: hsl(217 80% 68%);
+  /* oklch */
+  --bg-dark: oklch(0.1 0.065 219);
+  --bg: oklch(0.15 0.065 219);
+  --bg-light: oklch(0.2 0.065 219);
+
+  --text: oklch(0.96 0.1 219);
+  --text-muted: oklch(0.76 0.1 219);
+
+  --highlight: oklch(0.5 0.13 219);
+  --border: oklch(0.4 0.13 219);
+  --border-muted: oklch(0.3 0.13 219);
+
+  --primary: oklch(0.76 0.13 219);
+  --secondary: oklch(0.76 0.13 39);
+
+  --danger: oklch(0.7 0.13 30);
+  --warning: oklch(0.7 0.13 100);
+  --success: oklch(0.7 0.13 160);
+  --info: oklch(0.7 0.13 260);
+
+  --ff: "Manrope", sans-serif;
+  --h1: 700 1.5rem/1.2em var(--ff);
+  --h2: 700 1.25rem/1.2em var(--ff);
+  --h3: 700 1.125rem/1.4em var(--ff);
+  --h4: 700 1rem/1.6em var(--ff);
+  --p: 400 1rem/1.6em var(--ff);
+  --small: 400 0.75rem/1.8em var(--ff);
+}
+body.light {
+  /* hsl (fallback color) */
+  --bg-dark: hsl(194 100% 86%);
+  --bg: hsl(194 100% 91%);
+  --bg-light: hsl(194 100% 96%);
+
+  --text: hsl(209 100% 5%);
+  --text-muted: hsl(191 100% 12%);
+
+  --highlight: hsl(193 100% 89%);
+  --border: hsl(189 100% 25%);
+  --border-muted: hsl(189 100% 37%);
+
+  --primary: hsl(191 100% 12%);
+  --secondary: hsl(18 100% 24%);
+
+  --danger: hsl(7 51% 41%);
+  --warning: hsl(53 100% 15%);
+  --success: hsl(161 100% 17%);
+  --info: hsl(217 54% 44%);
+
+  /* oklch */
+  --bg-dark: oklch(0.92 0.065 219);
+  --bg: oklch(0.96 0.065 219);
+  --bg-light: oklch(1 0.065 219);
+  
+  --text: oklch(0.15 0.13 219);
+  --text-muted: oklch(0.4 0.13 219);
+  
+  --highlight: oklch(1 0.13 219);
+  --border: oklch(0.6 0.13 219);
+  --border-muted: oklch(0.7 0.13 219);
+  
+  --primary: oklch(0.4 0.13 219);
+  --secondary: oklch(0.4 0.13 39);
+  
+  --danger: oklch(0.5 0.13 30);
+  --warning: oklch(0.5 0.13 100);
+  --success: oklch(0.5 0.13 160);
+  --info: oklch(0.5 0.13 260);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg);
+  --color-background-dark: var(--bg-dark);
+  --color-background-light: var(--bg-light);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-muted: var(--border-muted);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-geist-sans, system-ui, sans-serif);
+  --font-mono: var(
+    --font-geist-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace
+  );
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #000000;
   }
-}
+} */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-muted);
+}
+
+h1 {
+  font: var(--h1);
+  color: var(--text);
+}
+/* h2 {
+  font: var(--h2);
+  margin-bottom: 0.5rem;
+  color: var(--text);
+} */
+h3 {
+  font: var(--h3);
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+h4 {
+  font: var(--h4);
+  margin-bottom: 0.5rem;
+}
+p {
+  font: var(--p);
+}
+.small,
+small {
+  font: var(--small);
+}
+/* button {
+  background: var(--bg-light);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font: var(--p);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  border: var(--border-card);
+  border-top: solid 1px var(--highlight);
+} */
+button:focus {
+  outline: none;
+}
+button:hover,
+.card:hover {
+  background: var(--gradient-hover);
+}
+a {
+  text-decoration: none;
+  color: var(--text);
+}
+a:hover {
+  color: var(--primary);
 }
