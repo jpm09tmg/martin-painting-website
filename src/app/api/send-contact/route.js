@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+//POST sends contact form details to admin email
 export async function POST(request) {
   try {
     const { name, email, subject, message } = await request.json();
@@ -148,14 +149,17 @@ export async function POST(request) {
       `
     });
 
+    //if there was an error sending the email, throw it
     if (emailError) throw emailError;
 
+    // Return success response
     return Response.json({
       success: true,
       message: 'Message sent successfully',
       data
     });
 
+    // End of try block
   } catch (error) {
     console.error('Error sending contact form email:', error);
     return Response.json(
