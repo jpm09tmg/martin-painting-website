@@ -1,4 +1,5 @@
 "use client";
+import { btnPrimary } from "@/src/components/ui/buttons";
 
 import { useState } from "react";
 import { Star, X, MessageSquare } from "lucide-react";
@@ -76,7 +77,7 @@ export default function ReviewForm() {
 
   return (
     <>
-      <section className="w-full bg-[#74A744] py-12">
+      <section className="w-full bg-background-dark py-24">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Share Your Experience
@@ -86,7 +87,7 @@ export default function ReviewForm() {
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-white text-[#74A744] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center gap-2 shadow-lg"
+            className="bg-background-light text-text px-8 py-4 rounded-lg font-semibold text-lg hover:bg-text transition-colors inline-flex items-center gap-2 shadow-lg"
           >
             <MessageSquare className="w-6 h-6" />
             Leave a Review
