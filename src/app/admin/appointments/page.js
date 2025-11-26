@@ -67,6 +67,26 @@ const AdminAppointments = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(() => null);
 
+  // Email sending state
+  const [sendingEmail, setSendingEmail] = useState(null); // Stores appointment ID being processed
+  const [emailStatus, setEmailStatus] = useState({}); // Tracks success/error messages per appointment
+
+  // Format phone number for display
+  const formatPhoneNumber = (value) => {
+    if (!value) return "";
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, "");
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   // ============================================
   // LOAD APPOINTMENTS ON COMPONENT MOUNT
   // ============================================
@@ -428,9 +448,11 @@ const AdminAppointments = () => {
   // CONFIRM APPOINTMENT WITH DATE/TIME
   // ============================================
 
-  // Saves the confirmed date/time and updates status to 'confirmed'
+  // Saves the confirmed date/time, updates status to 'confirmed', and sends confirmation email
   const confirmAppointment = async () => {
     if (!editingAppointment) return; // Safety check - exit if no appointment selected
+
+    setSendingEmail(editingAppointment.id); // Show loading state
 
     try {
       // Update database with confirmed date, time, and status
@@ -445,6 +467,41 @@ const AdminAppointments = () => {
 
       if (error) throw error;
 
+      // Send confirmation email automatically
+      const emailResponse = await fetch('/api/send-appointment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ appointmentId: editingAppointment.id }),
+      });
+
+      const emailResult = await emailResponse.json();
+
+      if (emailResult.success) {
+        // Show success message
+        setEmailStatus(prev => ({ 
+          ...prev, 
+          [editingAppointment.id]: { type: 'success', message: 'Appointment confirmed and email sent!' } 
+        }));
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+        }, 3000);
+      } else {
+        // Show warning if email failed but appointment was confirmed
+        setEmailStatus(prev => ({ 
+          ...prev, 
+          [editingAppointment.id]: { type: 'error', message: 'Appointment confirmed but email failed to send.' } 
+        }));
+        
+        // Clear error message after 5 seconds
+        setTimeout(() => {
+          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+        }, 5000);
+      }
+
       // Close the modal and reset form fields
       setEditingAppointment(null);
       setConfirmedDate("");
@@ -454,6 +511,12 @@ const AdminAppointments = () => {
       await fetchAppointments();
     } catch (error) {
       console.error("Error confirming appointment:", error);
+      setEmailStatus(prev => ({ 
+        ...prev, 
+        [editingAppointment.id]: { type: 'error', message: 'Error confirming appointment. Please try again.' } 
+      }));
+    } finally {
+      setSendingEmail(null); // Clear loading state
     }
   };
 
@@ -564,21 +627,25 @@ const AdminAppointments = () => {
       {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {/* Today's Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-500 mr-3" />
-            <div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Today's Appointments</p>
+              <p className="text-sm text-gray-600">Todays Appointments</p>
             </div>
           </div>
         </div>
 
         {/* This Week Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-500 mr-3" />
-            <div>
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.thisWeek}
               </p>
@@ -588,10 +655,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Completed Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
-            <div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.completed}
               </p>
@@ -601,10 +670,12 @@ const AdminAppointments = () => {
         </div>
 
         {/* Cancelled Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <XCircle className="w-8 h-8 text-red-500 mr-3" />
-            <div>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.cancelled}
               </p>
@@ -678,7 +749,21 @@ const AdminAppointments = () => {
               return (
                 <div
                   key={index}
-                  className={`min-h-[100px] border rounded-lg p-2 ${
+                  onClick={() => {
+                    if (dayInfo.isCurrentMonth) {
+                      const dayAppointments = getAppointmentsForDate(dayInfo.date);
+
+                      if (dayAppointments.length === 0) {
+                        alert(`No appointments scheduled for ${dayInfo.date.toLocaleDateString('en-US', { 
+                           month: 'long', 
+                           day: 'numeric', 
+                           year: 'numeric' 
+                        })}`);
+                      }                    
+                    }
+                  }}
+                  className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
+
                     // Gray background for days not in current month
                     dayInfo.isCurrentMonth ? "bg-white" : "bg-gray-50"
                   } ${
@@ -737,7 +822,7 @@ const AdminAppointments = () => {
           {/* ============================================ */}
 
           {/* Filters and Search Bar */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
@@ -776,7 +861,7 @@ const AdminAppointments = () => {
           <div className="space-y-4">
             {/* Empty State - No appointments found */}
             {filteredAppointments.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm border text-center">
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No appointments found</p>
                 <p className="text-sm text-gray-400">
@@ -789,7 +874,7 @@ const AdminAppointments = () => {
               filteredAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                     {/* Appointment Details Section */}
@@ -811,6 +896,13 @@ const AdminAppointments = () => {
                           Requested:{" "}
                           {new Date(appointment.createdAt).toLocaleDateString()}
                         </span>
+                        {/* Email sent indicator */}
+                        {appointment.confirmation_email_sent && (
+                          <span className="text-xs text-green-600 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Email Sent
+                          </span>
+                        )}
                       </div>
 
                       {/* Three-column grid for appointment information */}
@@ -834,7 +926,7 @@ const AdminAppointments = () => {
                             <div className="flex items-center gap-1">
                               <Phone className="w-3 h-3 text-gray-400" />
                               <span className="text-gray-600">
-                                {appointment.phone}
+                                {formatPhoneNumber(appointment.phone)}
                               </span>
                             </div>
                           </div>
@@ -921,6 +1013,24 @@ const AdminAppointments = () => {
                           </p>
                         </div>
                       )}
+
+                      {/* Email Status Messages */}
+                      {emailStatus[appointment.id] && (
+                        <div className={`mt-4 p-3 rounded-lg ${
+                          emailStatus[appointment.id].type === 'success' 
+                            ? 'bg-green-50 text-green-800 border border-green-200' 
+                            : 'bg-red-50 text-red-800 border border-red-200'
+                        }`}>
+                          <p className="text-sm flex items-center gap-2">
+                            {emailStatus[appointment.id].type === 'success' ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                            {emailStatus[appointment.id].message}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* ============================================ */}
@@ -930,13 +1040,13 @@ const AdminAppointments = () => {
                       {/* Buttons for PENDING appointments */}
                       {appointment.status === "pending" && (
                         <>
-                          {/* Confirm button - opens modal to set date/time */}
+                          {/* Confirm button - opens modal to set date/time and send email */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center justify-center"
                           >
                             <Calendar className="w-4 h-4 mr-1" />
-                            Set Date & Confirm
+                            Confirm & Send Email
                           </button>
 
                           {/* Decline button - changes status to cancelled */}
@@ -1042,7 +1152,7 @@ const AdminAppointments = () => {
                 <div>
                   <p className="text-sm text-gray-600">Phone</p>
                   <p className="font-medium text-gray-900">
-                    {selectedAppointment.phone}
+                    {formatPhoneNumber(selectedAppointment.phone)}
                   </p>
                 </div>
               </div>
@@ -1096,15 +1206,24 @@ const AdminAppointments = () => {
               {/* Status Badge */}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Status</p>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                    selectedAppointment.status
-                  )}`}
-                >
-                  {/* Capitalize first letter of status */}
-                  {selectedAppointment.status.charAt(0).toUpperCase() +
-                    selectedAppointment.status.slice(1)}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                      selectedAppointment.status
+                    )}`}
+                  >
+                    {/* Capitalize first letter of status */}
+                    {selectedAppointment.status.charAt(0).toUpperCase() +
+                      selectedAppointment.status.slice(1)}
+                  </span>
+                  {/* Email sent indicator */}
+                  {selectedAppointment.confirmation_email_sent && (
+                    <span className="text-xs text-green-600 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Email Sent
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Project Details - Only show if exists */}
@@ -1113,6 +1232,25 @@ const AdminAppointments = () => {
                   <p className="text-sm text-gray-600 mb-1">Project Details</p>
                   <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
                     {selectedAppointment.projectDetails}
+                  </p>
+                </div>
+              )}
+
+              {/* Email Status Messages in Modal */}
+              {emailStatus[selectedAppointment.id] && (
+                <div className={`p-3 rounded-lg ${
+                  emailStatus[selectedAppointment.id].type === 'success' 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  {/* Sets the icon and message based on success or error */}
+                  <p className="text-sm flex items-center gap-2">
+                    {emailStatus[selectedAppointment.id].type === 'success' ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    {emailStatus[selectedAppointment.id].message}
                   </p>
                 </div>
               )}
@@ -1135,7 +1273,7 @@ const AdminAppointments = () => {
                 </button>
               )}
 
-              {/* Show Mark Complete button only for confirmed appointments */}
+              {/* Show Mark Complete button for confirmed appointments */}
               {selectedAppointment.status === "confirmed" && (
                 <button
                   onClick={() => {
@@ -1171,7 +1309,7 @@ const AdminAppointments = () => {
           {/* Modal content container */}
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Confirm Appointment
+              Confirm Appointment & Send Email
             </h2>
 
             {/* Customer Info Display */}
@@ -1183,7 +1321,7 @@ const AdminAppointments = () => {
                 {editingAppointment.email}
               </p>
               <p className="text-sm text-gray-600">
-                {editingAppointment.phone}
+                {formatPhoneNumber(editingAppointment.phone)}
               </p>
             </div>
 
@@ -1202,7 +1340,7 @@ const AdminAppointments = () => {
             </div>
 
             {/* Date/Time Input Fields */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-4 mb-4">
               {/* Confirmed Date Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1233,6 +1371,14 @@ const AdminAppointments = () => {
               </div>
             </div>
 
+            {/* Info note about email */}
+            <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                A confirmation email will be automatically sent to the customer when you confirm this appointment.
+              </p>
+            </div>
+
             {/* Modal Action Buttons */}
             <div className="flex gap-3">
               {/* Cancel button - closes modal without saving */}
@@ -1247,13 +1393,20 @@ const AdminAppointments = () => {
                 Cancel
               </button>
 
-              {/* Confirm button - saves date/time and updates status */}
+              {/* Confirm button - saves date/time, updates status, and sends email */}
               <button
                 onClick={confirmAppointment}
-                disabled={!confirmedDate || !confirmedTime} // Disabled if date or time is empty
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!confirmedDate || !confirmedTime || sendingEmail === editingAppointment.id} // Disabled if date/time is empty or sending
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Confirm Appointment
+                {sendingEmail === editingAppointment.id ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Confirming & Sending...
+                  </>
+                ) : (
+                  'Confirm & Send Email'
+                )}
               </button>
             </div>
           </div>

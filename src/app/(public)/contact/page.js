@@ -1,8 +1,81 @@
-import { MapPin, Phone, Mail, Facebook, Instagram } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { MapPin, Phone, Mail, Facebook, Instagram, CheckCircle, XCircle } from "lucide-react";
 import Header from "@/src/components/layout/Header";
 import Footer from "@/src/components/layout/Footer";
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' or 'error'
+  const [statusMessage, setStatusMessage] = useState("");
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch('/api/send-contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setStatusMessage('Thank you for your message! We\'ll get back to you soon.');
+        
+        // this clears the form
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: ""
+        });
+
+        // this clears success message after 5 seconds
+        setTimeout(() => {
+          setSubmitStatus(null);
+          setStatusMessage("");
+        }, 5000);
+      } else {
+        throw new Error(result.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus('error');
+      setStatusMessage(error.message || 'Failed to send message. Please try again.');
+      
+      // this clears error message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+        setStatusMessage("");
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-white">
       <Header currentPage="contact" />
@@ -50,6 +123,7 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
+
 
               {/* Follow Us */}
               <div className="bg-background rounded-lg shadow-lg p-8">
@@ -104,17 +178,35 @@ export default function ContactPage() {
                 Send us a message
               </h2>
 
-              <form className="space-y-6">
+              {/* Status Messages */}
+              {submitStatus && (
+                <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+                  submitStatus === 'success' 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  {submitStatus === 'success' ? (
+                    <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  )}
+                  <p className="text-sm">{statusMessage}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
                     htmlFor="name"
                     className="block text-sm font-medium text-text mb-2"
                   >
-                    Name
+                    Name *
                   </label>
                   <input
                     type="text"
                     id="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     placeholder="Your name"
                     required
                     className="w-full bg-background-light px-4 py-3 border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -126,11 +218,13 @@ export default function ContactPage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-text mb-2"
                   >
-                    Email
+                    Email *
                   </label>
                   <input
                     type="email"
                     id="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="your@email.com"
                     required
                     className="w-full bg-background-light px-4 py-3 border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -142,11 +236,13 @@ export default function ContactPage() {
                     htmlFor="subject"
                     className="block text-sm font-medium text-text mb-2"
                   >
-                    Subject
+                    Subject *
                   </label>
                   <input
                     type="text"
                     id="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
                     placeholder="Message subject"
                     required
                     className="w-full bg-background-light px-4 py-3 border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -158,10 +254,12 @@ export default function ContactPage() {
                     htmlFor="message"
                     className="block text-sm font-medium text-text mb-2"
                   >
-                    Message
+                    Message *
                   </label>
                   <textarea
                     id="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     placeholder="Your message..."
                     required
                     rows={6}
@@ -173,7 +271,14 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-secondary transition-colors"
                 >
-                  Send Message
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
                 </button>
               </form>
             </div>

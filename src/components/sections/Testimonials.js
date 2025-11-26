@@ -26,14 +26,7 @@ export default function Testimonials() {
       service_type: "Exterior Painting",
       rating: 5,
     },
-    {
-      id: "default-3",
-      quote:
-        "Exceptional attention to detail and very reasonable pricing. The team was punctual and cleaned up thoroughly after completing the job.",
-      author_name: "John D.",
-      service_type: "Interior Painting",
-      rating: 5,
-    },
+   
   ];
 
   // Load approved testimonials from database
