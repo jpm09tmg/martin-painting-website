@@ -22,7 +22,6 @@ import {
   ChevronRight, // Right arrow for next month
   List, // Icon for list view
   X, // Close/exit icon
-  Send, // Icon for send email button
 } from "lucide-react";
 import { supabase } from "../../../lib/db/supabase-client";
 
@@ -168,58 +167,6 @@ const AdminAppointments = () => {
     } finally {
       // Always set loading to false, whether successful or not
       setLoading(false);
-    }
-  };
-
-  // ============================================
-  // SEND CONFIRMATION EMAIL
-  // ============================================
-
-  const sendConfirmationEmail = async (appointmentId) => {
-    setSendingEmail(appointmentId); // Set loading state
-    setEmailStatus(prev => ({ ...prev, [appointmentId]: null })); // Clear previous status
-
-    try {
-      const response = await fetch('/api/send-appointment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ appointmentId }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Show success message
-        setEmailStatus(prev => ({ 
-          ...prev, 
-          [appointmentId]: { type: 'success', message: 'Email sent successfully!' } 
-        }));
-        
-        // Refresh appointments to update confirmation_email_sent flag
-        await fetchAppointments();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setEmailStatus(prev => ({ ...prev, [appointmentId]: null }));
-        }, 3000);
-      } else {
-        throw new Error(result.error || 'Failed to send email');
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      setEmailStatus(prev => ({ 
-        ...prev, 
-        [appointmentId]: { type: 'error', message: error.message || 'Failed to send email' } 
-      }));
-      
-      // Clear error message after 5 seconds
-      setTimeout(() => {
-        setEmailStatus(prev => ({ ...prev, [appointmentId]: null }));
-      }, 5000);
-    } finally {
-      setSendingEmail(null); // Clear loading state
     }
   };
 
@@ -501,9 +448,11 @@ const AdminAppointments = () => {
   // CONFIRM APPOINTMENT WITH DATE/TIME
   // ============================================
 
-  // Saves the confirmed date/time and updates status to 'confirmed'
+  // Saves the confirmed date/time, updates status to 'confirmed', and sends confirmation email
   const confirmAppointment = async () => {
     if (!editingAppointment) return; // Safety check - exit if no appointment selected
+
+    setSendingEmail(editingAppointment.id); // Show loading state
 
     try {
       // Update database with confirmed date, time, and status
@@ -518,6 +467,41 @@ const AdminAppointments = () => {
 
       if (error) throw error;
 
+      // Send confirmation email automatically
+      const emailResponse = await fetch('/api/send-appointment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ appointmentId: editingAppointment.id }),
+      });
+
+      const emailResult = await emailResponse.json();
+
+      if (emailResult.success) {
+        // Show success message
+        setEmailStatus(prev => ({ 
+          ...prev, 
+          [editingAppointment.id]: { type: 'success', message: 'Appointment confirmed and email sent!' } 
+        }));
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+        }, 3000);
+      } else {
+        // Show warning if email failed but appointment was confirmed
+        setEmailStatus(prev => ({ 
+          ...prev, 
+          [editingAppointment.id]: { type: 'error', message: 'Appointment confirmed but email failed to send.' } 
+        }));
+        
+        // Clear error message after 5 seconds
+        setTimeout(() => {
+          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+        }, 5000);
+      }
+
       // Close the modal and reset form fields
       setEditingAppointment(null);
       setConfirmedDate("");
@@ -527,6 +511,12 @@ const AdminAppointments = () => {
       await fetchAppointments();
     } catch (error) {
       console.error("Error confirming appointment:", error);
+      setEmailStatus(prev => ({ 
+        ...prev, 
+        [editingAppointment.id]: { type: 'error', message: 'Error confirming appointment. Please try again.' } 
+      }));
+    } finally {
+      setSendingEmail(null); // Clear loading state
     }
   };
 
@@ -1050,13 +1040,13 @@ const AdminAppointments = () => {
                       {/* Buttons for PENDING appointments */}
                       {appointment.status === "pending" && (
                         <>
-                          {/* Confirm button - opens modal to set date/time */}
+                          {/* Confirm button - opens modal to set date/time and send email */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center justify-center"
                           >
                             <Calendar className="w-4 h-4 mr-1" />
-                            Set Date & Confirm
+                            Confirm & Send Email
                           </button>
 
                           {/* Decline button - changes status to cancelled */}
@@ -1076,25 +1066,6 @@ const AdminAppointments = () => {
                       {/* Buttons for CONFIRMED appointments */}
                       {appointment.status === "confirmed" && (
                         <>
-                          {/* Send Email button */}
-                          <button
-                            onClick={() => sendConfirmationEmail(appointment.id)}
-                            disabled={sendingEmail === appointment.id}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {sendingEmail === appointment.id ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Sending...
-                              </>
-                            ) : (
-                              <>
-                                <Send className="w-4 h-4 mr-1" />
-                                Send Email
-                              </>
-                            )}
-                          </button>
-
                           {/* Edit date/time button - reopens confirmation modal */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
@@ -1301,39 +1272,19 @@ const AdminAppointments = () => {
                 </button>
               )}
 
-              {/* Show Send Email and Mark Complete buttons for confirmed appointments */}
+              {/* Show Mark Complete button for confirmed appointments */}
               {selectedAppointment.status === "confirmed" && (
-                <>
-                  <button
-                    onClick={() => sendConfirmationEmail(selectedAppointment.id)}
-                    disabled={sendingEmail === selectedAppointment.id}
-                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {sendingEmail === selectedAppointment.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Send Email
-                      </>
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      openConfirmDialog(() => {
-                        updateStatus(selectedAppointment.id, "completed"); // Update status
-                        setSelectedAppointment(null); // Close modal
-                      });
-                    }}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Mark Complete
-                  </button>
-                </>
+                <button
+                  onClick={() => {
+                    openConfirmDialog(() => {
+                      updateStatus(selectedAppointment.id, "completed"); // Update status
+                      setSelectedAppointment(null); // Close modal
+                    });
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Mark Complete
+                </button>
               )}
 
               {/* Close button - always visible */}
@@ -1357,7 +1308,7 @@ const AdminAppointments = () => {
           {/* Modal content container */}
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Confirm Appointment
+              Confirm Appointment & Send Email
             </h2>
 
             {/* Customer Info Display */}
@@ -1388,7 +1339,7 @@ const AdminAppointments = () => {
             </div>
 
             {/* Date/Time Input Fields */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-4 mb-4">
               {/* Confirmed Date Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1419,6 +1370,14 @@ const AdminAppointments = () => {
               </div>
             </div>
 
+            {/* Info note about email */}
+            <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                A confirmation email will be automatically sent to the customer when you confirm this appointment.
+              </p>
+            </div>
+
             {/* Modal Action Buttons */}
             <div className="flex gap-3">
               {/* Cancel button - closes modal without saving */}
@@ -1433,13 +1392,20 @@ const AdminAppointments = () => {
                 Cancel
               </button>
 
-              {/* Confirm button - saves date/time and updates status */}
+              {/* Confirm button - saves date/time, updates status, and sends email */}
               <button
                 onClick={confirmAppointment}
-                disabled={!confirmedDate || !confirmedTime} // Disabled if date or time is empty
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!confirmedDate || !confirmedTime || sendingEmail === editingAppointment.id} // Disabled if date/time is empty or sending
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Confirm Appointment
+                {sendingEmail === editingAppointment.id ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Confirming & Sending...
+                  </>
+                ) : (
+                  'Confirm & Send Email'
+                )}
               </button>
             </div>
           </div>
