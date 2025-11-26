@@ -82,13 +82,11 @@ export default async function ServicesGrid() {
   ];
 
   return (
-    <section className="w-full bg-white py-20">
+    <section className="w-full bg-background-dark py-24">
       <div className="max-w-7xl mx-auto px-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-normal text-[#171717] mb-4">
-            Our Services
-          </h2>
-          <p className="text-xl text-[#525252]">
+          <h2 className="text-3xl font-normal text-text mb-4">Our Services</h2>
+          <p className="text-xl text-text-muted">
             Professional painting solutions for every need
           </p>
         </div>
@@ -97,7 +95,7 @@ export default async function ServicesGrid() {
           {items.map((s) => (
             <div
               key={s.key}
-              className="group bg-[#EAF3E0] rounded-lg p-8 transition-all duration-200 motion-reduce:transition-none hover:shadow-lg hover:-translate-y-1"
+              className="group bg-background-light rounded-lg p-8 transition-all duration-200 motion-reduce:transition-none hover:shadow-lg hover:-translate-y-1"
             >
               <div className="overflow-hidden rounded-lg mb-6">
                 <Image
@@ -109,10 +107,8 @@ export default async function ServicesGrid() {
                   className="w-full h-48 object-cover transition-transform duration-300 motion-reduce:transition-none group-hover:scale-[1.04]"
                 />
               </div>
-              <h3 className="text-xl text-[#171717] text-center mb-4">
-                {s.title}
-              </h3>
-              <p className="text-[#525252] text-center mb-6">{s.desc}</p>
+              <h3 className="text-xl text-text text-center mb-4">{s.title}</h3>
+              <p className="text-text-muted text-center mb-6">{s.desc}</p>
               <div className="text-center">
                 <Link
                   href={s.href}

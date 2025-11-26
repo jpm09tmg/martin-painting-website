@@ -221,11 +221,11 @@ export default function AdminDashboard() {
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-background-light">
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}
-      <div className="flex-1 p-8 bg-gray-50">
+      <div className="flex-1 p-8 bg-background-light">
         {/* ============================================ */}
         {/* PAGE HEADER - Title and welcome message */}
         {/* ============================================ */}

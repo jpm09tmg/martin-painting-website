@@ -11,7 +11,7 @@ import ReviewForm from "@/src/components/sections/ReviewForm";
 
 export default function Home() {
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen bg-background">
       <Header currentPage="home" />
       <Hero />
       <ValueProp />
