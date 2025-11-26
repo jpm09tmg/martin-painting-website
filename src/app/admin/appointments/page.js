@@ -22,6 +22,7 @@ import {
   ChevronRight, // Right arrow for next month
   List, // Icon for list view
   X, // Close/exit icon
+  Send, // Icon for send email button
 } from "lucide-react";
 import { supabase } from "../../../lib/db/supabase-client";
 
@@ -66,6 +67,10 @@ const AdminAppointments = () => {
   // Confirmation dialog state
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(() => null);
+
+  // Email sending state
+  const [sendingEmail, setSendingEmail] = useState(null); // Stores appointment ID being processed
+  const [emailStatus, setEmailStatus] = useState({}); // Tracks success/error messages per appointment
 
   // Format phone number for display
   const formatPhoneNumber = (value) => {
@@ -163,6 +168,58 @@ const AdminAppointments = () => {
     } finally {
       // Always set loading to false, whether successful or not
       setLoading(false);
+    }
+  };
+
+  // ============================================
+  // SEND CONFIRMATION EMAIL
+  // ============================================
+
+  const sendConfirmationEmail = async (appointmentId) => {
+    setSendingEmail(appointmentId); // Set loading state
+    setEmailStatus(prev => ({ ...prev, [appointmentId]: null })); // Clear previous status
+
+    try {
+      const response = await fetch('/api/send-appointment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ appointmentId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Show success message
+        setEmailStatus(prev => ({ 
+          ...prev, 
+          [appointmentId]: { type: 'success', message: 'Email sent successfully!' } 
+        }));
+        
+        // Refresh appointments to update confirmation_email_sent flag
+        await fetchAppointments();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setEmailStatus(prev => ({ ...prev, [appointmentId]: null }));
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to send email');
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setEmailStatus(prev => ({ 
+        ...prev, 
+        [appointmentId]: { type: 'error', message: error.message || 'Failed to send email' } 
+      }));
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setEmailStatus(prev => ({ ...prev, [appointmentId]: null }));
+      }, 5000);
+    } finally {
+      setSendingEmail(null); // Clear loading state
     }
   };
 
@@ -587,7 +644,7 @@ const AdminAppointments = () => {
             </div>
             <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Today's Appointments</p>
+              <p className="text-sm text-gray-600">Todays Appointments</p>
             </div>
           </div>
         </div>
@@ -849,6 +906,13 @@ const AdminAppointments = () => {
                           Requested:{" "}
                           {new Date(appointment.createdAt).toLocaleDateString()}
                         </span>
+                        {/* Email sent indicator */}
+                        {appointment.confirmation_email_sent && (
+                          <span className="text-xs text-green-600 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Email Sent
+                          </span>
+                        )}
                       </div>
 
                       {/* Three-column grid for appointment information */}
@@ -959,6 +1023,24 @@ const AdminAppointments = () => {
                           </p>
                         </div>
                       )}
+
+                      {/* Email Status Messages */}
+                      {emailStatus[appointment.id] && (
+                        <div className={`mt-4 p-3 rounded-lg ${
+                          emailStatus[appointment.id].type === 'success' 
+                            ? 'bg-green-50 text-green-800 border border-green-200' 
+                            : 'bg-red-50 text-red-800 border border-red-200'
+                        }`}>
+                          <p className="text-sm flex items-center gap-2">
+                            {emailStatus[appointment.id].type === 'success' ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                            {emailStatus[appointment.id].message}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* ============================================ */}
@@ -994,6 +1076,25 @@ const AdminAppointments = () => {
                       {/* Buttons for CONFIRMED appointments */}
                       {appointment.status === "confirmed" && (
                         <>
+                          {/* Send Email button */}
+                          <button
+                            onClick={() => sendConfirmationEmail(appointment.id)}
+                            disabled={sendingEmail === appointment.id}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {sendingEmail === appointment.id ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-4 h-4 mr-1" />
+                                Send Email
+                              </>
+                            )}
+                          </button>
+
                           {/* Edit date/time button - reopens confirmation modal */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
@@ -1134,15 +1235,24 @@ const AdminAppointments = () => {
               {/* Status Badge */}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Status</p>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                    selectedAppointment.status
-                  )}`}
-                >
-                  {/* Capitalize first letter of status */}
-                  {selectedAppointment.status.charAt(0).toUpperCase() +
-                    selectedAppointment.status.slice(1)}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                      selectedAppointment.status
+                    )}`}
+                  >
+                    {/* Capitalize first letter of status */}
+                    {selectedAppointment.status.charAt(0).toUpperCase() +
+                      selectedAppointment.status.slice(1)}
+                  </span>
+                  {/* Email sent indicator */}
+                  {selectedAppointment.confirmation_email_sent && (
+                    <span className="text-xs text-green-600 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Email Sent
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Project Details - Only show if exists */}
@@ -1151,6 +1261,24 @@ const AdminAppointments = () => {
                   <p className="text-sm text-gray-600 mb-1">Project Details</p>
                   <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
                     {selectedAppointment.projectDetails}
+                  </p>
+                </div>
+              )}
+
+              {/* Email Status Messages in Modal */}
+              {emailStatus[selectedAppointment.id] && (
+                <div className={`p-3 rounded-lg ${
+                  emailStatus[selectedAppointment.id].type === 'success' 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  <p className="text-sm flex items-center gap-2">
+                    {emailStatus[selectedAppointment.id].type === 'success' ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    {emailStatus[selectedAppointment.id].message}
                   </p>
                 </div>
               )}
@@ -1173,19 +1301,39 @@ const AdminAppointments = () => {
                 </button>
               )}
 
-              {/* Show Mark Complete button only for confirmed appointments */}
+              {/* Show Send Email and Mark Complete buttons for confirmed appointments */}
               {selectedAppointment.status === "confirmed" && (
-                <button
-                  onClick={() => {
-                    openConfirmDialog(() => {
-                      updateStatus(selectedAppointment.id, "completed"); // Update status
-                      setSelectedAppointment(null); // Close modal
-                    });
-                  }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Mark Complete
-                </button>
+                <>
+                  <button
+                    onClick={() => sendConfirmationEmail(selectedAppointment.id)}
+                    disabled={sendingEmail === selectedAppointment.id}
+                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {sendingEmail === selectedAppointment.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Send Email
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      openConfirmDialog(() => {
+                        updateStatus(selectedAppointment.id, "completed"); // Update status
+                        setSelectedAppointment(null); // Close modal
+                      });
+                    }}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Mark Complete
+                  </button>
+                </>
               )}
 
               {/* Close button - always visible */}

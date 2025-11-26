@@ -53,7 +53,7 @@ export async function POST(request) {
     // Send email
     const { data, error: emailError } = await resend.emails.send({
       from: 'Martin Painting <onboarding@resend.dev>',
-      to: appointment.clients.email,
+      to: 'joshua.martin1@edu.sait.ca',
       subject: `Appointment Confirmation – ${formattedDate}`,
       html: `
         <!DOCTYPE html>
