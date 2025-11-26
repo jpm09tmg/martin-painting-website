@@ -1243,6 +1243,7 @@ const AdminAppointments = () => {
                     ? 'bg-green-50 text-green-800 border border-green-200' 
                     : 'bg-red-50 text-red-800 border border-red-200'
                 }`}>
+                  {/* Sets the icon and message based on success or error */}
                   <p className="text-sm flex items-center gap-2">
                     {emailStatus[selectedAppointment.id].type === 'success' ? (
                       <CheckCircle className="w-4 h-4" />
