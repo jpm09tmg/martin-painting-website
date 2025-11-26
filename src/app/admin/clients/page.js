@@ -30,6 +30,8 @@ export default function ClientsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteType, setDeleteType] = useState(null); // 'client-only' or 'all-related'
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -239,6 +241,23 @@ export default function ClientsPage() {
     setShowDeleteModal(true);
   };
 
+  // Open final confirmation modal
+  const confirmDeleteType = (type) => {
+    setDeleteType(type);
+    setShowDeleteModal(false);
+    setShowConfirmModal(true);
+  };
+
+  // Execute the delete based on type
+  const executeDelete = () => {
+    if (deleteType === 'client-only') {
+      deleteClientOnly();
+    } else if (deleteType === 'all-related') {
+      deleteAllRelated();
+    }
+    setShowConfirmModal(false);
+  };
+
   // Delete client info only (keep related data but remove client reference)
   const deleteClientOnly = async () => {
     if (!clientToDelete) return;
@@ -291,8 +310,8 @@ export default function ClientsPage() {
       }
 
       setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" deleted successfully. Related data preserved.`);
-      setShowDeleteModal(false);
       setClientToDelete(null);
+      setDeleteType(null);
       loadClients();
     } catch (err) {
       console.error("Error deleting client:", err);
@@ -362,8 +381,8 @@ export default function ClientsPage() {
       if (deleteError) throw deleteError;
 
       setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" and all related data deleted successfully.`);
-      setShowDeleteModal(false);
       setClientToDelete(null);
+      setDeleteType(null);
       loadClients();
     } catch (err) {
       console.error("Error deleting client and related data:", err);
@@ -780,7 +799,7 @@ export default function ClientsPage() {
               <div className="space-y-3">
                 {/* Option 1: Delete Client Only */}
                 <button
-                  onClick={deleteClientOnly}
+                  onClick={() => confirmDeleteType('client-only')}
                   disabled={deleteLoading}
                   className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
@@ -802,7 +821,7 @@ export default function ClientsPage() {
 
                 {/* Option 2: Delete Everything */}
                 <button
-                  onClick={deleteAllRelated}
+                  onClick={() => confirmDeleteType('all-related')}
                   disabled={deleteLoading}
                   className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
@@ -823,13 +842,6 @@ export default function ClientsPage() {
                 </button>
               </div>
 
-              {deleteLoading && (
-                <div className="flex items-center justify-center gap-2 text-gray-600 py-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                  <span>Deleting...</span>
-                </div>
-              )}
-
               <div className="pt-2">
                 <button
                   onClick={() => {
@@ -840,6 +852,93 @@ export default function ClientsPage() {
                   className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Final Confirmation Modal */}
+      {showConfirmModal && clientToDelete && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-2xl border border-gray-200">
+            <div className="p-6 border-b flex items-start gap-4">
+              <div className="p-3 bg-red-100 rounded-full flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Confirm Deletion
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  This action cannot be undone
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {deleteType === 'client-only' ? (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <User className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-900">
+                      <p className="font-semibold mb-2">You are about to delete:</p>
+                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      <p className="text-orange-700 mt-3">
+                        Related appointments, quotes, and projects will be preserved but will no longer show client details.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Trash2 className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-red-900">
+                      <p className="font-semibold mb-2">You are about to permanently delete:</p>
+                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      {appointmentCounts[clientToDelete.id] > 0 && (
+                        <p className="mb-1">• {appointmentCounts[clientToDelete.id]} appointment(s)</p>
+                      )}
+                      <p className="mb-1">• All related quotes and projects</p>
+                      <p className="text-red-700 font-semibold mt-3">
+                        ⚠️ All data will be permanently removed and cannot be recovered.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {deleteLoading && (
+                <div className="flex items-center justify-center gap-2 text-gray-600 py-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                  <span>Deleting...</span>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setDeleteType(null);
+                    setShowDeleteModal(true);
+                  }}
+                  disabled={deleteLoading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={executeDelete}
+                  disabled={deleteLoading}
+                  className={`flex-1 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-white ${
+                    deleteType === 'client-only'
+                      ? 'bg-orange-600 hover:bg-orange-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
                 </button>
               </div>
             </div>
