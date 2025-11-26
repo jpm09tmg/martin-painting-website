@@ -77,6 +77,8 @@ export default function GalleryManagementPage() {
   const [uploadFiles, setUploadFiles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState(null);
 
   // Load images on component mount
   useEffect(() => {
@@ -236,6 +238,35 @@ export default function GalleryManagementPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  // Handle image deletion
+  const handleDelete = async () => {
+    if (!imageToDelete) return;
+
+    try {
+      const { error } = await supabase.storage
+        .from("gallery")
+        .remove([imageToDelete.path]);
+
+      if (error) throw error;
+
+      setMessage("Image deleted successfully!");
+      setImages(images.filter((img) => img.path !== imageToDelete.path));
+      setShowDeleteConfirm(false);
+      setImageToDelete(null);
+
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error("Error deleting image:", err);
+      setMessage(`Error deleting image: ${err.message}`);
+    }
+  };
+
+  // Confirm delete
+  const confirmDelete = (image) => {
+    setImageToDelete(image);
+    setShowDeleteConfirm(true);
   };
 
   // Get category badge colors
@@ -449,10 +480,10 @@ export default function GalleryManagementPage() {
                       {new Date(image.created_at).toLocaleDateString()}
                     </p>
 
-                    {/* Delete Button - will be functional in next commit */}
+                    {/* Delete Button */}
                     <button
-                      disabled
-                      className="w-full px-3 py-2 bg-gray-200 text-gray-400 text-sm rounded-lg cursor-not-allowed inline-flex items-center justify-center"
+                      onClick={() => confirmDelete(image)}
+                      className="w-full px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors inline-flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
@@ -591,6 +622,46 @@ export default function GalleryManagementPage() {
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploading ? "Uploading..." : "Upload"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && imageToDelete && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-2xl border border-gray-200">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Delete Image
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Are you sure you want to delete{" "}
+                <strong>{imageToDelete.name}</strong>? This action cannot be
+                undone.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setImageToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete
                 </button>
               </div>
             </div>
