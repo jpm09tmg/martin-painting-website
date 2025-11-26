@@ -8,7 +8,7 @@ export default function Header({ currentPage = "home" }) {
     <div className="w-full h-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center">
-          <div className="w-24 h-12rounded-lg overflow-hidden shadow-md">
+          <div className="w-24  rounded-lg overflow-hidden shadow-md">
             <Image
               src="/martinPainting_v2.png"
               alt="Martin Painting Logo"
