@@ -73,6 +73,10 @@ export default function GalleryManagementPage() {
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   // Load images on component mount
   useEffect(() => {
@@ -134,6 +138,106 @@ export default function GalleryManagementPage() {
     return diffDays <= 7;
   }).length;
 
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    setUploadFiles(files);
+  };
+
+  // Handle image upload
+  const handleUpload = async () => {
+    if (!selectedCategory) {
+      setMessage("Error: Please select a category");
+      return;
+    }
+
+    if (uploadFiles.length === 0) {
+      setMessage("Error: Please select at least one image");
+      return;
+    }
+
+    setUploading(true);
+    setMessage("");
+
+    try {
+      const folder = CATEGORY_FOLDERS[selectedCategory];
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const file of uploadFiles) {
+        if (!file.type.startsWith("image/")) {
+          errorCount++;
+          continue;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          errorCount++;
+          continue;
+        }
+
+        const sanitizedName = file.name
+          .replace(/[^a-zA-Z0-9.-]/g, "_")
+          .toLowerCase();
+
+        try {
+          const { error } = await supabase.storage
+            .from("gallery")
+            .upload(`${folder}/${sanitizedName}`, file, {
+              cacheControl: "3600",
+              upsert: false,
+            });
+
+          if (error) {
+            if (error.message.includes("already exists")) {
+              const timestamp = Date.now();
+              const nameParts = sanitizedName.split(".");
+              const ext = nameParts.pop();
+              const baseName = nameParts.join(".");
+              const newName = `${baseName}_${timestamp}.${ext}`;
+
+              const { error: retryError } = await supabase.storage
+                .from("gallery")
+                .upload(`${folder}/${newName}`, file, {
+                  cacheControl: "3600",
+                  upsert: false,
+                });
+
+              if (retryError) throw retryError;
+            } else {
+              throw error;
+            }
+          }
+
+          successCount++;
+        } catch (uploadError) {
+          console.error(`Error uploading ${file.name}:`, uploadError);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        setMessage(
+          `Successfully uploaded ${successCount} image${
+            successCount > 1 ? "s" : ""
+          }${errorCount > 0 ? `. ${errorCount} failed.` : ""}`
+        );
+        await loadImages();
+        setShowUploadModal(false);
+        setUploadFiles([]);
+        setSelectedCategory("");
+      } else {
+        setMessage(`Error: All ${errorCount} uploads failed`);
+      }
+
+      setTimeout(() => setMessage(""), 5000);
+    } catch (err) {
+      console.error("Upload error:", err);
+      setMessage(`Error uploading images: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Get category badge colors
   const getCategoryColor = (folder) => {
     if (folder.includes("residential")) {
@@ -181,10 +285,10 @@ export default function GalleryManagementPage() {
               </p>
             </div>
 
-            {/* Upload Button - will be functional in next commit */}
+            {/* Upload Button */}
             <button
-              disabled
-              className="bg-gray-400 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center shadow-lg cursor-not-allowed"
+              onClick={() => setShowUploadModal(true)}
+              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center shadow-lg transition-colors"
             >
               <Upload className="w-5 h-5 mr-2" />
               Upload Images
@@ -390,6 +494,109 @@ export default function GalleryManagementPage() {
           </>
         )}
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            <div className="p-6 border-b flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Upload Images
+              </h2>
+              <button
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadFiles([]);
+                  setSelectedCategory("");
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category *
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                >
+                  <option value="">Select a category...</option>
+                  {Object.keys(CATEGORY_FOLDERS).map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Images *
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Max 5MB per file. Supported formats: JPG, PNG, WebP, GIF
+                </p>
+              </div>
+
+              {uploadFiles.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Selected Files ({uploadFiles.length})
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-1">
+                    {uploadFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="text-sm text-gray-600 flex justify-between"
+                      >
+                        <span className="truncate">{file.name}</span>
+                        <span className="text-gray-400 ml-2">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setUploadFiles([]);
+                    setSelectedCategory("");
+                  }}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={uploading || !selectedCategory || uploadFiles.length === 0}
+                  className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? "Uploading..." : "Upload"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
