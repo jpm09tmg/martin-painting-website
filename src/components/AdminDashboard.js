@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/db/supabase-client";
+import { supabase } from "../lib/supabase-client";
 import { Star, CheckCircle, Trash2, Clock, Eye, EyeOff } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -82,10 +82,7 @@ export default function AdminDashboard() {
   const deleteReview = async (id) => {
     if (!confirm("Permanently delete? Cannot be undone!")) return;
     try {
-      const { error } = await supabase
-        .from("testimonials")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("testimonials").delete().eq("id", id);
       if (error) throw error;
       
       setMessage("Review deleted permanently.");
@@ -144,7 +141,7 @@ export default function AdminDashboard() {
       {/* Statistics cards: shows counts for pending, approved, and removed reviews */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Pending reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
@@ -159,7 +156,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Approved reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -174,7 +171,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Removed reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="p-2 bg-gray-100 rounded-lg">
               <EyeOff className="w-6 h-6 text-gray-600" />
@@ -190,7 +187,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Filter buttons: allows switching between pending, approved, removed, and all reviews */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("pending")}
@@ -249,7 +246,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Reviews list: displays all reviews or "no reviews found" message */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border">
         {reviews.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No reviews found</p>
@@ -291,8 +288,7 @@ export default function AdminDashboard() {
 
                     <p className="text-gray-700 mb-3">"{review.quote}"</p>
                     <div className="text-xs text-gray-500">
-                      Submitted:{" "}
-                      {new Date(review.submitted_at).toLocaleString()}
+                      Submitted: {new Date(review.submitted_at).toLocaleString()}
                     </div>
                   </div>
 
