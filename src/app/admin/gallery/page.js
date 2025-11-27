@@ -481,32 +481,33 @@ export default function GalleryManagementPage() {
                   {/* Image Details */}
                   <div className="p-4">
                     {/* Category Badges */}
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex gap-2 mb-3 flex-wrap">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(
                           image.folder
                         )}`}
                       >
-                        {image.folder.split("/")[0]}
+                        {image.folder.split("/")[0].charAt(0).toUpperCase() + image.folder.split("/")[0].slice(1)}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getLocationColor(
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getLocationColor(
                           image.folder
                         )}`}
                       >
-                        {image.folder.split("/")[1]}
+                        {image.folder.split("/")[1].charAt(0).toUpperCase() + image.folder.split("/")[1].slice(1)}
                       </span>
                     </div>
 
                     {/* File Name */}
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2 truncate">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2 truncate" title={image.name}>
                       {image.name}
                     </h3>
 
                     {/* Upload Date */}
-                    <p className="text-xs text-gray-500 mb-3">
-                      {new Date(image.created_at).toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                      <ImageIcon className="w-3 h-3" />
+                      <span>{new Date(image.created_at).toLocaleDateString()}</span>
+                    </div>
 
                     {/* Delete Button */}
                     <button
