@@ -37,6 +37,7 @@ export async function POST(request) {
       throw new Error('Client email not found');
     }
 
+    // Prepare email content
     const clientName = `${appointment.clients.first_name} ${appointment.clients.last_name}` || 'Valued Customer';
 
     // Format date
@@ -53,7 +54,7 @@ export async function POST(request) {
     // Send email
     const { data, error: emailError } = await resend.emails.send({
       from: 'Martin Painting <onboarding@resend.dev>',
-      to: appointment.clients.email,
+      to: 'joshua.martin1@edu.sait.ca',
       subject: `Appointment Confirmation – ${formattedDate}`,
       html: `
         <!DOCTYPE html>
@@ -219,12 +220,14 @@ export async function POST(request) {
       })
       .eq('id', appointmentId);
 
+    // Return success response  
     return Response.json({
       success: true,
       message: 'Appointment confirmation sent successfully',
       data
     });
 
+    // End of try block
   } catch (error) {
     console.error('Error sending appointment confirmation:', error);
     return Response.json(

@@ -21,7 +21,7 @@ export default function Hero() {
           style={{ marginTop: "-40px" }}
         >
           <Image
-            src="/martinPainting.png"
+            src="/martinPainting_v2.png"
             alt="Martin Painting Logo"
             width={6200}
             height={6200}

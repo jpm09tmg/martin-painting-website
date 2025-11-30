@@ -2,7 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Calendar, FileText, MessageSquare, DollarSign, Settings, Star } from 'lucide-react'
+import { Home, Calendar, FileText, MessageSquare, DollarSign, Settings, Star, Image } from 'lucide-react'
 
 /**
  * Admin Sidebar Navigation Component
@@ -28,6 +28,7 @@ export default function Sidebar() {
   const isAppointmentsActive = pathname.startsWith('/admin/appointments')
   const isProjectsActive = pathname.startsWith('/admin/projects')
   const isQuotesActive = pathname.startsWith('/admin/quotes')
+  const isGalleryActive = pathname.startsWith('/admin/gallery')
   const isPaymentsActive = pathname.startsWith('/admin/payments')
   const isReviewsActive = pathname.startsWith('/admin/reviews')
   const isSettingsActive = pathname.startsWith('/admin/settings')
@@ -74,10 +75,17 @@ export default function Sidebar() {
         </Link>
 
          {/* Quotes */}
-        <Link href="/admin/quotes" 
+        <Link href="/admin/quotes"
           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isQuotesActive ? 'bg-[#3F652B]' : ''}`}>
           <FileText className="w-5 h-5 text-white" />
           <span>Quotes</span>
+        </Link>
+
+        {/* Gallery Link */}
+        <Link href="/admin/gallery"
+           className={`flex items-center space-x-3 px-4 py-3 text-white rounded-lg transition-colors hover:bg-white/10 ${isGalleryActive ? 'bg-[#3F652B]' : ''}`}>
+          <Image className="w-5 h-5 text-white" />
+          <span>Gallery</span>
         </Link>
 
         {/* Payments Link */}

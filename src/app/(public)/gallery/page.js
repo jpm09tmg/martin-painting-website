@@ -119,12 +119,12 @@ export default function Gallery() {
       <Header currentPage="gallery" />
 
       {/* Hero Section */}
-      <div className="bg-[#F1F4E8] py-16">
+      <div className="bg-background-dark py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-text mb-4">
             Painting Project Gallery
           </h1>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          <p className="text-xl text-text-muted max-w-3xl mx-auto">
             Explore some of our completed painting projects. From interior walls
             to full home exteriors and commercial spaces, we bring color and
             quality craftsmanship to every job.
@@ -133,7 +133,7 @@ export default function Gallery() {
       </div>
 
       {/* Filter Buttons */}
-      <div className="py-8 bg-white">
+      <div className="py-8 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-center space-x-4">
             {["all", "interior", "exterior", "commercial", "residential"].map(
@@ -143,8 +143,8 @@ export default function Gallery() {
                   onClick={() => setActiveFilter(cat)}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     activeFilter === cat
-                      ? "bg-[#5F9136] text-white"
-                      : "bg-white text-gray-700 border border-[#5F9136] hover:bg-[#5F9136] hover:text-white"
+                      ? "bg-primary text-white"
+                      : "bg-background text-text-muted border border-primary hover:bg-background-light hover:text-white"
                   }`}
                 >
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}{" "}
@@ -158,7 +158,7 @@ export default function Gallery() {
 
       {/* Same grid from landscaping site; add image carousel on click */}
       {/* Project Grid */}
-      <div className="py-12 bg-white">
+      <div className="py-12 bg-background-dark">
         <div className="max-w-7xl mx-auto px-4">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -201,11 +201,11 @@ export default function Gallery() {
 
       {/* Pagination */}
       {!loading && items.length > 0 && (
-        <div className="py-8 bg-white border-t border-gray-200">
+        <div className="py-8 bg-background border-b border-border-muted ">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-center items-center space-x-4">
               <button
-                className="text-gray-600 hover:text-[#5F9136] disabled:opacity-50"
+                className="text-text-muted hover:text-primary disabled:opacity-50"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
@@ -213,14 +213,14 @@ export default function Gallery() {
               </button>
 
               <div className="flex items-center space-x-2">
-                <span className="w-10 h-10 bg-[#5F9136] text-white rounded-full flex items-center justify-center">
+                <span className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center">
                   {page}
                 </span>
-                <span className="text-gray-700">/ {totalPages}</span>
+                <span className="text-text-muted">/ {totalPages}</span>
               </div>
 
               <button
-                className="text-gray-600 hover:text-[#5F9136] disabled:opacity-50"
+                className="text-text-muted hover:text-primary disabled:opacity-50"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
               >
