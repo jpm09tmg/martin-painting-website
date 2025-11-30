@@ -135,6 +135,7 @@ body.light {
 body {
   background: var(--bg-dark);
   color: var(--text-muted);
+  overflow-y: scroll;
 }
 
 h1 {
