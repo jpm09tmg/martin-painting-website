@@ -40,13 +40,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white">
-      <div className="w-full h-16 bg-[#74A744] justify-center flex items-center">
+    <div className="min-h-screen w-full bg-background-dark pb-16">
+      <div className="w-full h-16 bg-background justify-center flex items-center">
         <div className="flex items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <div className="w-28 h-12 bg-[#E4EDCB] rounded-lg overflow-hidden shadow-md">
+            <div className="w-24  rounded-lg overflow-hidden shadow-md">
               <Image
-                src="/martinPainting.png"
+                src="/martinPainting_v2.png"
                 alt="Martin Painting Logo"
                 width={144}
                 height={69}
@@ -58,21 +58,19 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Centered card */}
-      <div className="max-w-[490px] mx-auto mt-20 bg-[#F1F4E8] shadow-lg rounded-md border border-gray-200">
+      <div className="max-w-[490px] mx-auto mt-20 bg-background shadow-lg rounded-md border border-border-muted">
         <div className="px-8 pt-8 pb-2">
-          <h1 className="text-[28px] text-[#171717] font-semibold">
-            Admin Login
-          </h1>
-          <div className="mt-2 h-px w-full bg-[#D1D5DB]" />
+          <h1 className="text-[28px] text-text font-semibold">Admin Login</h1>
+          <div className="mt-2 h-px w-full bg-border" />
 
           <form className="px-8 pb-8 pt-2" onSubmit={handleSubmit}>
             {/* Email */}
-            <label className="block text-gray-700 text-lg mb-2">Email</label>
+            <label className="block text-text text-lg mb-2">Email</label>
             <div className="relative mb-6">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-700" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text" />
               <input
                 type="email"
-                className="w-full h-[42px] rounded-md border border-neutral-300 bg-white pl-10 pr-3 text-[#171717] placeholder:text-gray-400 outline-none"
+                className="w-full h-[42px] rounded-md border border-border-muted bg-background-light pl-10 pr-3 text-text placeholder:text-text-muted outline-none"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -80,12 +78,12 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Password */}
-            <label className="block text-gray-700 text-lg mb-2">Password</label>
+            <label className="block text-text text-lg mb-2">Password</label>
             <div className="relative mb-8">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-700" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text" />
               <input
                 type="password"
-                className="w-full h-[42px] rounded-md border border-neutral-300 bg-white pl-10 pr-3 text-[#171717] placeholder:text-gray-400 outline-none"
+                className="w-full h-[42px] rounded-md border border-border-muted bg-background-light pl-10 pr-3 text-text placeholder:text-text-muted outline-none"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -101,14 +99,14 @@ export default function AdminLoginPage() {
                ${
                  loading
                    ? "bg-gray-400"
-                   : "bg-[#5F9136] hover:bg-[#3F652B] text-white"
+                   : "bg-primary hover:bg-secondary text-white"
                }
               `}
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
 
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            {error && <p className="text-danger text-sm mt-2">{error}</p>}
           </form>
         </div>
       </div>

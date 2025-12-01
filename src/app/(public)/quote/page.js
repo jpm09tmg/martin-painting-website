@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Header from "@/src/components/layout/Header";
+import Footer from "@/src/components/layout/Footer";
 
 export default function QuotePage() {
   const [formData, setFormData] = useState({
@@ -134,44 +135,44 @@ export default function QuotePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background-dark text-text">
       <Header currentPage="quote" />
 
       {/* Hero Section */}
-      <div className="bg-[#F1F4E8] py-16">
+      <div className="bg-background-dark py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-text mb-4">
             Get Your Painting Estimate
           </h1>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          <p className="text-xl text-text-muted max-w-3xl mx-auto">
             Fill out the details below to receive a personalized estimate for
             your painting project
           </p>
         </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto py-8 px-4">
+      <div className="w-full max-w-6xl mx-auto pb-48 px-4">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg border border-gray-200">
+            <div className="bg-background rounded-lg shadow-lg border border-border-muted">
               {/* Project Type Section */}
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              <div className="p-6 border-b border-border-muted">
+                <h2 className="text-xl font-semibold text-text mb-6">
                   Project Type
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-8">
                   {/* Property Type */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">
+                    <h3 className="text-sm font-medium text-text mb-4">
                       Property Type
                     </h3>
                     <div className="space-y-3">
                       {propertyTypes.map((property) => (
                         <label
                           key={property.name}
-                          className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#74A744]"
+                          className="flex items-start space-x-3 p-4 bg-background-light border border-border-muted rounded-lg cursor-pointer transition-colors hover:border-border"
                         >
                           <input
                             type="radio"
@@ -179,13 +180,13 @@ export default function QuotePage() {
                             value={property.name}
                             checked={formData.propertyType === property.name}
                             onChange={handleInputChange}
-                            className="mt-1 w-4 h-4 text-[#74A744] border-gray-300 focus:ring-[#74A744]"
+                            className="mt-1 w-4 h-4 text-text border-border-muted focus:ring-background focus:ring-offset-background      "
                           />
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-text">
                               {property.name}
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-text-muted">
                               {property.description}
                             </div>
                           </div>
@@ -196,14 +197,14 @@ export default function QuotePage() {
 
                   {/* Location Type */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">
+                    <h3 className="text-sm font-medium text-text mb-4">
                       Location Type *
                     </h3>
                     <div className="space-y-3">
                       {locationTypes.map((location) => (
                         <label
                           key={location.name}
-                          className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#74A744]"
+                          className="flex items-start space-x-3 p-4 bg-background-light border border-border-muted rounded-lg cursor-pointer transition-colors hover:border-border"
                         >
                           <input
                             type="radio"
@@ -211,16 +212,16 @@ export default function QuotePage() {
                             value={location.name}
                             checked={formData.locationType === location.name}
                             onChange={handleInputChange}
-                            className="mt-1 w-4 h-4 text-[#74A744] border-gray-300 focus:ring-[#74A744]"
+                            className="mt-1 w-4 h-4 text-text border-border-muted focus:ring-background focus:ring-offset-background      "
                           />
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-text">
                               {location.name}
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-text-muted">
                               {location.description}
                             </div>
-                            <div className="text-xs text-[#74A744] font-medium">
+                            <div className="text-xs text-primary font-medium">
                               ${location.baseRate}/sq ft base
                             </div>
                           </div>
@@ -232,14 +233,14 @@ export default function QuotePage() {
               </div>
 
               {/* Project Details Section */}
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              <div className="p-6 border-b border-border-muted">
+                <h2 className="text-xl font-semibold text-text mb-6">
                   Project Details
                 </h2>
 
                 <div className="grid md:grid-cols-3 gap-6 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Square Footage * (approximate)
                     </label>
                     <input
@@ -249,12 +250,12 @@ export default function QuotePage() {
                       onChange={handleInputChange}
                       placeholder="e.g., 1200"
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
+                      className="w-full px-3 py-2 border border-border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Number of Rooms/Areas
                     </label>
                     <input
@@ -264,43 +265,59 @@ export default function QuotePage() {
                       onChange={handleInputChange}
                       placeholder="e.g., 3"
                       min="1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
+                      className="w-full px-3 py-2 border border-border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Ceiling Height
                     </label>
                     <select
                       name="ceilingHeight"
                       value={formData.ceilingHeight}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
+                      className="w-full px-3 py-2 border border-border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
                     >
-                      <option value="">Select height</option>
-                      <option value="8ft">8 feet (standard)</option>
-                      <option value="9ft">9 feet (+5%)</option>
-                      <option value="10ft">10 feet (+10%)</option>
-                      <option value="10ft+">10+ feet (+15%)</option>
+                      <option className="bg-background-light" value="">
+                        Select height
+                      </option>
+                      <option className="bg-background-light" value="8ft">
+                        8 feet (standard)
+                      </option>
+                      <option className="bg-background-light" value="9ft">
+                        9 feet (+5%)
+                      </option>
+                      <option className="bg-background-light" value="10ft">
+                        10 feet (+10%)
+                      </option>
+                      <option className="bg-background-light" value="10ft+">
+                        10+ feet (+15%)
+                      </option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Current Paint Condition
                     </label>
                     <select
                       name="currentCondition"
                       value={formData.currentCondition}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
+                      className="w-full px-3 py-2 border border-border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
                     >
-                      <option value="">Select condition</option>
+                      <option className="bg-background-light" value="">
+                        Select condition
+                      </option>
                       {paintConditions.map((condition) => (
-                        <option key={condition.name} value={condition.name}>
+                        <option
+                          className="bg-background-light"
+                          key={condition.name}
+                          value={condition.name}
+                        >
                           {condition.name} - {condition.description}
                         </option>
                       ))}
@@ -308,18 +325,24 @@ export default function QuotePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Paint Quality Preference
                     </label>
                     <select
                       name="paintQuality"
                       value={formData.paintQuality}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent text-gray-800"
+                      className="w-full px-3 py-2 border border-border-muted rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
                     >
-                      <option value="">Select quality</option>
+                      <option className="bg-background-light" value="">
+                        Select quality
+                      </option>
                       {paintQualities.map((quality) => (
-                        <option key={quality.name} value={quality.name}>
+                        <option
+                          className="bg-background-light"
+                          key={quality.name}
+                          value={quality.name}
+                        >
                           {quality.name} - {quality.description}
                         </option>
                       ))}
@@ -333,7 +356,7 @@ export default function QuotePage() {
                 <button
                   type="button"
                   onClick={calculateEstimate}
-                  className="w-full py-3 px-4 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:ring-offset-2 transition duration-300"
+                  className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-md hover:bg-background-light focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition duration-300"
                 >
                   Calculate Estimate
                 </button>
@@ -343,9 +366,9 @@ export default function QuotePage() {
 
           {/* Estimate Results */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg border border-gray-200 sticky top-8">
+            <div className="bg-background-light rounded-lg shadow-lg border border-border-muted sticky top-8">
               <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-text mb-4">
                   Your Estimate
                 </h2>
 
@@ -353,12 +376,12 @@ export default function QuotePage() {
                 tells user to fill out form if not */}
                 {estimate ? (
                   <div>
-                    <div className="bg-[#F1F4E8] rounded-lg p-4 mb-4">
+                    <div className="bg-primary/10 rounded-lg p-4 mb-4">
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-[#74A744]">
+                        <div className="text-3xl font-bold text-primary">
                           ${estimate.totalCost.toLocaleString()}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-text">
                           ${estimate.costPerSqft}/sq ft
                         </div>
                       </div>
@@ -370,7 +393,7 @@ export default function QuotePage() {
                         <span>${estimate.baseRate}/sq ft</span>
                       </div>
                       <div className="pt-3 border-t">
-                        <div className="text-xs text-gray-500 mb-2">
+                        <div className="text-xs text-text mb-2">
                           Applied adjustments:
                         </div>
                         {estimate.breakdown.propertyMultiplier !== 1.0 && (
@@ -426,21 +449,21 @@ export default function QuotePage() {
                     <div className="mt-6 pt-4 border-t">
                       <Link
                         href="/appointments"
-                        className="w-full py-3 px-4 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:ring-offset-2 transition duration-300"
+                        className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-md hover:bg-background-light focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition duration-300"
                       >
                         Book Consultation
                       </Link>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-gray-500 text-center py-8">
+                  <div className="text-text-muted text-center py-8">
                     <p>Fill out the form to get your estimate</p>
                   </div>
                 )}
 
                 {/* Disclaimer */}
-                <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="text-xs text-blue-700">
+                <div className="mt-6 p-3 bg-background-light border border-border-muted rounded-lg">
+                  <div className="text-xs text-primary">
                     <strong>Note:</strong> This is a preliminary estimate only.
                     Final pricing may vary based on site conditions and specific
                     requirements.
@@ -451,6 +474,8 @@ export default function QuotePage() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

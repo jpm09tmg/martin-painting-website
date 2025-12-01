@@ -14,6 +14,8 @@ import {
   X,
   FileText,
   ExternalLink,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function ClientsPage() {
@@ -25,6 +27,11 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const [editingClient, setEditingClient] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteType, setDeleteType] = useState(null); // 'client-only' or 'all-related'
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -226,6 +233,163 @@ export default function ClientsPage() {
       })
     );
     router.push("/admin/appointments");
+  };
+
+  // Open delete confirmation modal
+  const openDeleteModal = (client) => {
+    setClientToDelete(client);
+    setShowDeleteModal(true);
+  };
+
+  // Open final confirmation modal
+  const confirmDeleteType = (type) => {
+    setDeleteType(type);
+    setShowDeleteModal(false);
+    setShowConfirmModal(true);
+  };
+
+  // Execute the delete based on type
+  const executeDelete = () => {
+    if (deleteType === 'client-only') {
+      deleteClientOnly();
+    } else if (deleteType === 'all-related') {
+      deleteAllRelated();
+    }
+    setShowConfirmModal(false);
+  };
+
+  // Delete client info only (keep related data but remove client reference)
+  const deleteClientOnly = async () => {
+    if (!clientToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      // First, update all related tables to remove client reference
+      // Update appointments - set client_id to null
+      const { error: appointmentsError } = await supabase
+        .from("appointments")
+        .update({ client_id: null })
+        .eq("client_id", clientToDelete.id);
+
+      if (appointmentsError) {
+        console.error("Appointments error:", appointmentsError);
+        throw new Error(`Failed to update appointments: ${appointmentsError.message || appointmentsError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+      }
+
+      // Update quotes - set client_id to null
+      const { error: quotesError } = await supabase
+        .from("quotes")
+        .update({ client_id: null })
+        .eq("client_id", clientToDelete.id);
+
+      if (quotesError) {
+        console.error("Quotes error:", quotesError);
+        throw new Error(`Failed to update quotes: ${quotesError.message || quotesError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+      }
+
+      // Update projects - set client_id to null
+      const { error: projectsError } = await supabase
+        .from("projects")
+        .update({ client_id: null })
+        .eq("client_id", clientToDelete.id);
+
+      if (projectsError) {
+        console.error("Projects error:", projectsError);
+        throw new Error(`Failed to update projects: ${projectsError.message || projectsError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+      }
+
+      // Delete the client
+      const { error: deleteError } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", clientToDelete.id);
+
+      if (deleteError) {
+        console.error("Delete error:", deleteError);
+        throw new Error(`Failed to delete client: ${deleteError.message || deleteError.hint || "Unknown error"}`);
+      }
+
+      setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" deleted successfully. Related data preserved.`);
+      setClientToDelete(null);
+      setDeleteType(null);
+      loadClients();
+    } catch (err) {
+      console.error("Error deleting client:", err);
+      setMessage(`Error: ${err.message || "Failed to delete client. Check console for details."}`);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Delete all related information (cascade delete)
+  const deleteAllRelated = async () => {
+    if (!clientToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      // Delete in order: quote_items -> quotes, then appointments, then projects, then client
+      
+      // First get all quotes for this client
+      const { data: quotes, error: quotesQueryError } = await supabase
+        .from("quotes")
+        .select("id")
+        .eq("client_id", clientToDelete.id);
+
+      if (quotesQueryError) throw quotesQueryError;
+
+      // Delete quote items for each quote
+      if (quotes && quotes.length > 0) {
+        const quoteIds = quotes.map(q => q.id);
+        const { error: quoteItemsError } = await supabase
+          .from("quote_items")
+          .delete()
+          .in("quote_id", quoteIds);
+
+        if (quoteItemsError) throw quoteItemsError;
+      }
+
+      // Delete quotes
+      const { error: quotesError } = await supabase
+        .from("quotes")
+        .delete()
+        .eq("client_id", clientToDelete.id);
+
+      if (quotesError) throw quotesError;
+
+      // Delete appointments
+      const { error: appointmentsError } = await supabase
+        .from("appointments")
+        .delete()
+        .eq("client_id", clientToDelete.id);
+
+      if (appointmentsError) throw appointmentsError;
+
+      // Delete projects
+      const { error: projectsError } = await supabase
+        .from("projects")
+        .delete()
+        .eq("client_id", clientToDelete.id);
+
+      if (projectsError) throw projectsError;
+
+      // Finally, delete the client
+      const { error: deleteError } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", clientToDelete.id);
+
+      if (deleteError) throw deleteError;
+
+      setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" and all related data deleted successfully.`);
+      setClientToDelete(null);
+      setDeleteType(null);
+      loadClients();
+    } catch (err) {
+      console.error("Error deleting client and related data:", err);
+      setMessage(`Error: ${err.message || "Failed to delete client and related data. Check console for details."}`);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   if (loading) {
@@ -547,25 +711,234 @@ export default function ClientsPage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col gap-3 pt-4">
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      resetForm();
+                      setMessage("");
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-500 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveClient}
+                    className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5d8636] transition-colors flex items-center justify-center"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {editingClient ? "Update Client" : "Add Client"}
+                  </button>
+                </div>
+                
+                {/* Delete Button - Only show when editing */}
+                {editingClient && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      openDeleteModal(editingClient);
+                    }}
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Client
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && clientToDelete && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
+            <div className="p-6 border-b flex items-start gap-4">
+              <div className="p-3 bg-red-100 rounded-full flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Delete Client
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Choose how to delete "{clientToDelete.first_name} {clientToDelete.last_name}"
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setClientToDelete(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={deleteLoading}
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Show appointment count warning */}
+              {appointmentCounts[clientToDelete.id] > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-yellow-800">
+                      <p className="font-medium">This client has {appointmentCounts[clientToDelete.id]} appointment(s)</p>
+                      <p className="mt-1">Choose whether to keep or delete related data.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {/* Option 1: Delete Client Only */}
                 <button
-                  type="button"
+                  onClick={() => confirmDeleteType('client-only')}
+                  disabled={deleteLoading}
+                  className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors flex-shrink-0">
+                      <User className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Delete Client Info Only
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Removes client information but keeps all appointments, quotes, and projects. 
+                        Related records will be preserved without client details.
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Option 2: Delete Everything */}
+                <button
+                  onClick={() => confirmDeleteType('all-related')}
+                  disabled={deleteLoading}
+                  className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg group-hover:bg-red-200 transition-colors flex-shrink-0">
+                      <Trash2 className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Delete All Related Information
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Permanently deletes client and all related appointments, quotes, projects, and data. 
+                        This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <button
                   onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                    setMessage("");
+                    setShowDeleteModal(false);
+                    setClientToDelete(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-500 transition-colors"
+                  disabled={deleteLoading}
+                  className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Cancel
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Final Confirmation Modal */}
+      {showConfirmModal && clientToDelete && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-2xl border border-gray-200">
+            <div className="p-6 border-b flex items-start gap-4">
+              <div className="p-3 bg-red-100 rounded-full flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Confirm Deletion
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  This action cannot be undone
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {deleteType === 'client-only' ? (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <User className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-900">
+                      <p className="font-semibold mb-2">You are about to delete:</p>
+                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      <p className="text-orange-700 mt-3">
+                        Related appointments, quotes, and projects will be preserved but will no longer show client details.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Trash2 className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-red-900">
+                      <p className="font-semibold mb-2">You are about to permanently delete:</p>
+                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      {appointmentCounts[clientToDelete.id] > 0 && (
+                        <p className="mb-1">• {appointmentCounts[clientToDelete.id]} appointment(s)</p>
+                      )}
+                      <p className="mb-1">• All related quotes and projects</p>
+                      <p className="text-red-700 font-semibold mt-3">
+                        ⚠️ All data will be permanently removed and cannot be recovered.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {deleteLoading && (
+                <div className="flex items-center justify-center gap-2 text-gray-600 py-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                  <span>Deleting...</span>
+                </div>
+              )}
+
+              <div className="flex gap-3">
                 <button
-                  type="button"
-                  onClick={saveClient}
-                  className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5d8636] transition-colors flex items-center justify-center"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setDeleteType(null);
+                    setShowDeleteModal(true);
+                  }}
+                  disabled={deleteLoading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {editingClient ? "Update Client" : "Add Client"}
+                  Go Back
+                </button>
+                <button
+                  onClick={executeDelete}
+                  disabled={deleteLoading}
+                  className={`flex-1 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-white ${
+                    deleteType === 'client-only'
+                      ? 'bg-orange-600 hover:bg-orange-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
                 </button>
               </div>
             </div>

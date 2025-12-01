@@ -1,19 +1,11 @@
-"use client";
+"use client"; // Tells Next.js this component runs on the client side (browser)
 
+// ============================================
+// IMPORTS - React hooks, routing, and database client
+// ============================================
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import Link from "next/link"; // Next.js Link component for client-side navigation
 import { supabase } from "../../lib/db/supabase-client";
-import {
-  RefreshCw,
-  BarChart3,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  FolderOpen,
-  Users,
-  TrendingUp,
-  ArrowRight
-} from "lucide-react";
 
 /**
  * ============================================
@@ -229,40 +221,28 @@ export default function AdminDashboard() {
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+    <div className="flex flex-col min-h-screen bg-background-light">
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 bg-background-light">
         {/* ============================================ */}
         {/* PAGE HEADER - Title and welcome message */}
         {/* ============================================ */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2 flex items-center">
-              {/* Using &apos; instead of ' to avoid JSX syntax issues */}
-              <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-              Welcome back! Here&apos;s what&apos;s happening with Martin
-              Painting.
-            </p>
-          </div>
-          <button
-            onClick={loadDashboardData}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium inline-flex items-center shadow-md hover:shadow-lg transition-all"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600">
+            {/* Using &apos; instead of ' to avoid JSX syntax issues */}
+            Welcome back! Here&apos;s what&apos;s happening with Martin
+            Painting.
+          </p>
         </div>
 
         {/* ============================================ */}
         {/* STATISTICS CARDS - Key metrics overview */}
         {/* ============================================ */}
-        {/*
-          LAYOUT:
+        {/* 
+          LAYOUT: 
           - 1 column on mobile
           - 2 columns on medium screens (md:)
           - 4 columns on large screens (lg:)
@@ -272,17 +252,25 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 1: Total Projects */}
           {/* ============================================ */}
-          <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl shadow-md border border-blue-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 mb-1">Total Projects</p>
-                <p className="text-3xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              {/* Icon container with blue background */}
+              <div className="p-2 bg-blue-100 rounded-lg">
+                {/* Shopping cart SVG icon (represents projects/orders) */}
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 12.846 4.632 15 6.414 15H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 5H6.28l-.31-1.243A1 1 0 005 3H4zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                </svg>
+              </div>
+              {/* Stat value and label */}
+              <div className="ml-4">
+                <p className="text-2xl font-bold text-gray-900">
                   {stats.totalProjects}
                 </p>
-              </div>
-              {/* Icon container with blue background */}
-              <div className="p-3 bg-blue-500 rounded-full shadow-lg">
-                <FolderOpen className="w-6 h-6 text-white" />
+                <p className="text-gray-600">Total Projects</p>
               </div>
             </div>
           </div>
@@ -290,17 +278,29 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 2: Total Appointments */}
           {/* ============================================ */}
-          <div className="bg-gradient-to-br from-amber-50 to-white p-6 rounded-xl shadow-md border border-amber-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-600 mb-1">Total Appointments</p>
-                <p className="text-3xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              {/* Icon container with yellow background */}
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                {/* Calendar SVG icon (represents scheduled appointments) */}
+                <svg
+                  className="w-6 h-6 text-yellow-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              {/* Stat value and label */}
+              <div className="ml-4">
+                <p className="text-2xl font-bold text-gray-900">
                   {stats.totalAppointments}
                 </p>
-              </div>
-              {/* Icon container with amber background */}
-              <div className="p-3 bg-amber-500 rounded-full shadow-lg">
-                <Calendar className="w-6 h-6 text-white" />
+                <p className="text-gray-600">Total Appointments</p>
               </div>
             </div>
           </div>
@@ -308,17 +308,29 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 3: Completed This Month */}
           {/* ============================================ */}
-          <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-xl shadow-md border border-green-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 mb-1">Completed This Month</p>
-                <p className="text-3xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              {/* Icon container with green background */}
+              <div className="p-2 bg-green-100 rounded-lg">
+                {/* Checkmark SVG icon (represents completion) */}
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              {/* Stat value and label */}
+              <div className="ml-4">
+                <p className="text-2xl font-bold text-gray-900">
                   {stats.completedThisMonth}
                 </p>
-              </div>
-              {/* Icon container with green background */}
-              <div className="p-3 bg-green-500 rounded-full shadow-lg">
-                <CheckCircle2 className="w-6 h-6 text-white" />
+                <p className="text-gray-600">Completed This Month</p>
               </div>
             </div>
           </div>
@@ -326,17 +338,29 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 4: Pending Appointments */}
           {/* ============================================ */}
-          <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl shadow-md border border-purple-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600 mb-1">Pending Appointments</p>
-                <p className="text-3xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              {/* Icon container with brand green background */}
+              <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
+                {/* Clock SVG icon (represents pending/waiting) */}
+                <svg
+                  className="w-6 h-6 text-[#74A744]"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              {/* Stat value and label */}
+              <div className="ml-4">
+                <p className="text-2xl font-bold text-gray-900">
                   {stats.pendingAppointments}
                 </p>
-              </div>
-              {/* Icon container with purple background */}
-              <div className="p-3 bg-purple-500 rounded-full shadow-lg">
-                <Clock className="w-6 h-6 text-white" />
+                <p className="text-gray-600">Pending Appointments</p>
               </div>
             </div>
           </div>
@@ -353,23 +377,19 @@ export default function AdminDashboard() {
           - Progress bars showing completion percentage
           - Empty state if no projects exist
         */}
-        <div className="bg-white rounded-xl shadow-lg mb-8 border border-gray-100">
+        <div className="bg-white rounded-lg shadow mb-8">
           {/* Section Header */}
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+          <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <BarChart3 className="w-5 h-5 text-blue-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Recent Projects
-                </h3>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Recent Projects
+              </h3>
               {/* Link to full projects page using Next.js Link component */}
               <Link
                 href="/admin/projects"
-                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center transition-colors"
+                className="text-[#74A744] hover:text-[#5F9136] font-medium"
               >
                 View All
-                <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
             </div>
           </div>
@@ -380,9 +400,8 @@ export default function AdminDashboard() {
             {/* LOADING STATE - Shows while fetching data */}
             {/* ============================================ */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                <p className="text-gray-500 font-medium">Loading projects...</p>
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading projects...</p>
               </div>
             ) : projects.length > 0 ? (
               // ============================================
@@ -393,16 +412,16 @@ export default function AdminDashboard() {
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className="border border-gray-200 rounded-lg p-5 hover:shadow-xl transition-all duration-300 hover:border-blue-300 bg-gradient-to-br from-gray-50 to-white"
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     {/* Project header with name and status badge */}
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold text-gray-900 text-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">
                         {project.name}
                       </h4>
                       {/* Status badge with dynamic color based on project status */}
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           project.status
                         )}`}
                       >
@@ -411,38 +430,37 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Project details */}
-                    <div className="text-sm text-gray-600 space-y-2">
+                    <div className="text-sm text-gray-600 space-y-1">
                       {/* Client name */}
-                      <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-2 text-gray-400" />
-                        <span className="font-medium">Client:</span>
-                        <span className="ml-1">{project.client}</span>
-                      </div>
+                      <p>
+                        <span className="font-medium">Client:</span>{" "}
+                        {project.client}
+                      </p>
                       {/* Project address */}
                       <p>
                         <span className="font-medium">Address:</span>{" "}
                         {project.address}
                       </p>
                       {/* Budget with currency formatting (adds commas) */}
-                      <p className="text-green-700 font-semibold">
-                        <span className="font-medium text-gray-600">Budget:</span> $
+                      <p>
+                        <span className="font-medium">Budget:</span> $
                         {project.budget?.toLocaleString()}
                       </p>
 
                       {/* ============================================ */}
                       {/* PROGRESS BAR - Visual completion indicator */}
                       {/* ============================================ */}
-                      <div className="mt-3">
+                      <div className="mt-2">
                         {/* Progress label and percentage */}
-                        <div className="flex justify-between text-xs mb-2 font-medium">
-                          <span className="text-gray-600">Progress</span>
-                          <span className="text-blue-600">{project.progress || 0}%</span>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Progress</span>
+                          <span>{project.progress || 0}%</span>
                         </div>
                         {/* Progress bar container (gray background) */}
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 shadow-inner">
-                          {/* Filled portion with gradient and dynamic width */}
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          {/* Filled portion (brand green) with dynamic width */}
                           <div
-                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                            className="bg-[#74A744] h-2 rounded-full transition-all"
                             style={{ width: `${project.progress || 0}%` }}
                           ></div>
                         </div>
@@ -455,20 +473,30 @@ export default function AdminDashboard() {
               // ============================================
               // EMPTY STATE - No projects exist yet
               // ============================================
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                  <FolderOpen className="w-8 h-8 text-blue-600" />
-                </div>
-                <p className="text-gray-700 font-semibold text-lg mb-2">No projects yet</p>
-                <p className="text-gray-500 text-sm mb-4">
+              <div className="text-center py-8">
+                {/* Briefcase/folder icon */}
+                <svg
+                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <p className="text-gray-500 font-medium">No projects yet</p>
+                <p className="text-gray-400 text-sm">
                   Projects will appear here once you start adding them
                 </p>
                 {/* Call-to-action button to add first project */}
                 <Link
                   href="/admin/projects"
-                  className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all font-medium"
+                  className="inline-block mt-3 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] text-sm"
                 >
-                  <FolderOpen className="w-4 h-4 mr-2" />
                   Add Your First Project
                 </Link>
               </div>
@@ -487,23 +515,19 @@ export default function AdminDashboard() {
           - Customer details and appointment info
           - Empty state if no pending appointments
         */}
-        <div className="bg-white rounded-xl shadow-lg mb-8 border border-gray-100">
+        <div className="bg-white rounded-lg shadow mb-8">
           {/* Section Header */}
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-white">
+          <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <Calendar className="w-5 h-5 text-purple-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Upcoming Appointments
-                </h3>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Upcoming Appointments
+              </h3>
               {/* Link to full appointments page */}
               <Link
                 href="/admin/appointments"
-                className="text-purple-600 hover:text-purple-700 font-medium inline-flex items-center transition-colors"
+                className="text-[#74A744] hover:text-[#5F9136] font-medium"
               >
                 View All
-                <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
             </div>
           </div>
@@ -514,9 +538,8 @@ export default function AdminDashboard() {
             {/* LOADING STATE */}
             {/* ============================================ */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-                <p className="text-gray-500 font-medium">Loading appointments...</p>
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading appointments...</p>
               </div>
             ) : upcomingAppointments.length > 0 ? (
               // ============================================
@@ -527,35 +550,47 @@ export default function AdminDashboard() {
                 {upcomingAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="border border-gray-200 rounded-lg p-5 hover:shadow-xl transition-all duration-300 hover:border-purple-300 bg-gradient-to-br from-purple-50 to-white"
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between">
                       {/* ============================================ */}
                       {/* LEFT SIDE - Customer info with avatar */}
                       {/* ============================================ */}
-                      <div className="flex items-start space-x-4">
+                      <div className="flex items-start space-x-3">
                         {/* Avatar circle with user icon */}
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                          <Users className="w-6 h-6 text-white" />
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          {/* User profile SVG icon */}
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                         </div>
 
                         {/* Customer details */}
                         <div>
                           {/* Customer name */}
-                          <h4 className="font-semibold text-gray-900 text-lg mb-1">
+                          <h4 className="font-semibold text-gray-900">
                             {appointment.first_name} {appointment.last_name}
                           </h4>
                           {/* Email address */}
-                          <p className="text-sm text-gray-600 mb-1">
+                          <p className="text-sm text-gray-600">
                             {appointment.email}
                           </p>
                           {/* Phone number */}
-                          <p className="text-sm text-gray-600 mb-2">
+                          <p className="text-sm text-gray-600">
                             Phone: {appointment.phone}
                           </p>
                           {/* Property details (type and location) */}
-                          <p className="text-sm text-gray-700 font-medium">
-                            {appointment.property_type} - {appointment.location_type}
+                          <p className="text-sm text-gray-600 mt-1">
+                            {appointment.property_type} -{" "}
+                            {appointment.location_type}
                           </p>
                         </div>
                       </div>
@@ -565,15 +600,15 @@ export default function AdminDashboard() {
                       {/* ============================================ */}
                       <div className="text-right">
                         {/* Formatted appointment date (e.g., "May 20, 2024") */}
-                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                        <p className="text-sm font-medium text-gray-900">
                           {formatDate(appointment.appointment_date)}
                         </p>
                         {/* Appointment time (e.g., "10:00 AM") */}
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-sm text-gray-600">
                           {appointment.appointment_time}
                         </p>
-                        {/* Status badge (pending = amber) */}
-                        <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 text-xs font-semibold rounded-full shadow-sm">
+                        {/* Status badge (pending = yellow) */}
+                        <span className="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
                           {appointment.status}
                         </span>
                       </div>
@@ -585,14 +620,25 @@ export default function AdminDashboard() {
               // ============================================
               // EMPTY STATE - No upcoming appointments
               // ============================================
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-                  <Calendar className="w-8 h-8 text-purple-600" />
-                </div>
-                <p className="text-gray-700 font-semibold text-lg mb-2">
+              <div className="text-center py-8">
+                {/* Calendar icon */}
+                <svg
+                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-gray-500 font-medium">
                   No upcoming appointments
                 </p>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-400 text-sm">
                   New appointments will appear here
                 </p>
               </div>
