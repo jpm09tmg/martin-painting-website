@@ -28,7 +28,6 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>{children}</AuthProvider>
 
-        {/* 👇 Chat launcher appears on all public pages */}
         <Suspense>
           <ChatLauncher />
         </Suspense>
