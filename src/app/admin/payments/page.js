@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/src/lib/db/supabase-client";
-import { Search, Calendar, DollarSign } from "lucide-react";
+import { Search, Calendar, DollarSign, ExternalLink, CheckCircle } from "lucide-react";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState([]);
@@ -26,51 +26,22 @@ export default function PaymentsPage() {
     fetchPayments();
   }, []);
 
-  const handleStatusChange = async (id, newStatus) => {
-    const { error } = await supabase
-      .from("payments")
-      .update({ status: newStatus })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Failed to update status: ", error);
-    } else {
-      setPayments((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
-      );
-    }
-  };
-
-  const handlePaymentMethodChange = async (id, newMethod) => {
-    const { error } = await supabase
-      .from("payments")
-      .update({ payment_method: newMethod })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Failed to update payment method: ", error);
-    } else {
-      setPayments((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, payment_method: newMethod } : p))
-      );
-    }
-  };
-
   const term = searchTerm.toLowerCase();
   const filteredPayments = payments.filter(
     (p) =>
       p.project?.toLowerCase().includes(term) ||
       p.client?.toLowerCase().includes(term) ||
       p.status?.toLowerCase().includes(term) ||
-      p.payment_method?.toLowerCase().includes(term)
+      p.payment_method?.toLowerCase().includes(term) ||
+      p.payment_status?.toLowerCase().includes(term)
   );
 
-  const unpaidAmount = payments.reduce((sum, p) => {
-    const total = Number(p.total) || 0;
-    const paid = Number(p.paid) || 0;
-    const remaining = total - paid;
-    return sum + (remaining > 0 ? remaining : 0);
-  }, 0);
+  const totalPaidAmount = payments
+    .reduce((sum, p) => sum + (Number(p.paid) || 0), 0);
+  
+  const completedPayments = payments.filter(p => 
+    p.status === 'Paid' || p.payment_status === 'completed'
+  ).length;
 
   if (loading) {
     return (
@@ -94,7 +65,7 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -104,7 +75,7 @@ export default function PaymentsPage() {
               <p className="text-2xl font-bold text-gray-900">
                 {payments.length}
               </p>
-              <p className="text-sm text-gray-600">Total Payments</p>
+              <p className="text-sm text-gray-600">Total Transactions</p>
             </div>
           </div>
         </div>
@@ -116,9 +87,23 @@ export default function PaymentsPage() {
             </div>
             <div className="ml-4">
               <p className="text-2xl font-bold text-gray-900">
-                ${unpaidAmount.toFixed(2)}
+                ${totalPaidAmount.toFixed(2)}
               </p>
-              <p className="text-sm text-gray-600">Unpaid Amount</p>
+              <p className="text-sm text-gray-600">Total Revenue</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-2xl font-bold text-gray-900">
+                {completedPayments}
+              </p>
+              <p className="text-sm text-gray-600">Completed</p>
             </div>
           </div>
         </div>
@@ -157,16 +142,19 @@ export default function PaymentsPage() {
                     Client
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total ($)
+                    Total
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Paid ($)
+                    Paid
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Payment Method
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stripe
                   </th>
                 </tr>
               </thead>
@@ -175,50 +163,56 @@ export default function PaymentsPage() {
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {p.project}
+                        {p.project || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{p.client}</div>
+                      <div className="text-sm text-gray-900">{p.client || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${p.total}</div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        ${Number(p.total || 0).toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${p.paid}</div>
+                      <div className="text-sm font-semibold text-green-600">
+                        ${Number(p.paid || 0).toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={p.payment_method || ""}
-                        onChange={(e) =>
-                          handlePaymentMethodChange(p.id, e.target.value)
-                        }
-                        className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#74A744]"
-                      >
-                        <option value="">Select...</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Credit Card">Credit Card</option>
-                        <option value="E-Transfer">E-Transfer</option>
-                      </select>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        p.payment_method?.toLowerCase() === 'stripe' ? 'bg-blue-100 text-blue-800' :
+                        p.payment_method?.toLowerCase() === 'cash' ? 'bg-green-100 text-green-800' :
+                        p.payment_method?.toLowerCase() === 'credit card' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {p.payment_method || 'N/A'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={p.status}
-                        onChange={(e) =>
-                          handleStatusChange(p.id, e.target.value)
-                        }
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          p.status === "Paid"
-                            ? "bg-green-100 text-green-800"
-                            : p.status === "Partial"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        <option value="Paid">Paid</option>
-                        <option value="Partial">Partial</option>
-                        <option value="Unpaid">Unpaid</option>
-                      </select>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        p.status === 'Paid' || p.payment_status === 'completed' ? 'bg-green-100 text-green-800' :
+                        p.status === 'Partial' || p.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        p.status === 'Unpaid' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {p.payment_status || p.status || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {p.stripe_payment_id ? (
+                        <a
+                          href={`https://dashboard.stripe.com/payments/${p.stripe_payment_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs"
+                          title="View in Stripe Dashboard"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -230,3 +224,4 @@ export default function PaymentsPage() {
     </div>
   );
 }
+

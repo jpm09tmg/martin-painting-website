@@ -1,32 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
-import { Loader2, LogOut, Calendar, Briefcase, CreditCard, MessageCircle } from "lucide-react";
+import { Loader2, LogOut, Calendar, Briefcase, CreditCard, MessageCircle, CheckCircle, XCircle } from "lucide-react";
 import Header from "@/src/components/layout/Header";
 import ChatWidget from "@/src/components/chat/ChatWidget";
+import { loadStripe } from "@stripe/stripe-js";
 
 export default function CustomerHome() {
   const { session, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pastAppointments, setPastAppointments] = useState([]);
   const [projects, setProjects] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [payingQuoteId, setPayingQuoteId] = useState(null);
+  const [paymentNotification, setPaymentNotification] = useState(null);
 
   useEffect(() => {
     if (!loading && !session) {
       router.push("/");
     } else if (session) {
       const firstName = session.user?.user_metadata?.first_name || "User";
+      const email = session.user?.email || "";
       setUserName(firstName);
+      setUserEmail(email);
       loadCustomerData();
+
+      // Check for payment status in URL
+      const paymentStatus = searchParams.get('payment');
+      if (paymentStatus === 'success') {
+        setPaymentNotification({ type: 'success', message: 'Payment successful! Thank you.' });
+        // Clear URL params after showing notification
+        setTimeout(() => {
+          router.replace('/customer');
+        }, 100);
+      } else if (paymentStatus === 'cancelled') {
+        setPaymentNotification({ type: 'error', message: 'Payment was cancelled.' });
+        setTimeout(() => {
+          router.replace('/customer');
+        }, 100);
+      }
     }
-  }, [session, loading, router]);
+  }, [session, loading, router, searchParams]);
 
   const loadCustomerData = async () => {
     try {
@@ -84,6 +106,41 @@ export default function CustomerHome() {
     }
   };
 
+  const handlePayment = async (quoteId) => {
+    try {
+      setPayingQuoteId(quoteId);
+
+      // Create checkout session
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quoteId,
+          clientEmail: userEmail,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setPaymentNotification({ type: 'error', message: data.error });
+        setPayingQuoteId(null);
+        return;
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentNotification({ type: 'error', message: 'Failed to process payment' });
+      setPayingQuoteId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background-dark">
@@ -106,6 +163,28 @@ export default function CustomerHome() {
       <Header currentPage="profile" />
       <div className="min-h-screen bg-background-dark pt-16">
         <div className="max-w-7xl mx-auto p-6">
+          {/* Payment Notification */}
+          {paymentNotification && (
+            <div className={`mb-6 p-4 rounded-lg border flex items-center gap-3 ${
+              paymentNotification.type === 'success' 
+                ? 'bg-success/20 border-success text-success' 
+                : 'bg-danger/20 border-danger text-danger'
+            }`}>
+              {paymentNotification.type === 'success' ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <XCircle className="w-5 h-5" />
+              )}
+              <span className="font-medium">{paymentNotification.message}</span>
+              <button
+                onClick={() => setPaymentNotification(null)}
+                className="ml-auto text-current hover:opacity-70 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {/* Top Bar - Welcome & Sign Out */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-text">
@@ -244,11 +323,11 @@ export default function CustomerHome() {
                             <h3 className="font-medium text-text text-lg">{project.project_address || 'Project'}</h3>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            project.status === "completed" ? "bg-success/20 text-success" :
-                            project.status === "in_progress" ? "bg-primary/20 text-primary" :
+                            project.status?.toLowerCase() === "completed" ? "bg-success/20 text-success" :
+                            project.status?.toLowerCase() === "in_progress" ? "bg-primary/20 text-primary" :
                             "bg-text-muted/20 text-text-muted"
                           }`}>
-                            {project.status.replace("_", " ")}
+                            {project.status?.replace("_", " ") || "N/A"}
                           </span>
                         </div>
                         
@@ -318,8 +397,8 @@ export default function CustomerHome() {
                             </p>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            quote.status === "approved" ? "bg-success/20 text-success" :
-                            quote.status === "pending" ? "bg-primary/20 text-primary" :
+                            quote.status?.toLowerCase() === "approved" ? "bg-success/20 text-success" :
+                            quote.status?.toLowerCase() === "pending" ? "bg-primary/20 text-primary" :
                             "bg-danger/20 text-danger"
                           }`}>
                             {quote.status}
@@ -329,10 +408,27 @@ export default function CustomerHome() {
                           <span className="text-2xl font-bold text-text">
                             ${parseFloat(quote.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
-                          {quote.status === "approved" && (
-                            <button className="px-4 py-2 bg-primary text-white rounded-lg hover:!bg-cyan-600 transition-colors font-medium">
-                              Pay Now
+                          {quote.status?.toLowerCase() === "approved" && quote.payment_status?.toLowerCase() !== "paid" && (
+                            <button 
+                              onClick={() => handlePayment(quote.id)}
+                              disabled={payingQuoteId === quote.id}
+                              className="px-4 py-2 bg-primary text-white rounded-lg hover:!bg-cyan-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                              {payingQuoteId === quote.id ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                'Pay Now'
+                              )}
                             </button>
+                          )}
+                          {quote.payment_status?.toLowerCase() === "paid" && (
+                            <span className="px-4 py-2 bg-success/20 text-success rounded-lg font-medium flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4" />
+                              Paid
+                            </span>
                           )}
                         </div>
                         {quote.notes && (
