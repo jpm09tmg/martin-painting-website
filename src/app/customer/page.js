@@ -24,30 +24,50 @@ export default function CustomerHome() {
   const [paymentNotification, setPaymentNotification] = useState(null);
 
   useEffect(() => {
-    if (!loading && !session) {
-      router.push("/");
-    } else if (session) {
-      const firstName = session.user?.user_metadata?.first_name || "User";
-      const email = session.user?.email || "";
-      setUserName(firstName);
-      setUserEmail(email);
-      loadCustomerData();
-
-      // Check for payment status in URL
-      const paymentStatus = searchParams.get('payment');
-      if (paymentStatus === 'success') {
-        setPaymentNotification({ type: 'success', message: 'Payment successful! Thank you.' });
-        // Clear URL params after showing notification
-        setTimeout(() => {
-          router.replace('/customer');
-        }, 100);
-      } else if (paymentStatus === 'cancelled') {
-        setPaymentNotification({ type: 'error', message: 'Payment was cancelled.' });
-        setTimeout(() => {
-          router.replace('/customer');
-        }, 100);
+    const checkCustomerAccess = async () => {
+      if (!loading && !session) {
+        router.push("/");
+        return;
       }
-    }
+      
+      if (session) {
+        // Check if user has a client record
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('first_name, last_name')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!clientData) {
+          // No client record = not a customer, redirect to home
+          router.push("/");
+          return;
+        }
+
+        const firstName = clientData.first_name || session.user?.user_metadata?.first_name || "User";
+        const email = session.user?.email || "";
+        setUserName(firstName);
+        setUserEmail(email);
+        loadCustomerData();
+
+        // Check for payment status in URL
+        const paymentStatus = searchParams.get('payment');
+        if (paymentStatus === 'success') {
+          setPaymentNotification({ type: 'success', message: 'Payment successful! Thank you.' });
+          // Clear URL params after showing notification
+          setTimeout(() => {
+            router.replace('/customer');
+          }, 100);
+        } else if (paymentStatus === 'cancelled') {
+          setPaymentNotification({ type: 'error', message: 'Payment was cancelled.' });
+          setTimeout(() => {
+            router.replace('/customer');
+          }, 100);
+        }
+      }
+    };
+
+    checkCustomerAccess();
   }, [session, loading, router, searchParams]);
 
   const loadCustomerData = async () => {

@@ -3,20 +3,45 @@
 import Link from "next/link";
 import Image from "next/image";
 import { User, UserCog } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomerLoginModal from "../customer/CustomerLoginModal";
 import CustomerSignupModal from "../customer/CustomerSignupModal";
 import { useAuth } from "@/src/app/providers/AuthProvider";
+import { supabase } from "@/src/lib/db/supabase-client";
 
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [isCustomer, setIsCustomer] = useState(false);
+  const [userName, setUserName] = useState("Profile");
   const { session } = useAuth();
   const isActive = (page) => currentPage === page;
   
-  // Check if user is logged in and is a customer (not admin)
-  const isCustomer = session && session.user?.user_metadata?.role !== "admin";
-  const userName = session?.user?.user_metadata?.first_name || "Profile";
+  // Check if user has a client record (simpler than role checking)
+  useEffect(() => {
+    const checkIfCustomer = async () => {
+      if (session) {
+        const { data } = await supabase
+          .from('clients')
+          .select('first_name')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (data) {
+          setIsCustomer(true);
+          setUserName(data.first_name || "Profile");
+        } else {
+          setIsCustomer(false);
+          setUserName("Profile");
+        }
+      } else {
+        setIsCustomer(false);
+        setUserName("Profile");
+      }
+    };
+    
+    checkIfCustomer();
+  }, [session]);
 
   const switchToSignup = () => {
     setShowLoginModal(false);
