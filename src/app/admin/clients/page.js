@@ -404,20 +404,20 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-background min-h-screen">
       {/* Header */}
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-            <p className="text-gray-600">Manage your client database</p>
+            <h1 className="text-2xl font-bold text-text">Clients</h1>
+            <p className="text-text-muted">Manage your client database</p>
           </div>
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium flex items-center transition-colors"
+            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-background font-medium flex items-center transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Client
@@ -427,27 +427,27 @@ export default function ClientsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <User className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {clients.length}
               </p>
-              <p className="text-sm text-gray-600">Total Clients</p>
+              <p className="text-sm text-text-muted">Total Clients</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <Calendar className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {
                   clients.filter((c) => {
                     const created = new Date(c.created_at);
@@ -457,7 +457,7 @@ export default function ClientsPage() {
                   }).length
                 }
               </p>
-              <p className="text-sm text-gray-600">New This Month</p>
+              <p className="text-sm text-text-muted">New This Month</p>
             </div>
           </div>
         </div>
@@ -477,65 +477,65 @@ export default function ClientsPage() {
       )}
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-500" />
+          <Search className="w-4 h-4 text-text" />
           <input
             type="text"
             placeholder="Search by name, email, phone, or address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+            className="border border-border rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-border"
           />
         </div>
       </div>
 
       {/* Clients Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-background-light rounded-lg shadow-sm border border-border">
         {filteredClients.length === 0 ? (
           <div className="p-8 text-center">
-            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No clients found</p>
-            <p className="text-sm text-gray-400">
+            <User className="w-12 h-12 text-text-muted mx-auto mb-4" />
+            <p className="text-text-muted">No clients found</p>
+            <p className="text-sm text-text-muted">
               Client information will appear here when added to the database
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-background-light">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Address
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Added
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Appointments
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-background-light divide-y divide-border">
                 {filteredClients.map((client) => {
                   const appointmentCount = appointmentCounts[client.id] || 0;
                   
                   return (
-                    <tr key={client.id} className="hover:bg-gray-50">
+                    <tr key={client.id} className="hover:bg-background-hover">
                       <td
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-text">
                           {client.first_name} {client.last_name}
                         </div>
                       </td>
@@ -543,8 +543,8 @@ export default function ClientsPage() {
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                        <div className="flex items-center text-sm text-text">
+                          <Mail className="w-4 h-4 text-text-muted mr-2" />
                           {client.email || "Not provided"}
                         </div>
                       </td>
@@ -552,8 +552,8 @@ export default function ClientsPage() {
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                        <div className="flex items-center text-sm text-text">
+                          <Phone className="w-4 h-4 text-text-muted mr-2" />
                           {client.phone ? formatPhoneNumber(client.phone) : "Not provided"}
                         </div>
                       </td>
@@ -561,15 +561,15 @@ export default function ClientsPage() {
                         className="px-6 py-4 cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                        <div className="flex items-center text-sm text-text">
+                          <MapPin className="w-4 h-4 text-text-muted mr-2 flex-shrink-0" />
                           <span className="truncate max-w-xs">
                             {client.address || "Not provided"}
                           </span>
                         </div>
                       </td>
                       <td
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer"
+                        className="px-6 py-4 whitespace-nowrap text-sm text-text cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
                         {new Date(client.created_at).toLocaleDateString()}
