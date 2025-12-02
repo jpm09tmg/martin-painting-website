@@ -23,7 +23,7 @@ export default function AdminLayout({ children }) {
   if (!session) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-background-dark">
       <AdminHeader />
       <div className="flex flex-1">
         <Sidebar />

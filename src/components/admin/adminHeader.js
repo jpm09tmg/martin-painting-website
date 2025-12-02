@@ -19,7 +19,7 @@ export default function AdminHeader() {
   };
 
   return (
-    <div className="w-full h-16 bg-background justify-center flex items-center relative">
+    <div className="w-full h-16 bg-background-light justify-center flex items-center relative">
       <Link href="/" className="hover:opacity-80 transition-opacity">
         <div className="w-24  rounded-lg overflow-hidden shadow-md">
           <Image
