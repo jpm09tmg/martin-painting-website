@@ -391,7 +391,7 @@ export default function CustomerHome() {
                       <div key={quote.id} className="bg-background-light border border-border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <h3 className="font-medium text-text">{quote.service_type}</h3>
+                            <h3 className="font-medium text-text">{quote.project_type}</h3>
                             <p className="text-sm text-text-muted">
                               Created: {new Date(quote.created_at).toLocaleDateString()}
                             </p>

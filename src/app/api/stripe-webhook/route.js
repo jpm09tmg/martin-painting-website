@@ -33,6 +33,22 @@ export async function POST(req) {
         const quoteId = session.metadata.quote_id;
 
         if (quoteId) {
+          // Get quote details for payment record
+          const { data: quote } = await supabase
+            .from('quotes')
+            .select(`
+              id,
+              project_type,
+              total_amount,
+              client_id,
+              clients (
+                first_name,
+                last_name
+              )
+            `)
+            .eq('id', quoteId)
+            .single();
+
           // Update the quote status to paid
           const { error: updateError } = await supabase
             .from('quotes')
@@ -47,20 +63,50 @@ export async function POST(req) {
             console.error('Error updating quote:', updateError);
           }
 
-          // Create payment record for admin dashboard
-          const { error: paymentError } = await supabase
+          // Check if payment record already exists
+          const { data: existingPayment } = await supabase
             .from('payments')
-            .insert({
-              quote_id: quoteId,
-              amount: session.amount_total / 100, // Convert from cents
-              payment_method: 'stripe',
-              payment_status: 'completed',
-              stripe_payment_id: session.payment_intent,
-              paid_at: new Date().toISOString(),
-            });
+            .select('id')
+            .eq('quote_id', quoteId)
+            .single();
 
-          if (paymentError) {
-            console.error('Error creating payment record:', paymentError);
+          const clientName = quote?.clients 
+            ? `${quote.clients.first_name} ${quote.clients.last_name}`
+            : 'Unknown';
+
+          if (existingPayment) {
+            // Update existing payment record (Stripe payment completed)
+            const { error: updatePaymentError } = await supabase
+              .from('payments')
+              .update({
+                paid: session.amount_total / 100,
+                payment_method: 'Stripe',  // Set to Stripe since this is a Stripe payment
+                payment_status: 'Paid',
+                stripe_payment_id: session.payment_intent,
+              })
+              .eq('id', existingPayment.id);
+
+            if (updatePaymentError) {
+              console.error('Error updating payment record:', updatePaymentError);
+            }
+          } else {
+            // Create new payment record (no existing record found)
+            const { error: createPaymentError } = await supabase
+              .from('payments')
+              .insert({
+                quote_id: quoteId,
+                project: quote?.project_type || 'Service',
+                client: clientName,
+                total: session.amount_total / 100,
+                paid: session.amount_total / 100,
+                payment_method: 'Stripe',
+                payment_status: 'Paid',
+                stripe_payment_id: session.payment_intent,
+              });
+
+            if (createPaymentError) {
+              console.error('Error creating payment record:', createPaymentError);
+            }
           }
         }
         break;
