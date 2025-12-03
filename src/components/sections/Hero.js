@@ -32,7 +32,7 @@ export default function Hero() {
             className="drop-shadow-xl"
             style={{
               mixBlendMode: "multiply",
-              filter: "contrast(1.1) brightness(0.95)",
+              filter: "contrast(1.1) brightness(1.2)",
               width: "650px",
               height: "650px",
               objectFit: "contain",
