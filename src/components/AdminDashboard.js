@@ -25,15 +25,15 @@ export default function AdminDashboard() {
         .from("testimonials")
         .select("*")
         .order("submitted_at", { ascending: false });
-      
+
       // Apply filter if not showing "all" reviews
       if (filter !== "all") {
         query = query.eq("status", filter);
       }
-      
+
       const { data, error } = await query;
       if (error) throw error;
-      
+
       setReviews(data || []);
     } catch (err) {
       setMessage(`Error loading reviews: ${err.message}`);
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
-      
+
   // Approve a review: change status to "approved" and mark it live on website
   const approveReview = async (id) => {
     try {
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
         .update({ status: "approved", approved_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
-      
+
       // Show success message and refresh the list
       setMessage("Review approved and posted!");
       loadReviews();
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
         .update({ status: "removed" })
         .eq("id", id);
       if (error) throw error;
-      
+
       setMessage("Review removed from website.");
       loadReviews();
       setTimeout(() => setMessage(""), 3000);
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         .delete()
         .eq("id", id);
       if (error) throw error;
-      
+
       setMessage("Review deleted permanently.");
       loadReviews();
       setTimeout(() => setMessage(""), 3000);
@@ -134,63 +134,63 @@ export default function AdminDashboard() {
     );
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-background min-h-screen">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Customer Reviews</h1>
-        <p className="text-gray-600">Manage customer reviews</p>
+        <h1 className="text-2xl font-bold text-text">Customer Reviews</h1>
+        <p className="text-text-muted">Manage customer reviews</p>
       </div>
 
       {/* Statistics cards: shows counts for pending, approved, and removed reviews */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Pending reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {reviews.filter((r) => r.status === "pending").length}
               </p>
-              <p className="text-gray-600">Pending</p>
+              <p className="text-text-muted">Pending</p>
             </div>
           </div>
         </div>
 
         {/* Approved reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {reviews.filter((r) => r.status === "approved").length}
               </p>
-              <p className="text-gray-600">Approved</p>
+              <p className="text-text-muted">Approved</p>
             </div>
           </div>
         </div>
 
         {/* Removed reviews card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-gray-100 rounded-lg">
               <EyeOff className="w-6 h-6 text-gray-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {reviews.filter((r) => r.status === "removed").length}
               </p>
-              <p className="text-gray-600">Removed</p>
+              <p className="text-text-muted">Removed</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter buttons: allows switching between pending, approved, removed, and all reviews */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("pending")}
@@ -249,13 +249,13 @@ export default function AdminDashboard() {
       )}
 
       {/* Reviews list: displays all reviews or "no reviews found" message */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-background-light rounded-lg shadow-sm border border-border">
         {reviews.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No reviews found</p>
+            <p className="text-text-muted">No reviews found</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {/* Loop through each review and display as a card */}
             {reviews.map((review) => (
               <div key={review.id} className="p-6 hover:bg-gray-50">
@@ -263,10 +263,10 @@ export default function AdminDashboard() {
                   {/* Review content: name, service type, rating, quote, and date */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <h3 className="font-semibold text-gray-900 text-lg">
+                      <h3 className="font-semibold text-text text-lg">
                         {review.author_name}
                       </h3>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-text-muted">
                         ({review.service_type})
                       </span>
                       {getStatusBadge(review.status)}
@@ -284,13 +284,13 @@ export default function AdminDashboard() {
                           }`}
                         />
                       ))}
-                      <span className="ml-2 text-sm text-gray-600">
+                      <span className="ml-2 text-sm text-text-muted">
                         ({review.rating}/5)
                       </span>
                     </div>
 
-                    <p className="text-gray-700 mb-3">"{review.quote}"</p>
-                    <div className="text-xs text-gray-500">
+                    <p className="text-text mb-3">"{review.quote}"</p>
+                    <div className="text-xs text-text-muted">
                       Submitted:{" "}
                       {new Date(review.submitted_at).toLocaleString()}
                     </div>
