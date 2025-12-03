@@ -489,14 +489,14 @@ export default function GalleryManagementPage() {
 
             {/* Empty State */}
             {images.length === 0 && (
-              <div className="bg-white rounded-lg shadow p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
+              <div className="bg-background-light rounded-lg shadow p-12 text-center">
+                <div className="w-16 h-16 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ImageIcon className="w-8 h-8 text-text-muted" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-text mb-2">
                   No images yet
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p className="text-text-muted mb-6">
                   Get started by uploading your first gallery image
                 </p>
               </div>
@@ -505,13 +505,13 @@ export default function GalleryManagementPage() {
             {/* No Search Results */}
             {filteredImages.length === 0 && images.length > 0 && (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-text-muted" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-text mb-2">
                   No images found
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-text-muted">
                   Try adjusting your search or filter criteria
                 </p>
               </div>
