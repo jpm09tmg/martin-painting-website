@@ -54,10 +54,10 @@ export default function Header({ currentPage = "home" }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50">
+    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center">
-          <div className="w-24  rounded-lg overflow-hidden shadow-md">
+          <div className="w-24  rounded-lg overflow-hidden ">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <div className="w-24  rounded-lg overflow-hidden shadow-md">
                 <Image
