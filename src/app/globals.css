@@ -125,6 +125,8 @@ body.light {
   );
 }
 
+.d-shadow{
+  box-shadow: 0px 4px 4px #00000030, 0px 12px 12px #00000015;}
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
