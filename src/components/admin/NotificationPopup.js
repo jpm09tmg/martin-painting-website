@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Star, MessageSquare } from "lucide-react";
+import { X, MessageSquare } from "lucide-react";
 
 /**
  * NotificationPopup Component
@@ -35,91 +35,45 @@ export default function NotificationPopup({ newReviews = [], onClose, onViewRevi
 
   return (
     <>
-      {/* Backdrop overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 z-[999] transition-opacity duration-300"
-        onClick={handleClose}
-      />
-
-      {/* Notification popup */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1000] w-full max-w-md px-4">
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      {/* Notification popup - slides in from right */}
+      <div className="fixed top-20 right-4 z-[1000] w-full max-w-sm animate-slide-in">
+        <div className="bg-background-dark rounded-xl shadow-2xl overflow-hidden border-2 border-primary/50">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 relative">
+          <div className="bg-background-dark border-b border-primary/30 p-4 relative">
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+              className="absolute top-3 right-3 text-text-muted hover:text-text transition-colors"
               aria-label="Close notification"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center space-x-3">
-              <div className="bg-white/20 p-3 rounded-full">
-                <MessageSquare className="w-8 h-8 text-white" />
+            <div className="flex items-center space-x-3 pr-8">
+              <div className="bg-primary/20 p-2 rounded-full">
+                <MessageSquare className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">
-                  New Review{newReviews.length > 1 ? "s" : ""}!
+                <h2 className="text-lg font-bold text-text">
+                  New Reviews Pending
                 </h2>
-                <p className="text-blue-100 text-sm">
-                  {newReviews.length} {newReviews.length === 1 ? "review" : "reviews"} awaiting your attention
-                </p>
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-6">
-            <div className="space-y-4 max-h-64 overflow-y-auto">
-              {newReviews.slice(0, 3).map((review, index) => (
-                <div
-                  key={review.id || index}
-                  className="bg-gray-50 rounded-lg p-4 border border-gray-200"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {review.client_name || "Anonymous"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {review.created_at
-                          ? new Date(review.created_at).toLocaleDateString()
-                          : "Recently"}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm font-semibold text-gray-700">
-                        {review.rating || 5}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {review.review_text || review.comment || "No comment provided"}
-                  </p>
-                </div>
-              ))}
-
-              {newReviews.length > 3 && (
-                <p className="text-center text-sm text-gray-500 pt-2">
-                  + {newReviews.length - 3} more review{newReviews.length - 3 > 1 ? "s" : ""}
-                </p>
-              )}
-            </div>
-
+          <div className="p-4 bg-background-dark">
             {/* Action buttons */}
-            <div className="flex space-x-3 mt-6">
+            <div className="flex flex-col space-y-2">
               <button
                 onClick={handleViewReviews}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                className="w-full bg-primary hover:bg-primary/80 text-background-dark font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
               >
-                <MessageSquare className="w-5 h-5" />
-                <span>View All Reviews</span>
+                <MessageSquare className="w-4 h-4" />
+                <span>See Reviews</span>
               </button>
               <button
                 onClick={handleClose}
-                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors duration-200"
+                className="w-full py-2.5 px-4 bg-background-light hover:bg-background text-text-muted font-semibold rounded-lg transition-colors duration-200 border border-border"
               >
                 Later
               </button>
@@ -129,19 +83,19 @@ export default function NotificationPopup({ newReviews = [], onClose, onViewRevi
       </div>
 
       <style jsx>{`
-        @keyframes scale-in {
+        @keyframes slide-in {
           from {
-            transform: scale(0.9);
+            transform: translateX(100%);
             opacity: 0;
           }
           to {
-            transform: scale(1);
+            transform: translateX(0);
             opacity: 1;
           }
         }
 
-        .animate-scale-in {
-          animation: scale-in 0.3s ease-out;
+        .animate-slide-in {
+          animation: slide-in 0.4s ease-out;
         }
       `}</style>
     </>
