@@ -135,7 +135,7 @@ export default function QuotePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-dark text-text">
+    <div className="min-h-screen bg-background-dark text-text pt-16">
       <Header currentPage="quote" />
 
       {/* Hero Section */}

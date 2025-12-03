@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="w-full h-[600px] relative overflow-hidden">
+    <section className="w-full h-[600px] relative overflow-hidden pt-16">
       {/* bg image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
