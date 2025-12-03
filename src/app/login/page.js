@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
                ${
                  loading
                    ? "bg-background-light text-text-muted cursor-not-allowed"
-                   : "bg-primary text-text hover:bg-secondary"
+                   : "bg-primary text-white hover:bg-secondary"
                }
               `}
             >
