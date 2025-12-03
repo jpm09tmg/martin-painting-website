@@ -6,7 +6,7 @@ import Footer from "@/src/components/layout/Footer";
 
 export default function ServicesPage() {
   return (
-    <div className="w-full min-h-screen bg-background">
+    <div className="w-full min-h-screen bg-background pt-16">
       <Header currentPage="services" />
 
       {/* Hero */}
