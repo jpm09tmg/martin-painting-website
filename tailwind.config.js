@@ -5,13 +5,11 @@ const config = {
     "./src/components/**/*.{js,jsx,ts,tsx}",
   ],
 
-  // Use class-based dark mode (you can switch themes with a class on <html> or <body>)
   darkMode: "class",
 
   theme: {
     extend: {
       colors: {
-        // These map directly to the CSS variables in globals.css
         background: "var(--bg)",
         "background-dark": "var(--bg-dark)",
         "background-light": "var(--bg-light)",

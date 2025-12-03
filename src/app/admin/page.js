@@ -221,17 +221,17 @@ export default function AdminDashboard() {
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
-    <div className="flex flex-col min-h-screen bg-background-light">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}
-      <div className="flex-1 p-8 bg-background-light">
+      <div className="flex-1 p-8 bg-background">
         {/* ============================================ */}
         {/* PAGE HEADER - Title and welcome message */}
         {/* ============================================ */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-text">Admin Dashboard</h1>
+          <p className="text-text-muted">
             {/* Using &apos; instead of ' to avoid JSX syntax issues */}
             Welcome back! Here&apos;s what&apos;s happening with Martin
             Painting.
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 1: Total Projects */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with blue background */}
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -267,10 +267,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-text text-m">Total Projects</p>
+                <p className="text-2xl font-bold text-text-muted">
                   {stats.totalProjects}
                 </p>
-                <p className="text-gray-600">Total Projects</p>
               </div>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 2: Total Appointments */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with yellow background */}
               <div className="p-2 bg-yellow-100 rounded-lg">
@@ -297,10 +297,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.totalAppointments}
                 </p>
-                <p className="text-gray-600">Total Appointments</p>
+                <p className="text-text-muted">Total Appointments</p>
               </div>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 3: Completed This Month */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with green background */}
               <div className="p-2 bg-green-100 rounded-lg">
@@ -327,10 +327,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.completedThisMonth}
                 </p>
-                <p className="text-gray-600">Completed This Month</p>
+                <p className="text-text-muted">Completed This Month</p>
               </div>
             </div>
           </div>
@@ -338,13 +338,13 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 4: Pending Appointments */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with brand green background */}
-              <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
+              <div className="p-2 bg-warning/20 bg-opacity-20 rounded-lg">
                 {/* Clock SVG icon (represents pending/waiting) */}
                 <svg
-                  className="w-6 h-6 text-[#74A744]"
+                  className="w-6 h-6 text-warning"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -357,10 +357,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.pendingAppointments}
                 </p>
-                <p className="text-gray-600">Pending Appointments</p>
+                <p className="text-text-muted">Pending Appointments</p>
               </div>
             </div>
           </div>
@@ -377,17 +377,17 @@ export default function AdminDashboard() {
           - Progress bars showing completion percentage
           - Empty state if no projects exist
         */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-text">
                 Recent Projects
               </h3>
               {/* Link to full projects page using Next.js Link component */}
               <Link
                 href="/admin/projects"
-                className="text-[#74A744] hover:text-[#5F9136] font-medium"
+                className="text-text hover:text-text-muted font-medium"
               >
                 View All
               </Link>
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
                   >
                     {/* Project header with name and status badge */}
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-text">
                         {project.name}
                       </h4>
                       {/* Status badge with dynamic color based on project status */}
@@ -430,7 +430,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Project details */}
-                    <div className="text-sm text-gray-600 space-y-1">
+                    <div className="text-sm text-text-muted space-y-1">
                       {/* Client name */}
                       <p>
                         <span className="font-medium">Client:</span>{" "}
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
               <div className="text-center py-8">
                 {/* Briefcase/folder icon */}
                 <svg
-                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  className="w-12 h-12 text-text-muted mx-auto mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -488,14 +488,14 @@ export default function AdminDashboard() {
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   />
                 </svg>
-                <p className="text-gray-500 font-medium">No projects yet</p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-text font-medium">No projects yet</p>
+                <p className="text-text-muted text-sm">
                   Projects will appear here once you start adding them
                 </p>
                 {/* Call-to-action button to add first project */}
                 <Link
                   href="/admin/projects"
-                  className="inline-block mt-3 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] text-sm"
+                  className="inline-block mt-3 px-4 py-2 bg-background text-text rounded-lg hover:bg-background-dark text-sm"
                 >
                   Add Your First Project
                 </Link>
@@ -515,17 +515,17 @@ export default function AdminDashboard() {
           - Customer details and appointment info
           - Empty state if no pending appointments
         */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-text">
                 Upcoming Appointments
               </h3>
               {/* Link to full appointments page */}
               <Link
                 href="/admin/appointments"
-                className="text-[#74A744] hover:text-[#5F9136] font-medium"
+                className="text-text hover:text-text-muted font-medium"
               >
                 View All
               </Link>
@@ -623,7 +623,7 @@ export default function AdminDashboard() {
               <div className="text-center py-8">
                 {/* Calendar icon */}
                 <svg
-                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  className="w-12 h-12 text-text-muted mx-auto mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -635,10 +635,10 @@ export default function AdminDashboard() {
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="text-gray-500 font-medium">
+                <p className="text-text font-medium">
                   No upcoming appointments
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-text-muted text-sm">
                   New appointments will appear here
                 </p>
               </div>

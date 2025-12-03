@@ -19,11 +19,11 @@ export default function AdminHeader() {
   };
 
   return (
-    <div className="w-full h-16 bg-[#74A744] justify-center flex items-center relative">
+    <div className="w-full h-16 bg-background-light justify-center flex items-center relative">
       <Link href="/" className="hover:opacity-80 transition-opacity">
-        <div className="w-28 h-12 bg-[#E4EDCB] rounded-lg overflow-hidden shadow-md">
+        <div className="w-24  rounded-lg overflow-hidden shadow-md">
           <Image
-            src="/martinPainting.png"
+            src="/martinPainting_v2.png"
             alt="Martin Painting Logo"
             width={144}
             height={69}
@@ -34,10 +34,10 @@ export default function AdminHeader() {
 
       <button
         onClick={handleLogout}
-        className="absolute right-6 p-2 rounded-full hover:bg-[#5F9136] transition-colors"
+        className="absolute right-6 p-2 rounded-full hover:bg-background-light transition-colors"
         aria-label="Logout"
       >
-        <LogOut className="w-6 h-6 text-white" />
+        <LogOut className="w-6 h-6 text-text-muted" />
       </button>
       {/* TODO: add admin icon + notification bell? + logout option */}
     </div>

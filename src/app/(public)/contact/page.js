@@ -77,7 +77,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen bg-white pt-16">
       <Header currentPage="contact" />
 
       {/* Hero Section */}

@@ -115,7 +115,7 @@ export default function Gallery() {
 
   // Note: Consider adding a file that determines website color scheme and company theme to allow easy switching of color palette
   return (
-    <div className="w-full min-h-screen flex flex-col bg-white">
+    <div className="w-full min-h-screen flex flex-col bg-white pt-16">
       <Header currentPage="gallery" />
 
       {/* Hero Section */}
@@ -193,7 +193,7 @@ export default function Gallery() {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                   </div>
                 </div>
-              ))}
+              ))} 
             </div>
           )}
         </div>

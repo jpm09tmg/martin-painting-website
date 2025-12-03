@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="w-full h-[600px] relative overflow-hidden">
+    <section className="w-full h-[600px] relative overflow-hidden pt-16">
       {/* bg image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
@@ -13,6 +13,8 @@ export default function Hero() {
       >
         <div className="absolute inset-0 bg-black/10 pointer-events-none" />
       </div>
+
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/45 to-slate-900/10 backdrop-blur-xs" />
 
       {/* centered logo */}
       <div className="relative z-10 h-full flex items-center justify-center">
@@ -30,7 +32,7 @@ export default function Hero() {
             className="drop-shadow-xl"
             style={{
               mixBlendMode: "multiply",
-              filter: "contrast(1.1) brightness(0.95)",
+              filter: "contrast(1.1) brightness(1.2)",
               width: "650px",
               height: "650px",
               objectFit: "contain",
