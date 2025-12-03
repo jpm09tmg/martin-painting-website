@@ -45,25 +45,23 @@ async function listFolder(folder) {
   const parts = folder.split("/");
   const tags = parts;
 
-  return (
-    (data || [])
-      .filter((item) => item.id) // Filter out folders, keep files only
-      .map((item) => {
-        const fullPath = `${folder}/${item.name}`;
-        const { data: pub } = supabase.storage
-          .from("gallery")
-          .getPublicUrl(fullPath);
-        return {
-          id: item.id,
-          name: item.name,
-          path: fullPath,
-          url: pub.publicUrl,
-          created_at: item.created_at,
-          tags,
-          folder,
-        };
-      })
-  );
+  return (data || [])
+    .filter((item) => item.id) // Filter out folders, keep files only
+    .map((item) => {
+      const fullPath = `${folder}/${item.name}`;
+      const { data: pub } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fullPath);
+      return {
+        id: item.id,
+        name: item.name,
+        path: fullPath,
+        url: pub.publicUrl,
+        created_at: item.created_at,
+        tags,
+        folder,
+      };
+    });
 }
 
 export default function GalleryManagementPage() {
@@ -289,8 +287,8 @@ export default function GalleryManagementPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 p-8 bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex-1 p-8 bg-background">
         {/* Success/Error Message Banner */}
         {message && (
           <div
@@ -308,10 +306,10 @@ export default function GalleryManagementPage() {
         <div className="mb-8">
           <div className="mb-6 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-text">
                 Gallery Management
               </h1>
-              <p className="text-gray-600">
+              <p className="text-text-muted">
                 Manage gallery images for the public website
               </p>
             </div>
@@ -319,7 +317,7 @@ export default function GalleryManagementPage() {
             {/* Upload Button */}
             <button
               onClick={() => setShowUploadModal(true)}
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center shadow-lg transition-colors"
+              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/70 font-medium inline-flex items-center shadow-lg transition-colors"
             >
               <Upload className="w-5 h-5 mr-2" />
               Upload Images
@@ -329,88 +327,84 @@ export default function GalleryManagementPage() {
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             {/* Total Images */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <ImageIcon className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalImages}
-                  </p>
-                  <p className="text-gray-600">Total Images</p>
+                  <p className="text-2xl font-bold text-text">{totalImages}</p>
+                  <p className="text-text-muted">Total Images</p>
                 </div>
               </div>
             </div>
 
             {/* Residential Images */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <ImageIcon className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {residentialImages}
                   </p>
-                  <p className="text-gray-600">Residential</p>
+                  <p className="text-text-muted">Residential</p>
                 </div>
               </div>
             </div>
 
             {/* Commercial Images */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-indigo-100 rounded-lg">
                   <ImageIcon className="w-6 h-6 text-indigo-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {commercialImages}
                   </p>
-                  <p className="text-gray-600">Commercial</p>
+                  <p className="text-text-muted">Commercial</p>
                 </div>
               </div>
             </div>
 
             {/* Recent Uploads */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <Upload className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {recentImages}
-                  </p>
-                  <p className="text-gray-600">Last 7 Days</p>
+                  <p className="text-2xl font-bold text-text">{recentImages}</p>
+                  <p className="text-text-muted">Last 7 Days</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Search and Filter Bar */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-background-light rounded-lg shadow p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search Input */}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search images by filename..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 text-text border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               {/* Category Filter */}
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-400" />
+                <Filter className="w-5 h-5 text-text-muted" />
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="text-text bg-background-light border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-border"
                 >
                   <option value="all">All Categories</option>
                   <option value="residential">Residential</option>
@@ -420,7 +414,7 @@ export default function GalleryManagementPage() {
                 </select>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-text-muted mt-2">
               Showing {filteredImages.length} of {totalImages} images
             </p>
           </div>
@@ -429,7 +423,7 @@ export default function GalleryManagementPage() {
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading gallery images...</p>
+            <p className="text-text-muted">Loading gallery images...</p>
           </div>
         ) : (
           <>
@@ -438,7 +432,7 @@ export default function GalleryManagementPage() {
               {filteredImages.map((image) => (
                 <div
                   key={image.path}
-                  className="bg-white rounded-lg shadow-lg border hover:shadow-xl transition-shadow"
+                  className="bg-background-light rounded-lg shadow-lg border hover:shadow-xl transition-shadow"
                 >
                   {/* Image Preview */}
                   <div className="relative h-48 overflow-hidden rounded-t-lg">
@@ -471,19 +465,19 @@ export default function GalleryManagementPage() {
                     </div>
 
                     {/* File Name */}
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2 truncate">
+                    <h3 className="text-sm font-semibold text-text mb-2 truncate">
                       {image.name}
                     </h3>
 
                     {/* Upload Date */}
-                    <p className="text-xs text-gray-500 mb-3">
+                    <p className="text-xs text-text-muted mb-3">
                       {new Date(image.created_at).toLocaleDateString()}
                     </p>
 
                     {/* Delete Button */}
                     <button
                       onClick={() => confirmDelete(image)}
-                      className="w-full px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors inline-flex items-center justify-center"
+                      className="w-full px-3 py-2 bg-danger text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors inline-flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
@@ -618,7 +612,9 @@ export default function GalleryManagementPage() {
                 <button
                   type="button"
                   onClick={handleUpload}
-                  disabled={uploading || !selectedCategory || uploadFiles.length === 0}
+                  disabled={
+                    uploading || !selectedCategory || uploadFiles.length === 0
+                  }
                   className="flex-1 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploading ? "Uploading..." : "Upload"}
