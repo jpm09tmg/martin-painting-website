@@ -128,8 +128,8 @@ export default function AdminDashboard() {
   // Show loading spinner while fetching data
   if (loading)
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="p-6 bg-background min-h-screen flex items-center justify-center">
+        <p className="text-text-muted">Loading...</p>
       </div>
     );
 
