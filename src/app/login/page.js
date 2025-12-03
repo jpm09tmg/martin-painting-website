@@ -98,8 +98,8 @@ export default function AdminLoginPage() {
               className={`w-full h-[44px] flex items-center justify-center rounded transition-colors
                ${
                  loading
-                   ? "bg-gray-400"
-                   : "bg-primary hover:bg-secondary text-white"
+                   ? "bg-background-light text-text-muted cursor-not-allowed"
+                   : "bg-primary text-text hover:bg-secondary"
                }
               `}
             >
