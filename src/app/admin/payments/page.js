@@ -84,108 +84,106 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-background min-h-screen">
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
-            <p className="text-gray-600">Track and manage payment records</p>
+            <h1 className="text-2xl font-bold text-text">Payments</h1>
+            <p className="text-text-muted">Track and manage payment records</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
-                {payments.length}
-              </p>
-              <p className="text-sm text-gray-600">Total Payments</p>
+              <p className="text-2xl font-bold text-text">{payments.length}</p>
+              <p className="text-sm text-text-muted">Total Payments</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 ${unpaidAmount.toFixed(2)}
               </p>
-              <p className="text-sm text-gray-600">Unpaid Amount</p>
+              <p className="text-sm text-text-muted">Unpaid Amount</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-500" />
+          <Search className="w-4 h-4 text-text-muted" />
           <input
             type="text"
             placeholder="Search by project, client, status, or payment method..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+            className="text-text border border-border rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-background-light rounded-lg shadow-sm border border-border">
         {filteredPayments.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No payments found</p>
-            <p className="text-sm text-gray-400">
+            <p className="text-text-muted">No payments found</p>
+            <p className="text-sm text-text-muted">
               Payment records will appear here when added to the database
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="border border-border rounded overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-background-light">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Project
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Client
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Total ($)
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Paid ($)
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Payment Method
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-background-light divide-y divide-border">
                 {filteredPayments.map((p) => (
-                  <tr key={p.id} className="hover:bg-gray-50">
+                  <tr key={p.id} className="hover:bg-primary/10">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-text">
                         {p.project}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{p.client}</div>
+                      <div className="text-sm text-text">{p.client}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${p.total}</div>
+                      <div className="text-sm text-text">${p.total}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${p.paid}</div>
+                      <div className="text-sm text-text">${p.paid}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
@@ -193,7 +191,7 @@ export default function PaymentsPage() {
                         onChange={(e) =>
                           handlePaymentMethodChange(p.id, e.target.value)
                         }
-                        className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+                        className="px-2 py-1 rounded text-xs font-semibold bg-background-light text-text-muted border border-border-muted focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="">Select...</option>
                         <option value="Cash">Cash</option>
@@ -207,7 +205,7 @@ export default function PaymentsPage() {
                         onChange={(e) =>
                           handleStatusChange(p.id, e.target.value)
                         }
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
+                        className={`bg-background-light px-2 py-1 rounded text-xs font-semibold ${
                           p.status === "Paid"
                             ? "bg-green-100 text-green-800"
                             : p.status === "Partial"
