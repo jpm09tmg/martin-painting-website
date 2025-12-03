@@ -495,14 +495,17 @@ export default function ProjectsPage() {
     if (!value) return "";
     // Remove all non-digits
     const phoneNumber = value.replace(/\D/g, "");
-    
+
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     } else {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+        3,
+        6
+      )}-${phoneNumber.slice(6, 10)}`;
     }
   };
 
@@ -542,8 +545,8 @@ export default function ProjectsPage() {
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 p-8 bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex-1 p-8 bg-background text-text">
         {/* ============================================ */}
         {/* SUCCESS/ERROR MESSAGE BANNER */}
         {/* ============================================ */}
@@ -566,10 +569,8 @@ export default function ProjectsPage() {
         <div className="mb-8">
           <div className="mb-6 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Projects Management
-              </h1>
-              <p className="text-gray-600">
+              <h1 className="text-3xl font-bold">Projects Management</h1>
+              <p className="text-text-muted">
                 Track and manage all painting projects
               </p>
             </div>
@@ -577,7 +578,7 @@ export default function ProjectsPage() {
             {/* New Project Button */}
             <button
               onClick={() => setShowAddModal(true)} // Open add project modal
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center shadow-lg transition-colors"
+              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/70 font-medium inline-flex items-center shadow-lg transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" />
               New Project
@@ -589,39 +590,39 @@ export default function ProjectsPage() {
           {/* ============================================ */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             {/* Active Projects Card */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Calendar className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   {/* Filter and count projects with "In Progress" status */}
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold ">
                     {projects.filter((p) => p.status === "In Progress").length}
                   </p>
-                  <p className="text-gray-600">Active Projects</p>
+                  <p className="text-text-muted">Active Projects</p>
                 </div>
               </div>
             </div>
 
             {/* Planning Projects Card */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-yellow-100 rounded-lg">
                   <Clock className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   {/* Filter and count projects with "Planning" status */}
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold ">
                     {projects.filter((p) => p.status === "Planning").length}
                   </p>
-                  <p className="text-gray-600">Planning</p>
+                  <p className="text-text-muted">Planning</p>
                 </div>
               </div>
             </div>
 
             {/* Completed Projects Card */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <div className="w-6 h-6 text-green-600 flex items-center justify-center font-bold">
@@ -630,26 +631,26 @@ export default function ProjectsPage() {
                 </div>
                 <div className="ml-4">
                   {/* Filter and count projects with "Completed" status */}
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold ">
                     {projects.filter((p) => p.status === "Completed").length}
                   </p>
-                  <p className="text-gray-600">Completed</p>
+                  <p className="text-text-muted">Completed</p>
                 </div>
               </div>
             </div>
 
             {/* On Hold Projects Card */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="ml-4">
                   {/* Filter and count projects with "On Hold" status */}
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold ">
                     {projects.filter((p) => p.status === "On Hold").length}
                   </p>
-                  <p className="text-gray-600">On Hold</p>
+                  <p className="text-text-muted">On Hold</p>
                 </div>
               </div>
             </div>
@@ -658,27 +659,27 @@ export default function ProjectsPage() {
           {/* ============================================ */}
           {/* SEARCH AND FILTER BAR */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-background-light rounded-lg shadow p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search Input */}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search projects, clients, or addresses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm when user types
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-400" />
+                <Filter className="w-5 h-5 text-text" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)} // Update statusFilter when user selects
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="bg-background-light border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="all">All Status</option>
                   <option value="Planning">Planning</option>
@@ -696,7 +697,7 @@ export default function ProjectsPage() {
         {/* ============================================ */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading projects...</p>
+            <p className="text-text-muted">Loading projects...</p>
           </div>
         ) : (
           <>
@@ -708,12 +709,12 @@ export default function ProjectsPage() {
               {filteredProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
+                  className="bg-background-light rounded-lg shadow-lg border border-border hover:shadow-xl transition-shadow"
                 >
                   <div className="p-6">
                     {/* Project Header - Name and Status/Type badges */}
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
+                      <h3 className="text-lg font-semibold text-text line-clamp-2 flex-1">
                         {/* Display client name with possessive or generic "Project" */}
                         {project.clients
                           ? `${project.clients.first_name} ${project.clients.last_name}'s Project`
@@ -746,7 +747,7 @@ export default function ProjectsPage() {
                     {/* ============================================ */}
                     <div className="space-y-3 mb-4">
                       {/* Client name with icon */}
-                      <div className="flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-text-muted">
                         <User className="w-4 h-4 mr-2" />
                         <span>
                           {project.clients
@@ -757,14 +758,16 @@ export default function ProjectsPage() {
 
                       {/* Phone (only show if client has phone) */}
                       {project.clients?.phone && (
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-text-muted">
                           <Phone className="w-4 h-4 mr-2" />
-                          <span>{formatPhoneNumber(project.clients.phone)}</span>
+                          <span>
+                            {formatPhoneNumber(project.clients.phone)}
+                          </span>
                         </div>
                       )}
 
                       {/* Project address with icon */}
-                      <div className="flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-text-muted">
                         <MapPin className="w-4 h-4 mr-2" />
                         <span className="line-clamp-1">
                           {project.project_address || "No address"}
@@ -772,7 +775,7 @@ export default function ProjectsPage() {
                       </div>
 
                       {/* Date range with icon */}
-                      <div className="flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-text-muted">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>
                           {project.start_date || "TBD"} →{" "}
@@ -782,7 +785,7 @@ export default function ProjectsPage() {
 
                       {/* Quote amount (only show if quote exists and has amount) */}
                       {project.quotes?.total_amount && (
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-text-muted">
                           <DollarSign className="w-4 h-4 mr-2" />
                           <span className="font-medium">
                             ${project.quotes.total_amount.toLocaleString()}
@@ -794,7 +797,7 @@ export default function ProjectsPage() {
                     {/* Project Description (only show if exists) */}
                     {project.description && (
                       <div className="mb-4">
-                        <p className="text-sm text-gray-600 line-clamp-2">
+                        <p className="text-sm text-text-muted line-clamp-2">
                           {project.description}
                         </p>
                       </div>
@@ -806,11 +809,11 @@ export default function ProjectsPage() {
                     <div className="mb-4">
                       {/* Progress header with percentage */}
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-text">
                           Progress
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-text-muted">
                             {project.progress || 0}%
                           </span>
                           {/* Show checkmark if 100% complete */}
@@ -889,7 +892,7 @@ export default function ProjectsPage() {
                       {/* View Details Button - Opens detail modal */}
                       <button
                         onClick={() => viewProjectDetails(project)}
-                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
+                        className="flex-1 px-3 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/70 transition-colors"
                       >
                         View Details
                       </button>
@@ -963,7 +966,6 @@ export default function ProjectsPage() {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -1222,7 +1224,6 @@ export default function ProjectsPage() {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content - scrollable */}
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            
             {/* Modal Header - Sticky at top */}
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -1552,7 +1553,8 @@ export default function ProjectsPage() {
                         {quotes.map((quote) => (
                           <option key={quote.id} value={quote.id}>
                             ${quote.total_amount?.toLocaleString()} -{" "}
-                            {quote.clients?.first_name} {quote.clients?.last_name}
+                            {quote.clients?.first_name}{" "}
+                            {quote.clients?.last_name}
                           </option>
                         ))}
                       </select>
