@@ -10,6 +10,7 @@ import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
 import { useTheme } from "@/src/app/providers/ThemeProvider";
 import { btnOutline, btnPrimary } from "../ui/buttons";
+import ThemeSwitch from "@/src/components/ui/themeSwitch";
 
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -161,14 +162,9 @@ export default function Header({ currentPage = "home" }) {
           </Link>
 
           {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className={btnPrimary + " rounded-full ml-4 text-sm"}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-          >
-            {theme === "dark" ? "Light" : "Dark"}
-          </button>
+          <div className="px-4 flex items-center">
+            <ThemeSwitch />
+          </div>
         </nav>
       </div>
 
