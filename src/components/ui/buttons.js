@@ -1,14 +1,14 @@
 // src/components/ui/buttons.js
 // Reusable button and link styles
 export const btnPrimary =
-  "inline-flex items-center justify-center rounded-md px-8 py-4 font-semibold text-white bg-primary " +
+  "inline-flex items-center justify-center rounded-md px-8 py-4 font-semibold text-white bg-primary button-shadow " +
   "transition-all duration-200 motion-reduce:transition-none " +
-  "hover:bg-primary/70 hover:d-shadow hover:-translate-y-0.5 " +
+  "hover:bg-primary/70 hover:button-shadow hover:translate-y-0.5 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74A744]/60 focus-visible:ring-offset-2";
 export const btnOutline =
   "inline-flex items-center justify-center rounded-md px-8 py-3 font-semibold text-text border border-border " +
   "transition-all duration-200 motion-reduce:transition-none " +
-  "hover:bg-border hover:text-white hover:d-shadow hover:-translate-y-0.5 " +
+  "hover:bg-border hover:text-white hover:button-shadow hover:translate-y-0.5 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74A744]/60 focus-visible:ring-offset-2";
 
 export const textLink =

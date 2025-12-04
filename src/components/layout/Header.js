@@ -8,6 +8,8 @@ import CustomerLoginModal from "../customer/CustomerLoginModal";
 import CustomerSignupModal from "../customer/CustomerSignupModal";
 import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
+import { useTheme } from "@/src/app/providers/ThemeProvider";
+import { btnOutline, btnPrimary } from "../ui/buttons";
 
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -16,6 +18,7 @@ export default function Header({ currentPage = "home" }) {
   const [userName, setUserName] = useState("Profile");
   const { session } = useAuth();
   const isActive = (page) => currentPage === page;
+  const { theme, toggleTheme } = useTheme();
 
   // Check if user has a client record (simpler than role checking)
   useEffect(() => {
@@ -156,6 +159,16 @@ export default function Header({ currentPage = "home" }) {
             <UserCog className="w-4 h-4" />
             Admin
           </Link>
+
+          {/* Theme Toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={btnPrimary + " rounded-full ml-4 text-sm"}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? "Light" : "Dark"}
+          </button>
         </nav>
       </div>
 
