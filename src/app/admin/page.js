@@ -5,7 +5,9 @@
 // ============================================
 import { useState, useEffect } from "react";
 import Link from "next/link"; // Next.js Link component for client-side navigation
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/db/supabase-client";
+import NotificationPopup from "../../components/admin/NotificationPopup";
 
 /**
  * ============================================
@@ -42,6 +44,15 @@ export default function AdminDashboard() {
 
   // Loading state - shows loading message while fetching data
   const [loading, setLoading] = useState(true);
+
+  // New reviews state - stores reviews added in the last 24 hours
+  const [newReviews, setNewReviews] = useState([]);
+
+  // Notification visibility state
+  const [showNotification, setShowNotification] = useState(false);
+
+  // Router for navigation
+  const router = useRouter();
 
   // ============================================
   // LOAD DATA ON COMPONENT MOUNT
@@ -108,11 +119,56 @@ export default function AdminDashboard() {
       } else {
         setProjects(projectsData || []); // Update state with fetched data
       }
+
+      // ============================================
+      // LOAD NEW REVIEWS (last 24 hours)
+      // ============================================
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from("testimonials")
+        .select("*")
+        .gte("submitted_at", twentyFourHoursAgo)
+        .order("submitted_at", { ascending: false });
+
+      if (reviewsError) {
+        console.error("Reviews error:", reviewsError);
+        setNewReviews([]);
+      } else {
+        // Format reviews with client name
+        const formattedReviews = (reviewsData || []).map(review => ({
+          ...review,
+          client_name: review.customer_name || "Anonymous Customer",
+          rating: review.rating || 5,
+          review_text: review.message || review.testimonial || "",
+          created_at: review.submitted_at
+        }));
+        setNewReviews(formattedReviews);
+
+        // Check if we should show notification
+        // Only show if there's at least one review from last 24 hours
+        if (formattedReviews.length > 0) {
+          // Get list of review IDs that have been seen
+          const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+
+          // Check if there are any new reviews that haven't been seen
+          const newUnseenReviews = formattedReviews.filter(
+            review => !seenReviewIds.includes(review.id)
+          );
+
+          // Show notification if there are unseen reviews
+          if (newUnseenReviews.length > 0) {
+            setShowNotification(true);
+            // Store the new review IDs as seen (but don't mark them until popup is closed)
+          }
+        }
+      }
     } catch (err) {
       // Catch any unexpected errors (network issues, etc.)
       console.error("Error loading dashboard data:", err);
       setAppointments([]);
       setProjects([]);
+      setNewReviews([]);
     } finally {
       // Always run this - set loading to false whether successful or not
       setLoading(false);
@@ -218,10 +274,53 @@ export default function AdminDashboard() {
   };
 
   // ============================================
+  // NOTIFICATION HANDLERS
+  // ============================================
+
+  /**
+   * Handle closing the notification popup
+   * Marks all current reviews as seen so they won't trigger notification again
+   */
+  const handleCloseNotification = () => {
+    // Mark all current reviews as seen
+    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    // Remove duplicates
+    const uniqueSeenIds = [...new Set(newSeenIds)];
+    localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
+
+    setShowNotification(false);
+  };
+
+  /**
+   * Navigate to reviews page when "View All Reviews" is clicked
+   */
+  const handleViewReviews = () => {
+    // Mark reviews as seen before navigating
+    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    const uniqueSeenIds = [...new Set(newSeenIds)];
+    localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
+
+    router.push("/admin/reviews");
+  };
+
+  // ============================================
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      {/* ============================================ */}
+      {/* NOTIFICATION POPUP - Shows when there are new reviews */}
+      {/* ============================================ */}
+      {showNotification && (
+        <NotificationPopup
+          newReviews={newReviews}
+          onClose={handleCloseNotification}
+          onViewReviews={handleViewReviews}
+        />
+      )}
+
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}

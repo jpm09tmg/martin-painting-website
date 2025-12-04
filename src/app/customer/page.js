@@ -7,7 +7,6 @@ import { supabase } from "@/src/lib/db/supabase-client";
 import { Loader2, LogOut, Calendar, Briefcase, CreditCard, MessageCircle, CheckCircle, XCircle, Eye, X } from "lucide-react";
 import Header from "@/src/components/layout/Header";
 import ChatWidget from "@/src/components/chat/ChatWidget";
-import { loadStripe } from "@stripe/stripe-js";
 
 export default function CustomerHome() {
   const { session, loading } = useAuth();
