@@ -41,10 +41,10 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-background-dark pb-16">
-      <div className="w-full h-16 bg-background justify-center flex items-center">
+      <div className="w-full h-16 bg-background justify-center flex items-center d-shadow">
         <div className="flex items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <div className="w-24  rounded-lg overflow-hidden shadow-md">
+            <div className="w-24  rounded-lg overflow-hidden">
               <Image
                 src="/martinPainting_v2.png"
                 alt="Martin Painting Logo"
@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Centered card */}
-      <div className="max-w-[490px] mx-auto mt-20 bg-background shadow-lg rounded-md border border-border-muted">
+      <div className="max-w-[490px] mx-auto mt-20 bg-background d-shadow rounded-md ">
         <div className="px-8 pt-8 pb-2">
           <h1 className="text-[28px] text-text font-semibold">Admin Login</h1>
           <div className="mt-2 h-px w-full bg-border" />
@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
                ${
                  loading
                    ? "bg-background-light text-text-muted cursor-not-allowed"
-                   : "bg-primary text-text hover:bg-secondary"
+                   : "bg-primary text-white hover:bg-secondary"
                }
               `}
             >

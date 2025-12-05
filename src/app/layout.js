@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "./providers/AuthProvider";
 import { Suspense } from "react";
 import ChatLauncher from "@/src/components/chat/ChatLauncher";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +25,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth motion-reduce:scroll-auto dark`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth motion-reduce:scroll-auto `}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
 
-        <Suspense>
-          <ChatLauncher />
-        </Suspense>
+          <Suspense>
+            <ChatLauncher />
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );

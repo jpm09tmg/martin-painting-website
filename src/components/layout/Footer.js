@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-20">
         <div className="grid grid-cols-4 gap-12 mb-8">
           <div className="flex flex-col items-center text-center">
-            <div className="w-28 h-16  rounded-lg overflow-hidden shadow-md mb-4">
+            <div className="w-28 h-16  rounded-lg overflow-hidden mb-4">
               <Image
                 src="/martinPainting_v2.png"
                 alt="Martin Painting Logo"

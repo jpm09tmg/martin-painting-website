@@ -8,6 +8,9 @@ import CustomerLoginModal from "../customer/CustomerLoginModal";
 import CustomerSignupModal from "../customer/CustomerSignupModal";
 import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
+import { useTheme } from "@/src/app/providers/ThemeProvider";
+import { btnOutline, btnPrimary } from "../ui/buttons";
+import ThemeSwitch from "@/src/components/ui/themeSwitch";
 
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -16,6 +19,7 @@ export default function Header({ currentPage = "home" }) {
   const [userName, setUserName] = useState("Profile");
   const { session } = useAuth();
   const isActive = (page) => currentPage === page;
+  const { theme, toggleTheme } = useTheme();
 
   // Check if user has a client record (simpler than role checking)
   useEffect(() => {
@@ -54,10 +58,10 @@ export default function Header({ currentPage = "home" }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50">
+    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50 d-shadow">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center">
-          <div className="w-24  rounded-lg overflow-hidden shadow-md">
+          <div className="w-24  rounded-lg overflow-hidden ">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <div className="w-24  rounded-lg overflow-hidden shadow-md">
                 <Image
@@ -156,6 +160,11 @@ export default function Header({ currentPage = "home" }) {
             <UserCog className="w-4 h-4" />
             Admin
           </Link>
+
+          {/* Theme Toggle */}
+          <div className="px-4 flex items-center">
+            <ThemeSwitch />
+          </div>
         </nav>
       </div>
 
