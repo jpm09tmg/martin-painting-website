@@ -127,6 +127,16 @@ export default function Header({ currentPage = "home" }) {
           >
             Contact
           </Link>
+          <Link
+            href="/appointments"
+            className={`px-6 py-4 text-sm transition-colors ${
+              isActive("appointments")
+                ? "text-text bg-background-dark font-bold border-b-2 border-primary"
+                : "text-text-muted hover:bg-white/10"
+            }`}
+          >
+            Appointments
+          </Link>
 
           {/* Customer Sign In / Profile */}
           <Link
