@@ -3,11 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { User, UserCog } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CustomerLoginModal from "../customer/CustomerLoginModal";
 import CustomerSignupModal from "../customer/CustomerSignupModal";
 import { useAuth } from "@/src/app/providers/AuthProvider";
-import { supabase } from "@/src/lib/db/supabase-client";
 import { useTheme } from "@/src/app/providers/ThemeProvider";
 import { btnOutline, btnPrimary } from "../ui/buttons";
 import ThemeSwitch from "@/src/components/ui/themeSwitch";
@@ -15,37 +14,9 @@ import ThemeSwitch from "@/src/components/ui/themeSwitch";
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [isCustomer, setIsCustomer] = useState(false);
-  const [userName, setUserName] = useState("Profile");
   const { session } = useAuth();
   const isActive = (page) => currentPage === page;
   const { theme, toggleTheme } = useTheme();
-
-  // Check if user has a client record (simpler than role checking)
-  useEffect(() => {
-    const checkIfCustomer = async () => {
-      if (session) {
-        const { data } = await supabase
-          .from("clients")
-          .select("first_name")
-          .eq("user_id", session.user.id)
-          .single();
-
-        if (data) {
-          setIsCustomer(true);
-          setUserName(data.first_name || "Profile");
-        } else {
-          setIsCustomer(false);
-          setUserName("Profile");
-        }
-      } else {
-        setIsCustomer(false);
-        setUserName("Profile");
-      }
-    };
-
-    checkIfCustomer();
-  }, [session]);
 
   const switchToSignup = () => {
     setShowLoginModal(false);
@@ -140,9 +111,9 @@ export default function Header({ currentPage = "home" }) {
 
           {/* Customer Sign In / Profile */}
           <Link
-            href={isCustomer ? "/customer" : "#"}
+            href={session ? "/customer" : "#"}
             onClick={
-              isCustomer
+              session
                 ? undefined
                 : (e) => {
                     e.preventDefault();
@@ -155,7 +126,7 @@ export default function Header({ currentPage = "home" }) {
                 : "text-text-muted hover:bg-white/10"
             }`}
           >
-            {isCustomer ? userName : "Sign In"}
+            Profile
           </Link>
 
           {/* Admin Link */}
