@@ -18,9 +18,11 @@ export default function PaymentsPage() {
   const [updating, setUpdating] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [clients, setClients] = useState([]);
+  const [quotes, setQuotes] = useState([]);
   const [saving, setSaving] = useState(false);
   const [newPayment, setNewPayment] = useState({
-    client: "",
+    client_id: "",
+    quote_id: "",
     project: "",
     total: "",
     paid: "",
@@ -52,6 +54,19 @@ export default function PaymentsPage() {
         console.error("Error fetching clients:", clientsError);
       } else {
         setClients(clientsData || []);
+      }
+
+      // Fetch quotes
+      const { data: quotesData, error: quotesError } = await supabase
+        .from("quotes")
+        .select("id, project_address, client_id, clients(first_name, last_name), total_amount")
+        .order("created_at", { ascending: false });
+
+      if (quotesError) {
+        console.error("Error fetching quotes:", quotesError);
+      } else {
+        console.log("Loaded quotes:", quotesData);
+        setQuotes(quotesData || []);
       }
 
       setLoading(false);
@@ -144,11 +159,19 @@ export default function PaymentsPage() {
     setSaving(true);
 
     try {
+      // Get quote and client info for display
+      const selectedQuote = quotes.find(q => q.id === newPayment.quote_id);
+      const clientName = selectedQuote?.clients 
+        ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
+        : "";
+
       const { data, error } = await supabase
         .from("payments")
         .insert([
           {
-            client: newPayment.client,
+            client_id: newPayment.client_id,
+            quote_id: newPayment.quote_id,
+            client: clientName, // Store name for display purposes
             project: newPayment.project,
             total: parseFloat(newPayment.total) || 0,
             paid: parseFloat(newPayment.paid) || 0,
@@ -164,7 +187,8 @@ export default function PaymentsPage() {
       setPayments([data, ...payments]);
       setShowAddForm(false);
       setNewPayment({
-        client: "",
+        client_id: "",
+        quote_id: "",
         project: "",
         total: "",
         paid: "",
@@ -218,7 +242,21 @@ export default function PaymentsPage() {
             <p className="text-text-muted">Track and manage payment records</p>
           </div>
           <button
-            onClick={() => setShowAddForm(true)}
+            onClick={async () => {
+              setShowAddForm(true);
+              // Refresh quotes when opening form
+              const { data: quotesData, error } = await supabase
+                .from("quotes")
+                .select("id, project_address, client_id, clients(first_name, last_name), total_amount")
+                .order("created_at", { ascending: false });
+              
+              if (!error) {
+                console.log("Refreshed quotes:", quotesData);
+                setQuotes(quotesData || []);
+              } else {
+                console.error("Error refreshing quotes:", error);
+              }
+            }}
             className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -444,26 +482,42 @@ export default function PaymentsPage() {
             <form onSubmit={handleAddPayment} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text mb-2">
-                  Client Name *
+                  Select Quote *
                 </label>
-                <select
-                  value={newPayment.client}
-                  onChange={(e) =>
-                    setNewPayment({ ...newPayment, client: e.target.value })
-                  }
-                  required
-                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
-                >
-                  <option value="">Select Client</option>
-                  {clients.map((client) => (
-                    <option
-                      key={client.id}
-                      value={`${client.first_name} ${client.last_name}`}
-                    >
-                      {client.first_name} {client.last_name}
-                    </option>
-                  ))}
-                </select>
+                {quotes.length === 0 ? (
+                  <div className="w-full px-3 py-2 border border-border rounded-md bg-background-light text-text-muted">
+                    No quotes available. Please create a quote first.
+                  </div>
+                ) : (
+                  <select
+                    value={newPayment.quote_id}
+                    onChange={(e) => {
+                      const selectedQuote = quotes.find(q => q.id === e.target.value);
+                      setNewPayment({ 
+                        ...newPayment, 
+                        quote_id: e.target.value,
+                        // Auto-fill from quote
+                        client_id: selectedQuote?.client_id || "",
+                        project: selectedQuote?.project_address || "",
+                        total: selectedQuote?.total_amount || "",
+                      });
+                    }}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="">Select Quote</option>
+                    {quotes.map((quote) => (
+                      <option key={quote.id} value={quote.id}>
+                        {quote.project_address || 'N/A'} - {quote.clients?.first_name} {quote.clients?.last_name} (${quote.total_amount || 0})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-xs text-text-muted mt-1">
+                  {quotes.length > 0 
+                    ? "Client and project details will auto-fill from quote" 
+                    : "Quotes need to be created before adding payment records"}
+                </p>
               </div>
 
               <div>
