@@ -9,7 +9,7 @@ export default function ValueProp() {
 
       <div className="relative z-8 max-w-7xl mx-auto px-20 h-full flex items-center gap-8">
         <div className="flex-1 max-w-2xl">
-          <h1 className="text-5xl font-normal text-[#171717] leading-tight mb-6">
+          <h1 className="text-5xl font-normal text-text leading-tight mb-6">
             Transform Your Space with Professional Painting
           </h1>
           <p className="text-xl text-text-muted leading-relaxed mb-8">

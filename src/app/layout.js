@@ -1,8 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./providers/AuthProvider";
-import { Suspense } from "react"; // 👈 add this
-import ChatLauncher from "@/src/components/chat/ChatLauncher"; // 👈 add this
+import { Suspense } from "react";
+import ChatLauncher from "@/src/components/chat/ChatLauncher";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,14 +25,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth motion-reduce:scroll-auto dark`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth motion-reduce:scroll-auto `}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
 
-        {/* 👇 Chat launcher appears on all public pages */}
-        <Suspense>
-          <ChatLauncher />
-        </Suspense>
+          <Suspense>
+            <ChatLauncher />
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-20">
         <div className="grid grid-cols-4 gap-12 mb-8">
           <div className="flex flex-col items-center text-center">
-            <div className="w-28 h-16  rounded-lg overflow-hidden shadow-md mb-4">
+            <div className="w-28 h-16  rounded-lg overflow-hidden mb-4">
               <Image
                 src="/martinPainting_v2.png"
                 alt="Martin Painting Logo"
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center text-center">
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-text-muted text-lg font-semibold mb-4">
               Contact Info
             </h3>
             <ul className="space-y-3">
@@ -85,7 +85,9 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center text-center">
-            <h3 className="text-white text-lg font-semibold mb-4">Follow Us</h3>
+            <h3 className="text-text-muted text-lg font-semibold mb-4">
+              Follow Us
+            </h3>
             <div className="flex space-x-4 mb-4">
               <div className="w-8 h-8 bg-background-light hover:bg-white/10 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
                 <span className="text-white text-sm">

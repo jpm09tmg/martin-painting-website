@@ -50,10 +50,10 @@ const AdminAppointments = () => {
 
   // Stores the confirmed time selected by admin
   const [confirmedTime, setConfirmedTime] = useState("");
-  
+
   // Stores active client filter (from clients page navigation)
   const [clientFilter, setClientFilter] = useState(null);
-  
+
   // View mode toggle: 'list' shows appointments in a list, 'calendar' shows monthly calendar view
   const [viewMode, setViewMode] = useState("list");
 
@@ -76,14 +76,17 @@ const AdminAppointments = () => {
     if (!value) return "";
     // Remove all non-digits
     const phoneNumber = value.replace(/\D/g, "");
-    
+
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     } else {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+        3,
+        6
+      )}-${phoneNumber.slice(6, 10)}`;
     }
   };
 
@@ -94,7 +97,7 @@ const AdminAppointments = () => {
   // useEffect runs once when component loads (empty dependency array [])
   useEffect(() => {
     fetchAppointments(); // Fetch all appointments from database
-    
+
     // Check if we have a client filter from sessionStorage
     const storedFilter = sessionStorage.getItem("appointmentClientFilter");
     if (storedFilter) {
@@ -352,7 +355,7 @@ const AdminAppointments = () => {
   // ============================================
   // FILTER AND SEARCH LOGIC
   // ============================================
-  
+
   // Filter appointments based on selected filter, search term, and client filter
   const filteredAppointments = appointments.filter((appointment) => {
     // Determine if appointment matches the selected filter
@@ -374,13 +377,13 @@ const AdminAppointments = () => {
       appointment.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.address
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    
+      appointment.address?.toLowerCase().includes(searchTerm.toLowerCase());
+
     // Check if appointment matches the client filter (if active)
-    const matchesClient = clientFilter ? appointment.client_id === clientFilter.id : true;
-    
+    const matchesClient = clientFilter
+      ? appointment.client_id === clientFilter.id
+      : true;
+
     // Return true only if all conditions are met
     return matchesFilter && matchesSearch && matchesClient;
   });
@@ -468,10 +471,10 @@ const AdminAppointments = () => {
       if (error) throw error;
 
       // Send confirmation email automatically
-      const emailResponse = await fetch('/api/send-appointment', {
-        method: 'POST',
+      const emailResponse = await fetch("/api/send-appointment", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ appointmentId: editingAppointment.id }),
       });
@@ -480,25 +483,37 @@ const AdminAppointments = () => {
 
       if (emailResult.success) {
         // Show success message
-        setEmailStatus(prev => ({ 
-          ...prev, 
-          [editingAppointment.id]: { type: 'success', message: 'Appointment confirmed and email sent!' } 
+        setEmailStatus((prev) => ({
+          ...prev,
+          [editingAppointment.id]: {
+            type: "success",
+            message: "Appointment confirmed and email sent!",
+          },
         }));
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
-          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+          setEmailStatus((prev) => ({
+            ...prev,
+            [editingAppointment.id]: null,
+          }));
         }, 3000);
       } else {
         // Show warning if email failed but appointment was confirmed
-        setEmailStatus(prev => ({ 
-          ...prev, 
-          [editingAppointment.id]: { type: 'error', message: 'Appointment confirmed but email failed to send.' } 
+        setEmailStatus((prev) => ({
+          ...prev,
+          [editingAppointment.id]: {
+            type: "error",
+            message: "Appointment confirmed but email failed to send.",
+          },
         }));
-        
+
         // Clear error message after 5 seconds
         setTimeout(() => {
-          setEmailStatus(prev => ({ ...prev, [editingAppointment.id]: null }));
+          setEmailStatus((prev) => ({
+            ...prev,
+            [editingAppointment.id]: null,
+          }));
         }, 5000);
       }
 
@@ -511,9 +526,12 @@ const AdminAppointments = () => {
       await fetchAppointments();
     } catch (error) {
       console.error("Error confirming appointment:", error);
-      setEmailStatus(prev => ({ 
-        ...prev, 
-        [editingAppointment.id]: { type: 'error', message: 'Error confirming appointment. Please try again.' } 
+      setEmailStatus((prev) => ({
+        ...prev,
+        [editingAppointment.id]: {
+          type: "error",
+          message: "Error confirming appointment. Please try again.",
+        },
       }));
     } finally {
       setSendingEmail(null); // Clear loading state
@@ -574,14 +592,14 @@ const AdminAppointments = () => {
   // MAIN UI RENDER
   // ============================================
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-background min-h-screen">
       {/* ============================================ */}
       {/* PAGE HEADER WITH VIEW TOGGLE */}
       {/* ============================================ */}
       <div className="mb-6 flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-text">Appointments</h1>
+          <p className="text-text-muted">
             Manage customer appointments and consultations
           </p>
           {/* Show active client filter badge */}
@@ -605,7 +623,7 @@ const AdminAppointments = () => {
         {/* Toggle button to switch between list and calendar view */}
         <button
           onClick={() => setViewMode(viewMode === "list" ? "calendar" : "list")}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors"
         >
           {/* Show different icon and text based on current view */}
           {viewMode === "list" ? (
@@ -627,59 +645,53 @@ const AdminAppointments = () => {
       {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {/* Today's Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border-muted">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Calendar className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
-              <p className="text-sm text-gray-600">Todays Appointments</p>
+              <p className="text-2xl font-bold text-text">{stats.today}</p>
+              <p className="text-sm text-text-muted">Todays Appointments</p>
             </div>
           </div>
         </div>
 
         {/* This Week Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border-muted">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
-                {stats.thisWeek}
-              </p>
-              <p className="text-sm text-gray-600">This Week</p>
+              <p className="text-2xl font-bold text-text">{stats.thisWeek}</p>
+              <p className="text-sm text-text-muted">This Week</p>
             </div>
           </div>
         </div>
 
         {/* Completed Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border-muted">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
-                {stats.completed}
-              </p>
-              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-2xl font-bold text-text">{stats.completed}</p>
+              <p className="text-sm text-text-muted">Completed</p>
             </div>
           </div>
         </div>
 
         {/* Cancelled Appointments Card */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border-muted">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
               <XCircle className="w-6 h-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
-                {stats.cancelled}
-              </p>
-              <p className="text-sm text-gray-600">Cancelled</p>
+              <p className="text-2xl font-bold text-text">{stats.cancelled}</p>
+              <p className="text-sm text-text-muted">Cancelled</p>
             </div>
           </div>
         </div>
@@ -689,7 +701,7 @@ const AdminAppointments = () => {
       {/* CALENDAR VIEW - Monthly calendar with appointments */}
       {/* ============================================ */}
       {viewMode === "calendar" ? (
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-background-light rounded-lg shadow-lg p-6">
           {/* Calendar Header - Month/Year and Navigation */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -698,11 +710,11 @@ const AdminAppointments = () => {
                 onClick={previousMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                <ChevronLeft className="w-5 h-5 text-text-muted" />
               </button>
 
               {/* Current Month and Year Display */}
-              <h2 className="text-2xl font-semibold text-gray-900 min-w-[200px] text-center">
+              <h2 className="text-2xl font-semibold text-text min-w-[200px] text-center">
                 {monthYear}
               </h2>
 
@@ -711,14 +723,14 @@ const AdminAppointments = () => {
                 onClick={nextMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ChevronRight className="w-5 h-5 text-gray-700" />
+                <ChevronRight className="w-5 h-5 text-text-muted" />
               </button>
             </div>
 
             {/* Today Button - Jump to current month */}
             <button
               onClick={goToToday}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/50 transition-colors"
             >
               Today
             </button>
@@ -732,7 +744,7 @@ const AdminAppointments = () => {
             {weekDays.map((day) => (
               <div
                 key={day}
-                className="text-center font-semibold text-gray-700 py-2"
+                className="text-center font-semibold text-text-muted py-2"
               >
                 {day}
               </div>
@@ -751,36 +763,46 @@ const AdminAppointments = () => {
                   key={index}
                   onClick={() => {
                     if (dayInfo.isCurrentMonth) {
-                      const dayAppointments = getAppointmentsForDate(dayInfo.date);
+                      const dayAppointments = getAppointmentsForDate(
+                        dayInfo.date
+                      );
 
                       if (dayAppointments.length === 0) {
-                        alert(`No appointments scheduled for ${dayInfo.date.toLocaleDateString('en-US', { 
-                           month: 'long', 
-                           day: 'numeric', 
-                           year: 'numeric' 
-                        })}`);
-                      }                    
+                        alert(
+                          `No appointments scheduled for ${dayInfo.date.toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}`
+                        );
+                      }
                     }
                   }}
-                  className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors ${
-
+                  className={`min-h-[100px] border rounded-lg p-2 cursor-pointer hover:bg-primary/10 transition-colors ${
                     // Gray background for days not in current month
-                    dayInfo.isCurrentMonth ? "bg-white" : "bg-gray-50"
+                    dayInfo.isCurrentMonth
+                      ? "bg-background"
+                      : "bg-background-light"
                   } ${
                     // Green border for today's date
                     isTodayDate
-                      ? "border-green-600 border-2"
-                      : "border-gray-200"
+                      ? "border-secondary border-2"
+                      : "border-border-muted border"
                   }`}
                 >
                   {/* Day Number */}
                   <div
                     className={`text-sm font-medium mb-1 ${
                       // Lighter color for days not in current month
-                      dayInfo.isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                      dayInfo.isCurrentMonth
+                        ? "text-text"
+                        : "text-text-muted/55"
                     } ${
                       // Green and bold for today
-                      isTodayDate ? "text-green-600 font-bold" : ""
+                      isTodayDate ? "text-secondary font-bold" : ""
                     }`}
                   >
                     {dayInfo.day}
@@ -822,15 +844,15 @@ const AdminAppointments = () => {
           {/* ============================================ */}
 
           {/* Filters and Search Bar */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+          <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border-muted mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Status Filter Dropdown */}
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-500" />
+                <Filter className="w-4 h-4 text-text-muted" />
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="text-text-muted bg-background-light border border-border-muted rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="active">Active Appointments</option>
                   <option value="all">All Appointments</option>
@@ -843,13 +865,13 @@ const AdminAppointments = () => {
 
               {/* Search Input Field */}
               <div className="flex items-center gap-2 flex-1">
-                <Search className="w-4 h-4 text-gray-500" />
+                <Search className="w-4 h-4 text-text-muted" />
                 <input
                   type="text"
                   placeholder="Search by name, email, or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="text-text border border-border-muted rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -861,10 +883,10 @@ const AdminAppointments = () => {
           <div className="space-y-4">
             {/* Empty State - No appointments found */}
             {filteredAppointments.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
-                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No appointments found</p>
-                <p className="text-sm text-gray-400">
+              <div className="bg-background-light p-8 rounded-lg shadow-sm border border-border-muted text-center">
+                <Calendar className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <p className="text-text-muted">No appointments found</p>
+                <p className="text-sm text-text-muted">
                   Customer appointment requests will appear here when submitted
                   through the website
                 </p>
@@ -874,7 +896,7 @@ const AdminAppointments = () => {
               filteredAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  className="bg-background-light p-6 rounded-lg shadow-sm border border-border-muted hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                     {/* Appointment Details Section */}
@@ -892,7 +914,7 @@ const AdminAppointments = () => {
                               appointment.status.slice(1)}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-text-muted">
                           Requested:{" "}
                           {new Date(appointment.createdAt).toLocaleDateString()}
                         </span>
@@ -909,23 +931,23 @@ const AdminAppointments = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Customer Info Column */}
                         <div>
-                          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                            <User className="w-4 h-4" />
+                          <h3 className="font-semibold text-text mb-2 flex items-center gap-2">
+                            <User className="w-4 h-4 text-text" />
                             Customer Details
                           </h3>
                           <div className="space-y-1 text-sm">
-                            <p className="font-medium">
+                            <p className="font-medium text-text">
                               {appointment.firstName} {appointment.lastName}
                             </p>
                             <div className="flex items-center gap-1">
-                              <Mail className="w-3 h-3 text-gray-400" />
-                              <span className="text-gray-600">
+                              <Mail className="w-3 h-3 text-text-muted" />
+                              <span className="text-text-muted">
                                 {appointment.email}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Phone className="w-3 h-3 text-gray-400" />
-                              <span className="text-gray-600">
+                              <Phone className="w-3 h-3 text-text-muted" />
+                              <span className="text-text-muted">
                                 {formatPhoneNumber(appointment.phone)}
                               </span>
                             </div>
@@ -934,7 +956,7 @@ const AdminAppointments = () => {
 
                         {/* Service Details Column */}
                         <div>
-                          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                          <h3 className="font-semibold text-text mb-2 flex items-center gap-2">
                             {appointment.propertyType === "Commercial" ? (
                               <Building className="w-4 h-4" />
                             ) : (
@@ -942,18 +964,18 @@ const AdminAppointments = () => {
                             )}
                             Service Details
                           </h3>
-                          <div className="space-y-1 text-sm">
+                          <div className="space-y-1 text-text text-sm">
                             <p>
-                              <span className="text-gray-500">Type:</span>{" "}
+                              <span className="text-text-muted">Type:</span>{" "}
                               {appointment.propertyType}
                             </p>
                             <p>
-                              <span className="text-gray-500">Location:</span>{" "}
+                              <span className="text-text-muted">Location:</span>{" "}
                               {appointment.locationType}
                             </p>
                             <div className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-gray-400" />
-                              <span className="text-gray-600">
+                              <MapPin className="w-3 h-3 text-text-muted" />
+                              <span className="text-text-muted">
                                 {appointment.address}
                               </span>
                             </div>
@@ -962,38 +984,38 @@ const AdminAppointments = () => {
 
                         {/* Schedule Column */}
                         <div>
-                          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                          <h3 className="font-semibold text-text mb-2 flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Schedule
                           </h3>
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-2 text-text text-sm">
                             {/* Customer's requested date/time */}
                             <div>
-                              <p className="font-medium text-gray-700">
+                              <p className="font-medium text-text">
                                 Requested:
                               </p>
                               <p>
-                                <span className="text-gray-500">Date:</span>{" "}
+                                <span className="text-text-muted">Date:</span>{" "}
                                 {formatDate(appointment.preferredDate)}
                               </p>
                               <p>
-                                <span className="text-gray-500">Time:</span>{" "}
+                                <span className="text-text-muted">Time:</span>{" "}
                                 {appointment.preferredTime}
                               </p>
                             </div>
 
                             {/* Show confirmed date/time only if it exists */}
                             {appointment.appointmentDate && (
-                              <div className="pt-2 border-t">
-                                <p className="font-medium text-green-700">
+                              <div className="pt-2 border-t border-border">
+                                <p className="font-medium text-success">
                                   Confirmed:
                                 </p>
                                 <p>
-                                  <span className="text-gray-500">Date:</span>{" "}
+                                  <span className="text-text-muted">Date:</span>{" "}
                                   {formatDate(appointment.appointmentDate)}
                                 </p>
                                 <p>
-                                  <span className="text-gray-500">Time:</span>{" "}
+                                  <span className="text-text-muted">Time:</span>{" "}
                                   {appointment.appointmentTime}
                                 </p>
                               </div>
@@ -1005,10 +1027,10 @@ const AdminAppointments = () => {
                       {/* Project Details - Optional section */}
                       {appointment.projectDetails && (
                         <div className="mt-4">
-                          <h4 className="font-medium text-gray-900 mb-2">
+                          <h4 className="font-medium text-text mb-2">
                             Project Details:
                           </h4>
-                          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                          <p className="text-sm text-text-muted bg-background/50 p-3 rounded border border-border-muted whitespace-pre-wrap">
                             {appointment.projectDetails}
                           </p>
                         </div>
@@ -1016,13 +1038,15 @@ const AdminAppointments = () => {
 
                       {/* Email Status Messages */}
                       {emailStatus[appointment.id] && (
-                        <div className={`mt-4 p-3 rounded-lg ${
-                          emailStatus[appointment.id].type === 'success' 
-                            ? 'bg-green-50 text-green-800 border border-green-200' 
-                            : 'bg-red-50 text-red-800 border border-red-200'
-                        }`}>
+                        <div
+                          className={`mt-4 p-3 rounded-lg ${
+                            emailStatus[appointment.id].type === "success"
+                              ? "bg-green-50 text-green-800 border border-green-200"
+                              : "bg-red-50 text-red-800 border border-red-200"
+                          }`}
+                        >
                           <p className="text-sm flex items-center gap-2">
-                            {emailStatus[appointment.id].type === 'success' ? (
+                            {emailStatus[appointment.id].type === "success" ? (
                               <CheckCircle className="w-4 h-4" />
                             ) : (
                               <XCircle className="w-4 h-4" />
@@ -1069,7 +1093,7 @@ const AdminAppointments = () => {
                           {/* Edit date/time button - reopens confirmation modal */}
                           <button
                             onClick={() => openConfirmModal(appointment)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                            className="bg-primary hover:bg-primary/50 text-white px-4 py-2 rounded text-sm"
                           >
                             Edit Date/Time
                           </button>
@@ -1081,7 +1105,7 @@ const AdminAppointments = () => {
                                 updateStatus(appointment.id, "completed")
                               )
                             }
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+                            className="bg-secondary hover:bg-secondary/50 text-white px-4 py-2 rounded text-sm"
                           >
                             Mark Complete
                           </button>
@@ -1103,17 +1127,16 @@ const AdminAppointments = () => {
         // Modal overlay - blurred background covering entire screen
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           {/* Modal content container - scrollable */}
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            
+          <div className="bg-background-light rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-border">
             {/* Modal Header with Close Button */}
             <div className="p-6 border-b flex justify-between items-center">
-              <h3 className="text-xl font-semibold text-gray-900">
+              <h3 className="text-xl font-semibold text-text">
                 Appointment Details
               </h3>
               {/* Close button (X icon) */}
               <button
                 onClick={() => setSelectedAppointment(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-text hover:text-text/70"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1122,13 +1145,13 @@ const AdminAppointments = () => {
             {/* ============================================ */}
             {/* APPOINTMENT DETAILS - All information */}
             {/* ============================================ */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 border border-border-muted">
               {/* Customer Name */}
               <div className="flex items-start">
-                <User className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                <User className="w-5 h-5 text-text mr-3 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600">Customer</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Customer</p>
+                  <p className="font-medium text-text">
                     {selectedAppointment.firstName}{" "}
                     {selectedAppointment.lastName}
                   </p>
@@ -1137,10 +1160,10 @@ const AdminAppointments = () => {
 
               {/* Email */}
               <div className="flex items-start">
-                <Mail className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                <Mail className="w-5 h-5 text-text mr-3 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Email</p>
+                  <p className="font-medium text-text">
                     {selectedAppointment.email}
                   </p>
                 </div>
@@ -1148,10 +1171,10 @@ const AdminAppointments = () => {
 
               {/* Phone */}
               <div className="flex items-start">
-                <Phone className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                <Phone className="w-5 h-5 text-text mr-3 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Phone</p>
+                  <p className="font-medium text-text">
                     {formatPhoneNumber(selectedAppointment.phone)}
                   </p>
                 </div>
@@ -1159,10 +1182,10 @@ const AdminAppointments = () => {
 
               {/* Address */}
               <div className="flex items-start">
-                <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                <MapPin className="w-5 h-5 text-text mr-3 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600">Address</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Address</p>
+                  <p className="font-medium text-text">
                     {selectedAppointment.address}
                   </p>
                 </div>
@@ -1170,10 +1193,10 @@ const AdminAppointments = () => {
 
               {/* Date & Time - Formatted in long format */}
               <div className="flex items-start">
-                <Calendar className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                <Calendar className="w-5 h-5 text-text mr-3 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600">Date & Time</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Date & Time</p>
+                  <p className="font-medium text-text">
                     {/* Format: "Monday, May 20, 2024 at 10:00 AM" */}
                     {formatDateLong(
                       selectedAppointment.appointmentDate ||
@@ -1190,13 +1213,13 @@ const AdminAppointments = () => {
               <div className="flex items-start">
                 {/* Show building icon for commercial, home icon for residential */}
                 {selectedAppointment.propertyType === "Commercial" ? (
-                  <Building className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                  <Building className="w-5 h-5 text-text mr-3 mt-0.5" />
                 ) : (
-                  <Home className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                  <Home className="w-5 h-5 text-text mr-3 mt-0.5" />
                 )}
                 <div>
-                  <p className="text-sm text-gray-600">Property Type</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-text-muted">Property Type</p>
+                  <p className="font-medium text-text">
                     {selectedAppointment.propertyType} -{" "}
                     {selectedAppointment.locationType}
                   </p>
@@ -1205,7 +1228,7 @@ const AdminAppointments = () => {
 
               {/* Status Badge */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Status</p>
+                <p className="text-sm text-text-muted mb-1">Status</p>
                 <div className="flex items-center gap-3">
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
@@ -1229,8 +1252,10 @@ const AdminAppointments = () => {
               {/* Project Details - Only show if exists */}
               {selectedAppointment.projectDetails && (
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Project Details</p>
-                  <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-text-muted mb-1">
+                    Project Details
+                  </p>
+                  <p className="text-text bg-background-light border border-border p-3 rounded-lg">
                     {selectedAppointment.projectDetails}
                   </p>
                 </div>
@@ -1238,14 +1263,16 @@ const AdminAppointments = () => {
 
               {/* Email Status Messages in Modal */}
               {emailStatus[selectedAppointment.id] && (
-                <div className={`p-3 rounded-lg ${
-                  emailStatus[selectedAppointment.id].type === 'success' 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : 'bg-red-50 text-red-800 border border-red-200'
-                }`}>
+                <div
+                  className={`p-3 rounded-lg ${
+                    emailStatus[selectedAppointment.id].type === "success"
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
                   {/* Sets the icon and message based on success or error */}
                   <p className="text-sm flex items-center gap-2">
-                    {emailStatus[selectedAppointment.id].type === 'success' ? (
+                    {emailStatus[selectedAppointment.id].type === "success" ? (
                       <CheckCircle className="w-4 h-4" />
                     ) : (
                       <XCircle className="w-4 h-4" />
@@ -1282,7 +1309,7 @@ const AdminAppointments = () => {
                       setSelectedAppointment(null); // Close modal
                     });
                   }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/70 transition-colors"
                 >
                   Mark Complete
                 </button>
@@ -1291,7 +1318,7 @@ const AdminAppointments = () => {
               {/* Close button - always visible */}
               <button
                 onClick={() => setSelectedAppointment(null)}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/70 transition-colors"
               >
                 Close
               </button>
@@ -1374,8 +1401,9 @@ const AdminAppointments = () => {
             {/* Info note about email */}
             <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-800 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                A confirmation email will be automatically sent to the customer when you confirm this appointment.
+                <Mail className="w-4 h-4" />A confirmation email will be
+                automatically sent to the customer when you confirm this
+                appointment.
               </p>
             </div>
 
@@ -1396,7 +1424,11 @@ const AdminAppointments = () => {
               {/* Confirm button - saves date/time, updates status, and sends email */}
               <button
                 onClick={confirmAppointment}
-                disabled={!confirmedDate || !confirmedTime || sendingEmail === editingAppointment.id} // Disabled if date/time is empty or sending
+                disabled={
+                  !confirmedDate ||
+                  !confirmedTime ||
+                  sendingEmail === editingAppointment.id
+                } // Disabled if date/time is empty or sending
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {sendingEmail === editingAppointment.id ? (
@@ -1405,7 +1437,7 @@ const AdminAppointments = () => {
                     Confirming & Sending...
                   </>
                 ) : (
-                  'Confirm & Send Email'
+                  "Confirm & Send Email"
                 )}
               </button>
             </div>

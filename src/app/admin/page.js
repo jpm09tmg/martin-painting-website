@@ -5,7 +5,9 @@
 // ============================================
 import { useState, useEffect } from "react";
 import Link from "next/link"; // Next.js Link component for client-side navigation
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/db/supabase-client";
+import NotificationPopup from "../../components/admin/NotificationPopup";
 
 /**
  * ============================================
@@ -42,6 +44,15 @@ export default function AdminDashboard() {
 
   // Loading state - shows loading message while fetching data
   const [loading, setLoading] = useState(true);
+
+  // New reviews state - stores reviews added in the last 24 hours
+  const [newReviews, setNewReviews] = useState([]);
+
+  // Notification visibility state
+  const [showNotification, setShowNotification] = useState(false);
+
+  // Router for navigation
+  const router = useRouter();
 
   // ============================================
   // LOAD DATA ON COMPONENT MOUNT
@@ -108,11 +119,56 @@ export default function AdminDashboard() {
       } else {
         setProjects(projectsData || []); // Update state with fetched data
       }
+
+      // ============================================
+      // LOAD NEW REVIEWS (last 24 hours)
+      // ============================================
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from("testimonials")
+        .select("*")
+        .gte("submitted_at", twentyFourHoursAgo)
+        .order("submitted_at", { ascending: false });
+
+      if (reviewsError) {
+        console.error("Reviews error:", reviewsError);
+        setNewReviews([]);
+      } else {
+        // Format reviews with client name
+        const formattedReviews = (reviewsData || []).map(review => ({
+          ...review,
+          client_name: review.customer_name || "Anonymous Customer",
+          rating: review.rating || 5,
+          review_text: review.message || review.testimonial || "",
+          created_at: review.submitted_at
+        }));
+        setNewReviews(formattedReviews);
+
+        // Check if we should show notification
+        // Only show if there's at least one review from last 24 hours
+        if (formattedReviews.length > 0) {
+          // Get list of review IDs that have been seen
+          const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+
+          // Check if there are any new reviews that haven't been seen
+          const newUnseenReviews = formattedReviews.filter(
+            review => !seenReviewIds.includes(review.id)
+          );
+
+          // Show notification if there are unseen reviews
+          if (newUnseenReviews.length > 0) {
+            setShowNotification(true);
+            // Store the new review IDs as seen (but don't mark them until popup is closed)
+          }
+        }
+      }
     } catch (err) {
       // Catch any unexpected errors (network issues, etc.)
       console.error("Error loading dashboard data:", err);
       setAppointments([]);
       setProjects([]);
+      setNewReviews([]);
     } finally {
       // Always run this - set loading to false whether successful or not
       setLoading(false);
@@ -218,20 +274,63 @@ export default function AdminDashboard() {
   };
 
   // ============================================
+  // NOTIFICATION HANDLERS
+  // ============================================
+
+  /**
+   * Handle closing the notification popup
+   * Marks all current reviews as seen so they won't trigger notification again
+   */
+  const handleCloseNotification = () => {
+    // Mark all current reviews as seen
+    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    // Remove duplicates
+    const uniqueSeenIds = [...new Set(newSeenIds)];
+    localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
+
+    setShowNotification(false);
+  };
+
+  /**
+   * Navigate to reviews page when "View All Reviews" is clicked
+   */
+  const handleViewReviews = () => {
+    // Mark reviews as seen before navigating
+    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    const uniqueSeenIds = [...new Set(newSeenIds)];
+    localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
+
+    router.push("/admin/reviews");
+  };
+
+  // ============================================
   // JSX RETURN - The actual UI/HTML structure
   // ============================================
   return (
-    <div className="flex flex-col min-h-screen bg-background-light">
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* ============================================ */}
+      {/* NOTIFICATION POPUP - Shows when there are new reviews */}
+      {/* ============================================ */}
+      {showNotification && (
+        <NotificationPopup
+          newReviews={newReviews}
+          onClose={handleCloseNotification}
+          onViewReviews={handleViewReviews}
+        />
+      )}
+
       {/* ============================================ */}
       {/* MAIN CONTENT AREA - Dashboard layout */}
       {/* ============================================ */}
-      <div className="flex-1 p-8 bg-background-light">
+      <div className="flex-1 p-8 bg-background">
         {/* ============================================ */}
         {/* PAGE HEADER - Title and welcome message */}
         {/* ============================================ */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-text">Admin Dashboard</h1>
+          <p className="text-text-muted">
             {/* Using &apos; instead of ' to avoid JSX syntax issues */}
             Welcome back! Here&apos;s what&apos;s happening with Martin
             Painting.
@@ -252,7 +351,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 1: Total Projects */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with blue background */}
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -267,10 +366,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-text text-m">Total Projects</p>
+                <p className="text-2xl font-bold text-text-muted">
                   {stats.totalProjects}
                 </p>
-                <p className="text-gray-600">Total Projects</p>
               </div>
             </div>
           </div>
@@ -278,7 +377,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 2: Total Appointments */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with yellow background */}
               <div className="p-2 bg-yellow-100 rounded-lg">
@@ -297,10 +396,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.totalAppointments}
                 </p>
-                <p className="text-gray-600">Total Appointments</p>
+                <p className="text-text-muted">Total Appointments</p>
               </div>
             </div>
           </div>
@@ -308,7 +407,7 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 3: Completed This Month */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with green background */}
               <div className="p-2 bg-green-100 rounded-lg">
@@ -327,10 +426,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.completedThisMonth}
                 </p>
-                <p className="text-gray-600">Completed This Month</p>
+                <p className="text-text-muted">Completed This Month</p>
               </div>
             </div>
           </div>
@@ -338,13 +437,13 @@ export default function AdminDashboard() {
           {/* ============================================ */}
           {/* STAT CARD 4: Pending Appointments */}
           {/* ============================================ */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-background-light rounded-lg shadow p-6">
             <div className="flex items-center">
               {/* Icon container with brand green background */}
-              <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
+              <div className="p-2 bg-warning/20 bg-opacity-20 rounded-lg">
                 {/* Clock SVG icon (represents pending/waiting) */}
                 <svg
-                  className="w-6 h-6 text-[#74A744]"
+                  className="w-6 h-6 text-warning"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -357,10 +456,10 @@ export default function AdminDashboard() {
               </div>
               {/* Stat value and label */}
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-text">
                   {stats.pendingAppointments}
                 </p>
-                <p className="text-gray-600">Pending Appointments</p>
+                <p className="text-text-muted">Pending Appointments</p>
               </div>
             </div>
           </div>
@@ -377,17 +476,17 @@ export default function AdminDashboard() {
           - Progress bars showing completion percentage
           - Empty state if no projects exist
         */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-text">
                 Recent Projects
               </h3>
               {/* Link to full projects page using Next.js Link component */}
               <Link
                 href="/admin/projects"
-                className="text-[#74A744] hover:text-[#5F9136] font-medium"
+                className="text-text hover:text-text-muted font-medium"
               >
                 View All
               </Link>
@@ -416,7 +515,7 @@ export default function AdminDashboard() {
                   >
                     {/* Project header with name and status badge */}
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-text">
                         {project.name}
                       </h4>
                       {/* Status badge with dynamic color based on project status */}
@@ -430,7 +529,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Project details */}
-                    <div className="text-sm text-gray-600 space-y-1">
+                    <div className="text-sm text-text-muted space-y-1">
                       {/* Client name */}
                       <p>
                         <span className="font-medium">Client:</span>{" "}
@@ -476,7 +575,7 @@ export default function AdminDashboard() {
               <div className="text-center py-8">
                 {/* Briefcase/folder icon */}
                 <svg
-                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  className="w-12 h-12 text-text-muted mx-auto mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -488,14 +587,14 @@ export default function AdminDashboard() {
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   />
                 </svg>
-                <p className="text-gray-500 font-medium">No projects yet</p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-text font-medium">No projects yet</p>
+                <p className="text-text-muted text-sm">
                   Projects will appear here once you start adding them
                 </p>
                 {/* Call-to-action button to add first project */}
                 <Link
                   href="/admin/projects"
-                  className="inline-block mt-3 px-4 py-2 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] text-sm"
+                  className="inline-block mt-3 px-4 py-2 bg-background text-text rounded-lg hover:bg-background-dark text-sm"
                 >
                   Add Your First Project
                 </Link>
@@ -515,17 +614,17 @@ export default function AdminDashboard() {
           - Customer details and appointment info
           - Empty state if no pending appointments
         */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-text">
                 Upcoming Appointments
               </h3>
               {/* Link to full appointments page */}
               <Link
                 href="/admin/appointments"
-                className="text-[#74A744] hover:text-[#5F9136] font-medium"
+                className="text-text hover:text-text-muted font-medium"
               >
                 View All
               </Link>
@@ -623,7 +722,7 @@ export default function AdminDashboard() {
               <div className="text-center py-8">
                 {/* Calendar icon */}
                 <svg
-                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  className="w-12 h-12 text-text-muted mx-auto mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -635,10 +734,10 @@ export default function AdminDashboard() {
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="text-gray-500 font-medium">
+                <p className="text-text font-medium">
                   No upcoming appointments
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-text-muted text-sm">
                   New appointments will appear here
                 </p>
               </div>

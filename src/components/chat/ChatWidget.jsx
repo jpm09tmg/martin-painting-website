@@ -69,8 +69,8 @@ export default function ChatWidget({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close chat" : "Open chat"}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg flex items-center justify-center text-white"
-        style={{ backgroundColor: brandHex, zIndex }}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full d-shadow flex items-center justify-center bg-primary text-white"
+        style={{ backgroundColor: zIndex }}
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </button>

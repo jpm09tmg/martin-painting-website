@@ -87,7 +87,7 @@ export default function ReviewForm() {
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-background-light text-text px-8 py-4 rounded-lg font-semibold text-lg hover:bg-text transition-colors inline-flex items-center gap-2 shadow-lg"
+            className="bg-background-light text-text px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary hover:text-white transition-colors inline-flex items-center gap-2 button-shadow hover:translate-y-0.5"
           >
             <MessageSquare className="w-6 h-6" />
             Leave a Review
