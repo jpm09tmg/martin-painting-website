@@ -7,6 +7,8 @@ import {
   DollarSign,
   ExternalLink,
   CheckCircle,
+  Plus,
+  X,
 } from "lucide-react";
 
 export default function PaymentsPage() {
@@ -14,23 +16,48 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    client: "",
+    project: "",
+    total: "",
+    paid: "",
+    payment_method: "",
+    payment_status: "Unpaid",
+  });
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch payments
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from("payments")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching payments:", error);
+      if (paymentsError) {
+        console.error("Error fetching payments:", paymentsError);
       } else {
-        setPayments(data || []);
+        setPayments(paymentsData || []);
       }
+
+      // Fetch clients
+      const { data: clientsData, error: clientsError } = await supabase
+        .from("clients")
+        .select("id, first_name, last_name")
+        .order("last_name", { ascending: true });
+
+      if (clientsError) {
+        console.error("Error fetching clients:", clientsError);
+      } else {
+        setClients(clientsData || []);
+      }
+
       setLoading(false);
     };
 
-    fetchPayments();
+    fetchData();
   }, []);
 
   const handlePaymentMethodChange = async (id, newMethod) => {
@@ -112,6 +139,47 @@ export default function PaymentsPage() {
     setUpdating(null);
   };
 
+  const handleAddPayment = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("payments")
+        .insert([
+          {
+            client: newPayment.client,
+            project: newPayment.project,
+            total: parseFloat(newPayment.total) || 0,
+            paid: parseFloat(newPayment.paid) || 0,
+            payment_method: newPayment.payment_method,
+            payment_status: newPayment.payment_status,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPayments([data, ...payments]);
+      setShowAddForm(false);
+      setNewPayment({
+        client: "",
+        project: "",
+        total: "",
+        paid: "",
+        payment_method: "",
+        payment_status: "Unpaid",
+      });
+      alert("Payment record created successfully!");
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      alert(`Failed to create payment: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const term = searchTerm.toLowerCase();
   const filteredPayments = payments.filter(
     (p) =>
@@ -149,6 +217,13 @@ export default function PaymentsPage() {
             <h1 className="text-2xl font-bold text-text">Payments</h1>
             <p className="text-text-muted">Track and manage payment records</p>
           </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Payment
+          </button>
         </div>
       </div>
 
@@ -351,6 +426,164 @@ export default function PaymentsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Payment Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b border-border">
+              <h2 className="text-xl font-bold text-text">Add New Payment</h2>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="text-text-muted hover:text-text"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPayment} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">
+                  Client Name *
+                </label>
+                <select
+                  value={newPayment.client}
+                  onChange={(e) =>
+                    setNewPayment({ ...newPayment, client: e.target.value })
+                  }
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                >
+                  <option value="">Select Client</option>
+                  {clients.map((client) => (
+                    <option
+                      key={client.id}
+                      value={`${client.first_name} ${client.last_name}`}
+                    >
+                      {client.first_name} {client.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">
+                  Project Name *
+                </label>
+                <input
+                  type="text"
+                  value={newPayment.project}
+                  onChange={(e) =>
+                    setNewPayment({ ...newPayment, project: e.target.value })
+                  }
+                  required
+                  placeholder="e.g., Kitchen Repaint"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Total Amount * ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newPayment.total}
+                    onChange={(e) =>
+                      setNewPayment({ ...newPayment, total: e.target.value })
+                    }
+                    required
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Paid Amount ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newPayment.paid}
+                    onChange={(e) =>
+                      setNewPayment({ ...newPayment, paid: e.target.value })
+                    }
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Payment Method
+                  </label>
+                  <select
+                    value={newPayment.payment_method}
+                    onChange={(e) =>
+                      setNewPayment({
+                        ...newPayment,
+                        payment_method: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="">Select Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="E-Transfer">E-Transfer</option>
+                    <option value="Stripe">Stripe</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Payment Status *
+                  </label>
+                  <select
+                    value={newPayment.payment_status}
+                    onChange={(e) =>
+                      setNewPayment({
+                        ...newPayment,
+                        payment_status: e.target.value,
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Partial">Partial</option>
+                    <option value="Paid">Paid</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="px-4 py-2 border border-border text-text rounded-lg hover:bg-background-light transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Saving..." : "Add Payment"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
