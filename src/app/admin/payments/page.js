@@ -20,6 +20,7 @@ export default function PaymentsPage() {
   const [clients, setClients] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [existingPayments, setExistingPayments] = useState([]);
   const [newPayment, setNewPayment] = useState({
     client_id: "",
     quote_id: "",
@@ -186,6 +187,7 @@ export default function PaymentsPage() {
 
       setPayments([data, ...payments]);
       setShowAddForm(false);
+      setExistingPayments([]);
       setNewPayment({
         client_id: "",
         quote_id: "",
@@ -472,7 +474,10 @@ export default function PaymentsPage() {
             <div className="flex justify-between items-center p-6 border-b border-border">
               <h2 className="text-xl font-bold text-text">Add New Payment</h2>
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                  setShowAddForm(false);
+                  setExistingPayments([]);
+                }}
                 className="text-text-muted hover:text-text"
               >
                 <X className="w-6 h-6" />
@@ -501,6 +506,14 @@ export default function PaymentsPage() {
                         project: selectedQuote?.project_address || "",
                         total: selectedQuote?.total_amount || "",
                       });
+                      
+                      // Check for existing payments for this quote
+                      if (e.target.value) {
+                        const existing = payments.filter(p => p.quote_id === e.target.value);
+                        setExistingPayments(existing);
+                      } else {
+                        setExistingPayments([]);
+                      }
                     }}
                     required
                     className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
@@ -518,6 +531,28 @@ export default function PaymentsPage() {
                     ? "Client and project details will auto-fill from quote" 
                     : "Quotes need to be created before adding payment records"}
                 </p>
+
+                {/* Existing Payments Warning */}
+                {existingPayments.length > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="flex items-start gap-2">
+                      <span className="text-yellow-600 font-medium text-sm">⚠️ Existing Payments</span>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-700">
+                      <p className="mb-1">
+                        <strong>{existingPayments.length}</strong> payment record(s) already exist for this quote:
+                      </p>
+                      <p className="font-semibold">
+                        Total Paid: ${existingPayments.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0).toFixed(2)}
+                      </p>
+                      {newPayment.total && (
+                        <p className="mt-1">
+                          Quote Total: ${parseFloat(newPayment.total).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -570,6 +605,30 @@ export default function PaymentsPage() {
                     placeholder="0.00"
                     className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
                   />
+                  {/* Overpayment Warning */}
+                  {newPayment.paid && newPayment.total && existingPayments.length > 0 && (
+                    (() => {
+                      const totalAlreadyPaid = existingPayments.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+                      const newAmount = parseFloat(newPayment.paid) || 0;
+                      const quoteTotal = parseFloat(newPayment.total) || 0;
+                      const totalAfterNew = totalAlreadyPaid + newAmount;
+                      
+                      if (totalAfterNew > quoteTotal) {
+                        return (
+                          <p className="text-xs text-red-600 mt-1">
+                            ⚠️ Warning: Total payments (${totalAfterNew.toFixed(2)}) will exceed quote amount (${quoteTotal.toFixed(2)})
+                          </p>
+                        );
+                      } else if (totalAfterNew === quoteTotal) {
+                        return (
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ This will complete the payment (${totalAfterNew.toFixed(2)} = ${quoteTotal.toFixed(2)})
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()
+                  )}
                 </div>
               </div>
 
@@ -621,7 +680,10 @@ export default function PaymentsPage() {
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setExistingPayments([]);
+                  }}
                   className="px-4 py-2 border border-border text-text rounded-lg hover:bg-background-light transition-colors"
                 >
                   Cancel
