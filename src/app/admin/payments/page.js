@@ -20,6 +20,7 @@ export default function PaymentsPage() {
   const [clients, setClients] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
   const [existingPayments, setExistingPayments] = useState([]);
   const [newPayment, setNewPayment] = useState({
     client_id: "",
@@ -60,7 +61,7 @@ export default function PaymentsPage() {
       // Fetch quotes
       const { data: quotesData, error: quotesError } = await supabase
         .from("quotes")
-        .select("id, project_address, client_id, clients(first_name, last_name), total_amount")
+        .select("id, project_type, client_id, clients(first_name, last_name), total_amount")
         .order("created_at", { ascending: false });
 
       if (quotesError) {
@@ -85,11 +86,13 @@ export default function PaymentsPage() {
 
     if (error) {
       console.error("Failed to update payment method:", error);
-      alert("Failed to update payment method");
+      setMessage("Error: Failed to update payment method");
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, payment_method: newMethod } : p))
       );
+      setMessage("Payment method updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
   };
@@ -102,9 +105,10 @@ export default function PaymentsPage() {
       payment_status: newStatus,
     };
 
-    // If marking as paid, set paid amount to total
+    // If marking as paid, set paid amount to total and record timestamp
     if (newStatus === "Paid" && payment.total) {
       updates.paid = payment.total;
+      updates.paid_at = new Date().toISOString();
     }
 
     const { error } = await supabase
@@ -115,11 +119,13 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update status:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      alert(`Failed to update status: ${error.message || "Unknown error"}`);
+      setMessage(`Error: Failed to update status - ${error.message || "Unknown error"}`);
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
+      setMessage("Payment status updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
   };
@@ -136,6 +142,11 @@ export default function PaymentsPage() {
         paidAmount >= total ? "Paid" : paidAmount > 0 ? "Partial" : "Unpaid",
     };
 
+    // Set paid_at timestamp if fully paid
+    if (paidAmount >= total) {
+      updates.paid_at = new Date().toISOString();
+    }
+
     const { error } = await supabase
       .from("payments")
       .update(updates)
@@ -144,13 +155,13 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update paid amount:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      alert(
-        `Failed to update paid amount: ${error.message || "Unknown error"}`
-      );
+      setMessage(`Error: Failed to update paid amount - ${error.message || "Unknown error"}`);
     } else {
       setPayments((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+        prev.map((p) => (p.id === id ? { ...p, ...updates} : p))
       );
+      setMessage("Paid amount updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
   };
@@ -166,20 +177,28 @@ export default function PaymentsPage() {
         ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
         : "";
 
+      const paidAmount = parseFloat(newPayment.paid) || 0;
+      const totalAmount = parseFloat(newPayment.total) || 0;
+      
+      const insertData = {
+        client_id: newPayment.client_id,
+        quote_id: newPayment.quote_id,
+        client: clientName, // Store name for display purposes
+        project: newPayment.project,
+        total: totalAmount,
+        paid: paidAmount,
+        payment_method: newPayment.payment_method,
+        payment_status: newPayment.payment_status,
+      };
+
+      // Set paid_at if payment is marked as fully paid
+      if (newPayment.payment_status === "Paid" || (paidAmount > 0 && paidAmount >= totalAmount)) {
+        insertData.paid_at = new Date().toISOString();
+      }
+
       const { data, error } = await supabase
         .from("payments")
-        .insert([
-          {
-            client_id: newPayment.client_id,
-            quote_id: newPayment.quote_id,
-            client: clientName, // Store name for display purposes
-            project: newPayment.project,
-            total: parseFloat(newPayment.total) || 0,
-            paid: parseFloat(newPayment.paid) || 0,
-            payment_method: newPayment.payment_method,
-            payment_status: newPayment.payment_status,
-          },
-        ])
+        .insert([insertData])
         .select()
         .single();
 
@@ -197,10 +216,13 @@ export default function PaymentsPage() {
         payment_method: "",
         payment_status: "Unpaid",
       });
-      alert("Payment record created successfully!");
+      setMessage("Payment record created successfully!");
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
     } catch (error) {
       console.error("Error creating payment:", error);
-      alert(`Failed to create payment: ${error.message}`);
+      setMessage(`Error: Failed to create payment - ${error.message}`);
     } finally {
       setSaving(false);
     }
@@ -249,7 +271,7 @@ export default function PaymentsPage() {
               // Refresh quotes when opening form
               const { data: quotesData, error } = await supabase
                 .from("quotes")
-                .select("id, project_address, client_id, clients(first_name, last_name), total_amount")
+                .select("id, project_type, client_id, clients(first_name, last_name), total_amount")
                 .order("created_at", { ascending: false });
               
               if (!error) {
@@ -308,6 +330,19 @@ export default function PaymentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Success/Error Message - After stat cards */}
+      {message && !showAddForm && (
+        <div
+          className={`mb-6 p-4 rounded-lg ${
+            message.includes("Error")
+              ? "bg-red-50 text-red-800 border border-red-200"
+              : "bg-green-50 text-green-800 border border-green-200"
+          }`}
+        >
+          <p>{message}</p>
+        </div>
+      )}
 
       <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex items-center gap-2">
@@ -477,6 +512,7 @@ export default function PaymentsPage() {
                 onClick={() => {
                   setShowAddForm(false);
                   setExistingPayments([]);
+                  setMessage("");
                 }}
                 className="text-text-muted hover:text-text"
               >
@@ -503,7 +539,7 @@ export default function PaymentsPage() {
                         quote_id: e.target.value,
                         // Auto-fill from quote
                         client_id: selectedQuote?.client_id || "",
-                        project: selectedQuote?.project_address || "",
+                        project: selectedQuote?.project_type || "",
                         total: selectedQuote?.total_amount || "",
                       });
                       
@@ -521,7 +557,7 @@ export default function PaymentsPage() {
                     <option value="">Select Quote</option>
                     {quotes.map((quote) => (
                       <option key={quote.id} value={quote.id}>
-                        {quote.project_address || 'N/A'} - {quote.clients?.first_name} {quote.clients?.last_name} (${quote.total_amount || 0})
+                        {quote.project_type || 'N/A'} - {quote.clients?.first_name} {quote.clients?.last_name} (${parseFloat(quote.total_amount || 0).toFixed(2)})
                       </option>
                     ))}
                   </select>
@@ -683,6 +719,7 @@ export default function PaymentsPage() {
                   onClick={() => {
                     setShowAddForm(false);
                     setExistingPayments([]);
+                    setMessage("");
                   }}
                   className="px-4 py-2 border border-border text-text rounded-lg hover:bg-background-light transition-colors"
                 >
