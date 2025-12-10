@@ -23,20 +23,23 @@ export default function BookAppointment() {
   const formatPhoneNumber = (value) => {
     // Remove all non-digits
     const phoneNumber = value.replace(/\D/g, "");
-    
+
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     } else {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+        3,
+        6
+      )}-${phoneNumber.slice(6, 10)}`;
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Format phone number field
     if (name === "phone") {
       setFormData({
@@ -190,41 +193,41 @@ export default function BookAppointment() {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <div className="min-h-screen bg-background-dark pt-16">
       <Header currentPage="appointments" />
 
       {/* Main Content */}
       <div className="w-full max-w-4xl mx-auto py-8 px-4">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold text-text mb-4">
             Book Your Painting Consultation
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-text-muted">
             Schedule a free consultation to discuss your painting project
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+        <div className="bg-background rounded-lg shadow-lg overflow-hidden border border-border-muted">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Left Panel - Service Selection */}
-            <div className="bg-[#F1F4E8] p-6">
-              <h2 className="text-lg font-normal text-[#171717] mb-6">
+            <div className="bg-background p-6">
+              <h2 className="text-lg font-normal text-text mb-6">
                 Service Details
               </h2>
 
               {/* Property Type Selection */}
               <div className="mb-6">
-                <h3 className="text-sm font-normal text-[#404040] mb-4">
+                <h3 className="text-sm font-normal text-text-muted mb-4">
                   Property Type
                 </h3>
                 <div className="space-y-3">
                   {propertyTypes.map((property) => (
                     <label
                       key={property.name}
-                      className={`flex items-start space-x-3 p-4 bg-white rounded-lg cursor-pointer transition-colors border ${
+                      className={`flex items-start space-x-3 p-4 bg-background-light rounded-lg cursor-pointer transition-colors border ${
                         formData.propertyType === property.name
-                          ? "border-[#DCE9D4] shadow-sm"
-                          : "border-gray-200 hover:border-[#DCE9D4]"
+                          ? "border-border shadow-sm"
+                          : "border-border hover:border-border"
                       }`}
                     >
                       <input
@@ -233,14 +236,14 @@ export default function BookAppointment() {
                         value={property.name}
                         checked={formData.propertyType === property.name}
                         onChange={handleChange}
-                        className="mt-1 w-4 h-4 text-[#74A744] border-gray-300 focus:ring-[#74A744] rounded-full"
+                        className="mt-1 w-4 h-4 text-text border-border focus:ring-highlight rounded-full"
                         required
                       />
                       <div className="flex-1">
-                        <div className="font-normal text-[#171717] text-sm mb-1">
+                        <div className="font-normal text-text text-sm mb-1">
                           {property.name}
                         </div>
-                        <div className="text-xs text-[#737373]">
+                        <div className="text-xs text-text-muted">
                           {property.description}
                         </div>
                       </div>
@@ -251,17 +254,17 @@ export default function BookAppointment() {
 
               {/* Location Type Selection */}
               <div className="mb-6">
-                <h3 className="text-sm font-normal text-[#404040] mb-4">
+                <h3 className="text-sm font-normal text-text mb-4">
                   Location Type
                 </h3>
                 <div className="space-y-3">
                   {locationTypes.map((location) => (
                     <label
                       key={location.name}
-                      className={`flex items-start space-x-3 p-4 bg-white rounded-lg cursor-pointer transition-colors border ${
+                      className={`flex items-start space-x-3 p-4 bg-background-light rounded-lg cursor-pointer transition-colors border ${
                         formData.locationType === location.name
-                          ? "border-[#DCE9D4] shadow-sm"
-                          : "border-gray-200 hover:border-[#DCE9D4]"
+                          ? "border-border shadow-sm"
+                          : "border-border hover:border-border"
                       }`}
                     >
                       <input
@@ -270,14 +273,14 @@ export default function BookAppointment() {
                         value={location.name}
                         checked={formData.locationType === location.name}
                         onChange={handleChange}
-                        className="mt-1 w-4 h-4 text-[#74A744] border-gray-300 focus:ring-[#74A744] rounded-full"
+                        className="mt-1 w-4 h-4 text-text border-border focus:ring-highlight rounded-full"
                         required
                       />
                       <div className="flex-1">
-                        <div className="font-normal text-[#171717] text-sm mb-1">
+                        <div className="font-normal text-text text-sm mb-1">
                           {location.name}
                         </div>
-                        <div className="text-xs text-[#737373]">
+                        <div className="text-xs text-text-muted">
                           {location.description}
                         </div>
                       </div>
@@ -287,7 +290,7 @@ export default function BookAppointment() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-normal text-[#404040] mb-2">
+                <label className="block text-sm font-normal text-text mb-2">
                   Project Details
                 </label>
                 <textarea
@@ -295,22 +298,22 @@ export default function BookAppointment() {
                   value={formData.details}
                   onChange={handleChange}
                   rows="6"
-                  className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   placeholder="Tell us about your painting project... (room sizes, color preferences, timeline, etc.)"
                 ></textarea>
               </div>
             </div>
 
             {/* Right Panel - Contact Information */}
-            <div className="bg-white p-6">
-              <h2 className="text-lg font-normal text-[#171717] mb-6">
+            <div className="bg-background-light p-6">
+              <h2 className="text-lg font-normal text-text mb-6">
                 Contact Information
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-normal text-[#404040] mb-2">
+                    <label className="block text-sm font-normal text-text-muted mb-2">
                       First Name
                     </label>
                     <input
@@ -320,11 +323,11 @@ export default function BookAppointment() {
                       onChange={handleChange}
                       placeholder="John"
                       required
-                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-normal text-[#404040] mb-2">
+                    <label className="block text-sm font-normal text-text-muted mb-2">
                       Last Name
                     </label>
                     <input
@@ -334,13 +337,13 @@ export default function BookAppointment() {
                       onChange={handleChange}
                       placeholder="Doe"
                       required
-                      className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                  <label className="block text-sm font-normal text-text-muted mb-2">
                     Email Address
                   </label>
                   <input
@@ -350,12 +353,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="john@example.com"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                  <label className="block text-sm font-normal text-text-muted mb-2">
                     Phone Number
                   </label>
                   <input
@@ -365,12 +368,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="(403) 555-PAINT"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                  <label className="block text-sm font-normal text-text-muted mb-2">
                     Address
                   </label>
                   <input
@@ -380,12 +383,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     placeholder="123 Main Street, Calgary, AB T2P 1J9"
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#D4D4D4] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                  <label className="block text-sm font-normal text-text-muted mb-2">
                     Preferred Consultation Date
                   </label>
 
@@ -397,12 +400,12 @@ export default function BookAppointment() {
                     onChange={handleChange}
                     min={new Date().toISOString().split("T")[0]}
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-normal text-[#404040] mb-2">
+                  <label className="block text-sm font-normal text-text-muted mb-2">
                     Preferred Time
                   </label>
                   <select
@@ -410,7 +413,7 @@ export default function BookAppointment() {
                     value={formData.appointmentTime}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-white border border-[#DFDFDF] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md text-text text-sm focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
                   >
                     <option value="">Select time</option>
                     {timeSlots.map((time) => (
@@ -437,17 +440,17 @@ export default function BookAppointment() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 px-4 bg-[#74A744] text-white font-semibold rounded-md hover:bg-[#5F9136] focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                  className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
                 >
                   {loading ? "Submitting..." : "Request Consultation"}
                 </button>
 
                 <div className="text-center pt-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-text-muted">
                     Or call us directly at{" "}
                     <a
                       href="tel:4035552746"
-                      className="text-[#74A744] hover:underline font-medium"
+                      className="text-text hover:underline font-medium"
                     >
                       (403) 555-PAINT
                     </a>
@@ -459,41 +462,39 @@ export default function BookAppointment() {
         </div>
 
         {/* Additional Information */}
-        <div className="mt-8 bg-[#F1F4E8] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-background-light rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-text mb-4">
             What to Expect
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#74A744] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-white font-bold">1</span>
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">
-                Free Consultation
-              </h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-medium text-text mb-2">Free Consultation</h4>
+              <p className="text-sm text-text-muted">
                 Well visit your property to assess your painting needs and
                 discuss your vision.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#74A744] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-white font-bold">2</span>
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">Detailed Quote</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-medium text-text mb-2">Detailed Quote</h4>
+              <p className="text-sm text-text-muted">
                 Receive a comprehensive written estimate with material and labor
                 breakdown.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#74A744] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-white font-bold">3</span>
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">
+              <h4 className="font-medium text-text mb-2">
                 Professional Service
               </h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-text-muted">
                 Schedule your painting project with our experienced and insured
                 team.
               </p>

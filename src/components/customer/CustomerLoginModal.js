@@ -5,7 +5,11 @@ import { X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/src/lib/db/supabase-client";
 import { useRouter } from "next/navigation";
 
-export default function CustomerLoginModal({ isOpen, onClose, onSwitchToSignup }) {
+export default function CustomerLoginModal({
+  isOpen,
+  onClose,
+  onSwitchToSignup,
+}) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,29 +26,32 @@ export default function CustomerLoginModal({ isOpen, onClose, onSwitchToSignup }
 
     try {
       // Sign in with Supabase
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password,
-      });
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password,
+        });
 
       if (signInError) throw signInError;
 
       // Check if user has a client record
       const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('user_id', data.user.id)
+        .from("clients")
+        .select("id")
+        .eq("user_id", data.user.id)
         .single();
 
       if (clientError || !clientData) {
         // Not a customer account
         await supabase.auth.signOut();
-        throw new Error("This account is not registered as a customer. Please sign up first.");
+        throw new Error(
+          "This account is not registered as a customer. Please sign up first."
+        );
       }
 
       // Success - redirect to customer dashboard
       onClose();
-      router.push('/customer');
+      router.push("/customer");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,10 +65,7 @@ export default function CustomerLoginModal({ isOpen, onClose, onSwitchToSignup }
         {/* Header */}
         <div className="p-6 border-b border-border flex justify-between items-center">
           <h2 className="text-2xl font-bold text-text">Customer Sign In</h2>
-          <button
-            onClick={onClose}
-            className="text-text-muted hover:text-text"
-          >
+          <button onClick={onClose} className="text-text-muted hover:text-text">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -130,11 +134,11 @@ export default function CustomerLoginModal({ isOpen, onClose, onSwitchToSignup }
           {/* Sign Up Link */}
           <div className="text-center pt-2">
             <p className="text-sm text-text-muted">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
                 onClick={onSwitchToSignup}
-                className="text-white hover:underline font-medium"
+                className="text-text hover:underline font-medium"
               >
                 Sign up
               </button>

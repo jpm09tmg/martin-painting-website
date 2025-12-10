@@ -53,7 +53,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("home")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Home
@@ -63,7 +63,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("services")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Services
@@ -73,7 +73,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("gallery")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Gallery
@@ -83,7 +83,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("quote")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Quote
@@ -93,7 +93,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("contact")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Contact
@@ -103,7 +103,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("appointments")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Appointments
@@ -123,7 +123,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("profile")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Profile
@@ -135,7 +135,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors flex items-center gap-2 ${
               isActive("admin")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             <UserCog className="w-4 h-4" />
