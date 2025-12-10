@@ -217,14 +217,16 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-1 p-8">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <main className="flex-1 p-4 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-text mb-2">
+          <div className="mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-text mb-2">
               Settings
             </h1>
-            <p className="text-text-muted">Manage your profile and account settings</p>
+            <p className="text-sm md:text-base text-text-muted">
+              Manage your profile and account settings
+            </p>
           </div>
 
           {/* Notification */}
@@ -252,53 +254,68 @@ export default function SettingsPage() {
           )}
 
           {/* General Profile Section */}
-          <section className="bg-background-light rounded-xl shadow-lg border border-border p-8">
-            <h2 className="text-2xl font-bold text-text mb-6 flex items-center">
-              <User className="w-6 h-6 mr-2 text-primary" />
-              Profile Information
-            </h2>
+          <section className="bg-background-light rounded-xl shadow-lg border border-border overflow-hidden">
+            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 px-6 py-5 border-b border-border">
+              <h2 className="text-xl md:text-2xl font-bold text-text flex items-center">
+                <div className="p-2 bg-primary/20 rounded-lg mr-3">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                Profile Information
+              </h2>
+              <p className="text-xs md:text-sm text-text-muted mt-1 ml-12">
+                Update your personal information and profile picture
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 items-start">
-              {/* Profile Image */}
-              <div className="flex flex-col items-center">
-                <div className="relative group">
-                  <div className="w-32 h-32 bg-primary rounded-full flex items-center justify-center mb-3 border-4 border-background-light shadow-lg overflow-hidden">
-                    {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-16 h-16 text-white" />
-                    )}
+            <div className="p-6 md:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 items-start">
+                {/* Profile Image */}
+                <div className="flex flex-col items-center lg:items-start">
+                  <div className="relative group">
+                    <div className="w-36 h-36 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mb-4 border-4 border-background shadow-xl overflow-hidden ring-4 ring-primary/10">
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-20 h-20 text-white" />
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-black bg-opacity-60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer">
+                      <div className="text-center">
+                        <Camera className="w-8 h-8 text-white mx-auto mb-1" />
+                        <p className="text-xs text-white font-medium">Change Photo</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="w-8 h-8 text-white" />
-                  </div>
+
+                  <label className="cursor-pointer text-primary text-sm font-semibold hover:opacity-80 flex items-center justify-center space-x-2 bg-primary/10 px-5 py-2.5 rounded-lg hover:bg-primary/20 transition-all duration-200 border border-primary/20 hover:border-primary/30 w-full">
+                    <Camera className="w-4 h-4" />
+                    <span>Update Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                  <p className="text-xs text-text-muted mt-2 text-center lg:text-left">
+                    JPG, PNG or GIF (Max. 5MB)
+                  </p>
                 </div>
 
-                <label className="cursor-pointer text-primary text-sm font-semibold hover:opacity-80 flex items-center space-x-2 bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
-                  <Camera className="w-4 h-4" />
-                  <span>Update Photo</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                </label>
-              </div>
-
               {/* Form */}
-              <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <form className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
                 {/* Full Name */}
-                <div className="flex flex-col">
+                <div className="flex flex-col group">
                   <label
                     htmlFor="fullName"
-                    className="text-sm font-semibold text-text mb-2"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide flex items-center"
                   >
-                    Full Name <span className="text-danger">*</span>
+                    <span>Full Name</span>
+                    <span className="text-danger ml-1">*</span>
                   </label>
                   <input
                     id="fullName"
@@ -307,20 +324,21 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       handleInputChange("fullName", e.target.value)
                     }
-                    placeholder="John Doe"
+                    placeholder="Enter your full name"
                     onFocus={(e) => e.target.select()}
                     autoComplete="name"
-                    className="px-4 py-2.5 border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-primary/50"
                   />
                 </div>
 
                 {/* Position */}
-                <div className="flex flex-col">
+                <div className="flex flex-col group">
                   <label
                     htmlFor="position"
-                    className="text-sm font-semibold text-text mb-2"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide"
                   >
                     Position
                   </label>
@@ -331,65 +349,69 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       handleInputChange("position", e.target.value)
                     }
-                    placeholder="Owner / Manager"
+                    placeholder="e.g., Owner, Manager, Administrator"
                     onFocus={(e) => e.target.select()}
-                    className="px-4 py-2.5 border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-primary/50"
                   />
                 </div>
 
                 {/* Email */}
-                <div className="flex flex-col">
+                <div className="flex flex-col group">
                   <label
                     htmlFor="email"
-                    className="text-sm font-semibold text-text mb-2"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide flex items-center"
                   >
-                    Email <span className="text-danger">*</span>
+                    <span>Email Address</span>
+                    <span className="text-danger ml-1">*</span>
                   </label>
                   <input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="john.doe@example.com"
+                    placeholder="your.email@example.com"
                     onFocus={(e) => e.target.select()}
                     autoComplete="email"
-                    className="px-4 py-2.5 border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-primary/50"
                   />
                 </div>
 
                 {/* Phone */}
-                <div className="flex flex-col">
+                <div className="flex flex-col group">
                   <label
                     htmlFor="phone"
-                    className="text-sm font-semibold text-text mb-2"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide"
                   >
-                    Phone
+                    Phone Number
                   </label>
                   <input
                     id="phone"
-                    type="text"
+                    type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     placeholder="(123) 456-7890"
                     onFocus={(e) => e.target.select()}
                     autoComplete="tel"
-                    className="px-4 py-2.5 border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-primary/50"
                   />
                 </div>
 
                 {/* Address */}
-                <div className="flex flex-col sm:col-span-2">
+                <div className="flex flex-col sm:col-span-2 group">
                   <label
                     htmlFor="address"
-                    className="text-sm font-semibold text-text mb-2"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide"
                   >
-                    Address
+                    Business Address
                   </label>
                   <input
                     id="address"
@@ -398,127 +420,161 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       handleInputChange("address", e.target.value)
                     }
-                    placeholder="123 Main St, Anytown, USA"
+                    placeholder="123 Main Street, City, State, ZIP"
                     onFocus={(e) => e.target.select()}
                     autoComplete="address"
-                    className="px-4 py-2.5 border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-primary/50"
                   />
                 </div>
               </form>
+              </div>
             </div>
           </section>
 
           {/* Login Information Section */}
-          <section className="bg-background-light rounded-xl shadow-lg border border-border p-8">
-            <h2 className="text-2xl font-bold text-text mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Security & Login
-            </h2>
-
-            <div className="w-full max-w-2xl mx-auto space-y-6">
-              {/* Username */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="username"
-                  className="text-sm font-semibold text-text mb-2"
-                >
-                  Username <span className="text-danger">*</span>
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    handleInputChange("username", e.target.value)
-                  }
-                  placeholder="johndoe"
-                  autoComplete="username"
-                  onFocus={(e) => e.target.select()}
-                  className="px-4 py-2.5 border border-border rounded-lg bg-background
-                            focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                            text-text placeholder:text-text-muted transition-all"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-semibold text-text mb-2"
-                >
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                    placeholder="Leave blank to keep current password"
-                    autoComplete="new-password"
-                    className="px-4 py-2.5 pr-12 w-full border border-border rounded-lg bg-background
-                              focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-                              text-text placeholder:text-text-muted transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-pressed={showPassword}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
+          <section className="bg-background-light rounded-xl shadow-lg border border-border overflow-hidden">
+            <div className="bg-gradient-to-r from-secondary/10 to-primary/10 px-6 py-5 border-b border-border">
+              <h2 className="text-xl md:text-2xl font-bold text-text flex items-center">
+                <div className="p-2 bg-secondary/20 rounded-lg mr-3">
+                  <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                 </div>
-                <p className="text-xs text-text-muted mt-2">
-                  Leave blank if you don&apos;t want to change your password
-                </p>
-              </div>
+                Security & Login
+              </h2>
+              <p className="text-xs md:text-sm text-text-muted mt-1 ml-12">
+                Manage your login credentials and account security
+              </p>
+            </div>
 
-              {/* Save Button */}
-              <div className="pt-4 flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData(originalData);
-                    setNotification(null);
-                  }}
-                  disabled={!hasChanges()}
-                  className="px-6 py-2.5 border border-border text-text rounded-lg hover:bg-background-dark
-                            transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!hasChanges() || saving}
-                  className="px-6 py-2.5 bg-primary text-white rounded-lg
-                            hover:opacity-90 shadow-md hover:shadow-lg
-                            transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium
-                            inline-flex items-center space-x-2"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      <span>Save Changes</span>
-                    </>
-                  )}
-                </button>
+            <div className="p-6 md:p-8">
+              <div className="w-full max-w-3xl mx-auto space-y-6">
+                {/* Username */}
+                <div className="flex flex-col group">
+                  <label
+                    htmlFor="username"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide flex items-center"
+                  >
+                    <span>Username</span>
+                    <span className="text-danger ml-1">*</span>
+                  </label>
+                  <input
+                    id="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
+                    placeholder="Enter your username"
+                    autoComplete="username"
+                    onFocus={(e) => e.target.select()}
+                    className="px-4 py-3 border-2 border-border rounded-lg bg-background
+                              focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary
+                              text-text placeholder:text-text-muted transition-all duration-200
+                              hover:border-secondary/50"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col group">
+                  <label
+                    htmlFor="password"
+                    className="text-xs font-bold text-text mb-2 uppercase tracking-wide"
+                  >
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      placeholder="Leave blank to keep current password"
+                      autoComplete="new-password"
+                      className="px-4 py-3 pr-12 w-full border-2 border-border rounded-lg bg-background
+                                focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary
+                                text-text placeholder:text-text-muted transition-all duration-200
+                                hover:border-secondary/50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-pressed={showPassword}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors p-1 rounded"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-text-muted mt-2 flex items-start">
+                    <svg className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span>Leave blank if you don&apos;t want to change your password</span>
+                  </p>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-border my-6"></div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+                  <div className="text-xs text-text-muted order-2 sm:order-1">
+                    {hasChanges() && (
+                      <span className="flex items-center">
+                        <span className="w-2 h-2 bg-warning rounded-full mr-2 animate-pulse"></span>
+                        You have unsaved changes
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex space-x-3 order-1 sm:order-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(originalData);
+                        setNotification(null);
+                      }}
+                      disabled={!hasChanges()}
+                      className="flex-1 sm:flex-none px-6 py-3 border-2 border-border text-text rounded-lg
+                                hover:bg-background-dark hover:border-text-muted
+                                transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+                                font-semibold text-sm disabled:hover:bg-transparent disabled:hover:border-border"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={!hasChanges() || saving}
+                      className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-primary to-secondary
+                                text-white rounded-lg hover:shadow-xl hover:scale-105
+                                transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+                                font-semibold text-sm inline-flex items-center justify-center space-x-2
+                                disabled:hover:scale-100 disabled:hover:shadow-md"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-5 h-5" />
+                          <span>Save Changes</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
