@@ -123,7 +123,9 @@ export default function AdminDashboard() {
       // ============================================
       // LOAD NEW REVIEWS (last 24 hours)
       // ============================================
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const twentyFourHoursAgo = new Date(
+        Date.now() - 24 * 60 * 60 * 1000
+      ).toISOString();
 
       const { data: reviewsData, error: reviewsError } = await supabase
         .from("testimonials")
@@ -136,12 +138,12 @@ export default function AdminDashboard() {
         setNewReviews([]);
       } else {
         // Format reviews with client name
-        const formattedReviews = (reviewsData || []).map(review => ({
+        const formattedReviews = (reviewsData || []).map((review) => ({
           ...review,
           client_name: review.customer_name || "Anonymous Customer",
           rating: review.rating || 5,
           review_text: review.message || review.testimonial || "",
-          created_at: review.submitted_at
+          created_at: review.submitted_at,
         }));
         setNewReviews(formattedReviews);
 
@@ -149,11 +151,13 @@ export default function AdminDashboard() {
         // Only show if there's at least one review from last 24 hours
         if (formattedReviews.length > 0) {
           // Get list of review IDs that have been seen
-          const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
+          const seenReviewIds = JSON.parse(
+            localStorage.getItem("seenReviewIds") || "[]"
+          );
 
           // Check if there are any new reviews that haven't been seen
           const newUnseenReviews = formattedReviews.filter(
-            review => !seenReviewIds.includes(review.id)
+            (review) => !seenReviewIds.includes(review.id)
           );
 
           // Show notification if there are unseen reviews
@@ -283,8 +287,10 @@ export default function AdminDashboard() {
    */
   const handleCloseNotification = () => {
     // Mark all current reviews as seen
-    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
-    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    const seenReviewIds = JSON.parse(
+      localStorage.getItem("seenReviewIds") || "[]"
+    );
+    const newSeenIds = [...seenReviewIds, ...newReviews.map((r) => r.id)];
     // Remove duplicates
     const uniqueSeenIds = [...new Set(newSeenIds)];
     localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
@@ -297,8 +303,10 @@ export default function AdminDashboard() {
    */
   const handleViewReviews = () => {
     // Mark reviews as seen before navigating
-    const seenReviewIds = JSON.parse(localStorage.getItem("seenReviewIds") || "[]");
-    const newSeenIds = [...seenReviewIds, ...newReviews.map(r => r.id)];
+    const seenReviewIds = JSON.parse(
+      localStorage.getItem("seenReviewIds") || "[]"
+    );
+    const newSeenIds = [...seenReviewIds, ...newReviews.map((r) => r.id)];
     const uniqueSeenIds = [...new Set(newSeenIds)];
     localStorage.setItem("seenReviewIds", JSON.stringify(uniqueSeenIds));
 
@@ -478,7 +486,7 @@ export default function AdminDashboard() {
         */}
         <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-border-muted">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-text">
                 Recent Projects
@@ -499,8 +507,8 @@ export default function AdminDashboard() {
             {/* LOADING STATE - Shows while fetching data */}
             {/* ============================================ */}
             {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Loading projects...</p>
+              <div className="bg-background-light text-center py-8">
+                <p className="text-text-muted">Loading projects...</p>
               </div>
             ) : projects.length > 0 ? (
               // ============================================
@@ -511,7 +519,7 @@ export default function AdminDashboard() {
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-border-muted rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     {/* Project header with name and status badge */}
                     <div className="flex justify-between items-start mb-2">

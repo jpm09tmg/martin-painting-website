@@ -61,7 +61,9 @@ export default function PaymentsPage() {
       // Fetch quotes
       const { data: quotesData, error: quotesError } = await supabase
         .from("quotes")
-        .select("id, project_type, client_id, clients(first_name, last_name), total_amount")
+        .select(
+          "id, project_type, client_id, clients(first_name, last_name), total_amount"
+        )
         .order("created_at", { ascending: false });
 
       if (quotesError) {
@@ -119,7 +121,9 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update status:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      setMessage(`Error: Failed to update status - ${error.message || "Unknown error"}`);
+      setMessage(
+        `Error: Failed to update status - ${error.message || "Unknown error"}`
+      );
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
@@ -155,10 +159,14 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update paid amount:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      setMessage(`Error: Failed to update paid amount - ${error.message || "Unknown error"}`);
+      setMessage(
+        `Error: Failed to update paid amount - ${
+          error.message || "Unknown error"
+        }`
+      );
     } else {
       setPayments((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...updates} : p))
+        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
       setMessage("Paid amount updated successfully");
       setTimeout(() => setMessage(""), 3000);
@@ -172,14 +180,14 @@ export default function PaymentsPage() {
 
     try {
       // Get quote and client info for display
-      const selectedQuote = quotes.find(q => q.id === newPayment.quote_id);
-      const clientName = selectedQuote?.clients 
+      const selectedQuote = quotes.find((q) => q.id === newPayment.quote_id);
+      const clientName = selectedQuote?.clients
         ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
         : "";
 
       const paidAmount = parseFloat(newPayment.paid) || 0;
       const totalAmount = parseFloat(newPayment.total) || 0;
-      
+
       const insertData = {
         client_id: newPayment.client_id,
         quote_id: newPayment.quote_id,
@@ -192,7 +200,10 @@ export default function PaymentsPage() {
       };
 
       // Set paid_at if payment is marked as fully paid
-      if (newPayment.payment_status === "Paid" || (paidAmount > 0 && paidAmount >= totalAmount)) {
+      if (
+        newPayment.payment_status === "Paid" ||
+        (paidAmount > 0 && paidAmount >= totalAmount)
+      ) {
         insertData.paid_at = new Date().toISOString();
       }
 
@@ -217,7 +228,7 @@ export default function PaymentsPage() {
         payment_status: "Unpaid",
       });
       setMessage("Payment record created successfully!");
-      
+
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
@@ -248,10 +259,10 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="p-6 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74A744] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading payments...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading payments...</p>
         </div>
       </div>
     );
@@ -271,9 +282,11 @@ export default function PaymentsPage() {
               // Refresh quotes when opening form
               const { data: quotesData, error } = await supabase
                 .from("quotes")
-                .select("id, project_type, client_id, clients(first_name, last_name), total_amount")
+                .select(
+                  "id, project_type, client_id, clients(first_name, last_name), total_amount"
+                )
                 .order("created_at", { ascending: false });
-              
+
               if (!error) {
                 console.log("Refreshed quotes:", quotesData);
                 setQuotes(quotesData || []);
@@ -533,19 +546,23 @@ export default function PaymentsPage() {
                   <select
                     value={newPayment.quote_id}
                     onChange={(e) => {
-                      const selectedQuote = quotes.find(q => q.id === e.target.value);
-                      setNewPayment({ 
-                        ...newPayment, 
+                      const selectedQuote = quotes.find(
+                        (q) => q.id === e.target.value
+                      );
+                      setNewPayment({
+                        ...newPayment,
                         quote_id: e.target.value,
                         // Auto-fill from quote
                         client_id: selectedQuote?.client_id || "",
                         project: selectedQuote?.project_type || "",
                         total: selectedQuote?.total_amount || "",
                       });
-                      
+
                       // Check for existing payments for this quote
                       if (e.target.value) {
-                        const existing = payments.filter(p => p.quote_id === e.target.value);
+                        const existing = payments.filter(
+                          (p) => p.quote_id === e.target.value
+                        );
                         setExistingPayments(existing);
                       } else {
                         setExistingPayments([]);
@@ -557,14 +574,16 @@ export default function PaymentsPage() {
                     <option value="">Select Quote</option>
                     {quotes.map((quote) => (
                       <option key={quote.id} value={quote.id}>
-                        {quote.project_type || 'N/A'} - {quote.clients?.first_name} {quote.clients?.last_name} (${parseFloat(quote.total_amount || 0).toFixed(2)})
+                        {quote.project_type || "N/A"} -{" "}
+                        {quote.clients?.first_name} {quote.clients?.last_name}{" "}
+                        (${parseFloat(quote.total_amount || 0).toFixed(2)})
                       </option>
                     ))}
                   </select>
                 )}
                 <p className="text-xs text-text-muted mt-1">
-                  {quotes.length > 0 
-                    ? "Client and project details will auto-fill from quote" 
+                  {quotes.length > 0
+                    ? "Client and project details will auto-fill from quote"
                     : "Quotes need to be created before adding payment records"}
                 </p>
 
@@ -572,18 +591,28 @@ export default function PaymentsPage() {
                 {existingPayments.length > 0 && (
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                     <div className="flex items-start gap-2">
-                      <span className="text-yellow-600 font-medium text-sm">⚠️ Existing Payments</span>
+                      <span className="text-yellow-600 font-medium text-sm">
+                        ⚠️ Existing Payments
+                      </span>
                     </div>
                     <div className="mt-2 text-sm text-gray-700">
                       <p className="mb-1">
-                        <strong>{existingPayments.length}</strong> payment record(s) already exist for this quote:
+                        <strong>{existingPayments.length}</strong> payment
+                        record(s) already exist for this quote:
                       </p>
                       <p className="font-semibold">
-                        Total Paid: ${existingPayments.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0).toFixed(2)}
+                        Total Paid: $
+                        {existingPayments
+                          .reduce(
+                            (sum, p) => sum + (parseFloat(p.paid) || 0),
+                            0
+                          )
+                          .toFixed(2)}
                       </p>
                       {newPayment.total && (
                         <p className="mt-1">
-                          Quote Total: ${parseFloat(newPayment.total).toFixed(2)}
+                          Quote Total: $
+                          {parseFloat(newPayment.total).toFixed(2)}
                         </p>
                       )}
                     </div>
@@ -642,29 +671,37 @@ export default function PaymentsPage() {
                     className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
                   />
                   {/* Overpayment Warning */}
-                  {newPayment.paid && newPayment.total && existingPayments.length > 0 && (
+                  {newPayment.paid &&
+                    newPayment.total &&
+                    existingPayments.length > 0 &&
                     (() => {
-                      const totalAlreadyPaid = existingPayments.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+                      const totalAlreadyPaid = existingPayments.reduce(
+                        (sum, p) => sum + (parseFloat(p.paid) || 0),
+                        0
+                      );
                       const newAmount = parseFloat(newPayment.paid) || 0;
                       const quoteTotal = parseFloat(newPayment.total) || 0;
                       const totalAfterNew = totalAlreadyPaid + newAmount;
-                      
+
                       if (totalAfterNew > quoteTotal) {
                         return (
                           <p className="text-xs text-red-600 mt-1">
-                            ⚠️ Warning: Total payments (${totalAfterNew.toFixed(2)}) will exceed quote amount (${quoteTotal.toFixed(2)})
+                            ⚠️ Warning: Total payments ($
+                            {totalAfterNew.toFixed(2)}) will exceed quote amount
+                            (${quoteTotal.toFixed(2)})
                           </p>
                         );
                       } else if (totalAfterNew === quoteTotal) {
                         return (
                           <p className="text-xs text-green-600 mt-1">
-                            ✓ This will complete the payment (${totalAfterNew.toFixed(2)} = ${quoteTotal.toFixed(2)})
+                            ✓ This will complete the payment ($
+                            {totalAfterNew.toFixed(2)} = $
+                            {quoteTotal.toFixed(2)})
                           </p>
                         );
                       }
                       return null;
-                    })()
-                  )}
+                    })()}
                 </div>
               </div>
 
