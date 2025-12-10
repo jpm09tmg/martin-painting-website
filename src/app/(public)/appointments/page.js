@@ -191,7 +191,7 @@ export default function BookAppointment() {
 
   return (
     <div className="min-h-screen bg-white pt-16">
-      <Header currentPage="appointment" />
+      <Header currentPage="appointments" />
 
       {/* Main Content */}
       <div className="w-full max-w-4xl mx-auto py-8 px-4">

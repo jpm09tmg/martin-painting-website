@@ -38,6 +38,7 @@ export default function Sidebar() {
   const isQuotesActive = pathname.startsWith("/admin/quotes");
   const isGalleryActive = pathname.startsWith("/admin/gallery");
   const isPaymentsActive = pathname.startsWith("/admin/payments");
+  const isMessagesActive = pathname.startsWith("/admin/messages");
   const isReviewsActive = pathname.startsWith("/admin/reviews");
   const isSettingsActive = pathname.startsWith("/admin/settings");
 
@@ -126,6 +127,17 @@ export default function Sidebar() {
         >
           <DollarSign className="w-5 h-5 text-text" />
           <span>Payments</span>
+        </Link>
+
+        {/* Messages Link */}
+        <Link
+          href="/admin/messages"
+          className={`flex items-center space-x-3 px-4 py-3 text-text rounded-lg transition-colors hover:bg-white/10 ${
+            isMessagesActive ? "bg-background-light" : ""
+          }`}
+        >
+          <MessageSquare className="w-5 h-5 text-text" />
+          <span>Messages</span>
         </Link>
 
         {/* Reviews Link */}
