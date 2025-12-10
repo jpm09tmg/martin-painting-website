@@ -6,7 +6,7 @@ import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
 import { Loader2, LogOut, Calendar, Briefcase, CreditCard, MessageCircle, CheckCircle, XCircle, Eye, X } from "lucide-react";
 import Header from "@/src/components/layout/Header";
-import ChatWidget from "@/src/components/chat/ChatWidget";
+import SupportChat from "@/src/components/chat/SupportChat";
 
 export default function CustomerHome() {
   const { session, loading } = useAuth();
@@ -511,7 +511,7 @@ export default function CustomerHome() {
                   <h2 className="text-xl font-bold text-text">Chat with Admin</h2>
                 </div>
                 <div className="h-[calc(100%-3rem)]">
-                  <ChatWidget isFullPage={true} />
+                  <SupportChat isFullPage={true} />
                 </div>
               </div>
             </div>

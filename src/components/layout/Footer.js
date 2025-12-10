@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -30,24 +31,24 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <span className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
+                <Link href="/services#interior" className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
                   Interior Painting
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
+                <Link href="/services#exterior" className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
                   Exterior Painting
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
+                <Link href="/services#residential" className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
                   Residential Services
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
+                <Link href="/services#commercial" className="text-text-muted/90 text-sm hover:text-text-muted transition-colors cursor-pointer">
                   Commercial Services
-                </span>
+                </Link>
               </li>
             </ul>
           </div>
