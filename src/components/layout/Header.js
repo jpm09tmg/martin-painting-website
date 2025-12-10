@@ -130,7 +130,7 @@ export default function Header({ currentPage = "home" }) {
           </Link>
 
           {/* Admin Link */}
-          <Link
+         {/*  <Link
             href="/login"
             className={`px-6 py-4 text-sm transition-colors flex items-center gap-2 ${
               isActive("admin")
@@ -140,7 +140,7 @@ export default function Header({ currentPage = "home" }) {
           >
             <UserCog className="w-4 h-4" />
             Admin
-          </Link>
+          </Link>  */}
 
           {/* Theme Toggle */}
           <div className="px-4 flex items-center">
