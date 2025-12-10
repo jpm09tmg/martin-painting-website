@@ -70,7 +70,7 @@ export default function QuotePage() {
     // Prevent negative values for numeric fields
     if (name === "squareFootage" || name === "numberOfRooms") {
       // Don't allow minus sign
-      if (value.toString().includes('-')) {
+      if (value.toString().includes("-")) {
         return;
       }
       // Don't allow negative numbers
@@ -262,7 +262,7 @@ export default function QuotePage() {
                       value={formData.squareFootage}
                       onChange={handleInputChange}
                       onKeyDown={(e) => {
-                        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                        if (e.key === "-" || e.key === "e" || e.key === "E") {
                           e.preventDefault();
                         }
                       }}
@@ -282,7 +282,7 @@ export default function QuotePage() {
                       value={formData.numberOfRooms}
                       onChange={handleInputChange}
                       onKeyDown={(e) => {
-                        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                        if (e.key === "-" || e.key === "e" || e.key === "E") {
                           e.preventDefault();
                         }
                       }}
@@ -379,7 +379,7 @@ export default function QuotePage() {
                 <button
                   type="button"
                   onClick={calculateEstimate}
-                  className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-md hover:bg-background-light focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition duration-300"
+                  className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition duration-300"
                 >
                   Calculate Estimate
                 </button>
