@@ -753,7 +753,7 @@ const AdminAppointments = () => {
           {/* Add Appointment button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Appointment
@@ -1871,7 +1871,7 @@ const AdminAppointments = () => {
                 </button>
                 <button
                   onClick={handleAddAppointment}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={addingAppointment}
                 >
                   {addingAppointment ? "Adding..." : "Add Appointment"}
