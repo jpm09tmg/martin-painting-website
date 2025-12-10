@@ -82,23 +82,23 @@ export default function ChatWidget({
         aria-label="Chat assistant"
         aria-modal="true"
         className={clsx(
-          "fixed bottom-24 right-6 w-[min(92vw,380px)] max-h-[70vh]",
-          "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
-          "rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800",
+          "fixed bottom-24 right-6 w-[min(92vw,600px)] h-[min(92vh,600px)] max-h-[70vh] ",
+          "bg-background-dark text-text",
+          "rounded-2xl shadow-2xl border border-border",
           "flex flex-col overflow-hidden transition-transform",
           open ? "scale-100" : "scale-0",
         )}
         style={{ zIndex }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-4 py-3 bg-background-light border-b border-border text-2xl">
           <div className="font-semibold">Chat with us</div>
           <button
             aria-label="Close"
             onClick={() => setOpen(false)}
             className="p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
           >
-            <X className="h-4 w-4" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 
@@ -123,7 +123,7 @@ export default function ChatWidget({
 
           {/* Loading indicator bubble */}
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-xs text-text-muted">
               <Loader2 className="h-4 w-4 animate-spin" />
               Thinking…
             </div>
@@ -132,12 +132,12 @@ export default function ChatWidget({
 
         {/* Quick suggestions */}
         {suggestions?.length > 0 && (
-          <div className="px-3 pb-2 pt-1 flex flex-wrap gap-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="px-3 pb-2 pt-1 flex flex-wrap gap-2 border-t border-border-muted ">
             {suggestions.map((q) => (
               <button
                 key={q}
                 onClick={() => sendMessage({ text: q })}
-                className="text-xs px-3 py-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                className="text-xs px-3 py-1.5 rounded-full border border-border-muted  hover:bg-background-light focus:outline-none focus:ring-2 focus:ring-border focus:ring-offset-0"
               >
                 {q}
               </button>
@@ -146,14 +146,14 @@ export default function ChatWidget({
         )}
 
         {/* Composer */}
-        <form onSubmit={onSubmit} className="border-t border-zinc-200 dark:border-zinc-800 p-2 flex items-end gap-2">
+        <form onSubmit={onSubmit} className="border-t border-border-muted p-2 flex items-end gap-2">
           <textarea
             ref={textareaRef}
             value={input ?? ""}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message…"
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+            className="flex-1 resize-none rounded-xl border border-border px-3 py-2 text-sm bg-background-light focus:outline-none focus:ring-2 focus:ring-border focus:ring-offset-0"
           />
           <button
             type="submit"
@@ -176,10 +176,10 @@ function Bubble({ children, roleLabel, tone }) {
     <div className={clsx("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={clsx(
-          "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm",
+          "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-lg",
           isUser
-            ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-            : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+            ? "bg-background-light text-secondary border border-border-muted"
+            : "bg-background text-text border border-border",
         )}
       >
         {roleLabel && (
