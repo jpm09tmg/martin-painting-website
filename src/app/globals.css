@@ -97,14 +97,12 @@ body.light {
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
 
+  --color-highlight: var(--highlight);
   --color-border: var(--border);
   --color-border-muted: var(--border-muted);
-  --color-ring: var(--ring);
 
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
 
   --color-danger: var(--danger);
   --color-warning: var(--warning);
