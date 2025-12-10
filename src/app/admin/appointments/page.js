@@ -22,6 +22,7 @@ import {
   ChevronRight, // Right arrow for next month
   List, // Icon for list view
   X, // Close/exit icon
+  Plus, // Plus icon for add button
 } from "lucide-react";
 import { supabase } from "../../../lib/db/supabase-client";
 
@@ -70,6 +71,23 @@ const AdminAppointments = () => {
   // Email sending state
   const [sendingEmail, setSendingEmail] = useState(null); // Stores appointment ID being processed
   const [emailStatus, setEmailStatus] = useState({}); // Tracks success/error messages per appointment
+
+  // Add appointment modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newAppointment, setNewAppointment] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    propertyType: "",
+    locationType: "",
+    preferredDate: "",
+    preferredTime: "",
+    details: "",
+  });
+  const [addingAppointment, setAddingAppointment] = useState(false);
+  const [addError, setAddError] = useState("");
 
   // Format phone number for display
   const formatPhoneNumber = (value) => {
@@ -170,6 +188,116 @@ const AdminAppointments = () => {
     } finally {
       // Always set loading to false, whether successful or not
       setLoading(false);
+    }
+  };
+
+  // ============================================
+  // ADD NEW APPOINTMENT
+  // ============================================
+  const handleAddAppointment = async () => {
+    setAddError("");
+    setAddingAppointment(true);
+
+    try {
+      // Validate required fields
+      if (
+        !newAppointment.firstName ||
+        !newAppointment.lastName ||
+        !newAppointment.email ||
+        !newAppointment.phone ||
+        !newAppointment.address ||
+        !newAppointment.propertyType ||
+        !newAppointment.locationType ||
+        !newAppointment.preferredDate ||
+        !newAppointment.preferredTime
+      ) {
+        setAddError("Please fill in all required fields");
+        setAddingAppointment(false);
+        return;
+      }
+
+      // Check if client already exists
+      const { data: existingClient, error: existingErr } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("email", newAppointment.email)
+        .single();
+
+      let clientId;
+
+      if (existingClient) {
+        // Update existing client
+        clientId = existingClient.id;
+        const { error: updateErr } = await supabase
+          .from("clients")
+          .update({
+            first_name: newAppointment.firstName,
+            last_name: newAppointment.lastName,
+            phone: newAppointment.phone,
+            address: newAppointment.address,
+          })
+          .eq("id", clientId);
+
+        if (updateErr) throw updateErr;
+      } else {
+        // Create new client
+        const { data: newClient, error: insertErr } = await supabase
+          .from("clients")
+          .insert([
+            {
+              first_name: newAppointment.firstName,
+              last_name: newAppointment.lastName,
+              email: newAppointment.email,
+              phone: newAppointment.phone,
+              address: newAppointment.address,
+            },
+          ])
+          .select()
+          .single();
+
+        if (insertErr) throw insertErr;
+        clientId = newClient.id;
+      }
+
+      // Create appointment
+      const { error: appointmentError } = await supabase
+        .from("appointments")
+        .insert([
+          {
+            property_type: newAppointment.propertyType,
+            location_type: newAppointment.locationType,
+            preferred_date: newAppointment.preferredDate,
+            preferred_time: newAppointment.preferredTime,
+            details: newAppointment.details,
+            client_id: clientId,
+            status: "pending",
+          },
+        ]);
+
+      if (appointmentError) throw appointmentError;
+
+      // Reset form and close modal
+      setNewAppointment({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        propertyType: "",
+        locationType: "",
+        preferredDate: "",
+        preferredTime: "",
+        details: "",
+      });
+      setShowAddModal(false);
+
+      // Refresh appointments list
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error adding appointment:", error);
+      setAddError(error.message || "Failed to add appointment");
+    } finally {
+      setAddingAppointment(false);
     }
   };
 
@@ -578,11 +706,11 @@ const AdminAppointments = () => {
   // ============================================
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="p-6 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
           {/* Animated loading spinner */}
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading appointments...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading appointments...</p>
         </div>
       </div>
     );
@@ -620,24 +748,38 @@ const AdminAppointments = () => {
           )}
         </div>
 
-        {/* Toggle button to switch between list and calendar view */}
-        <button
-          onClick={() => setViewMode(viewMode === "list" ? "calendar" : "list")}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors"
-        >
-          {/* Show different icon and text based on current view */}
-          {viewMode === "list" ? (
-            <>
-              <Calendar className="w-5 h-5" />
-              Calendar View
-            </>
-          ) : (
-            <>
-              <List className="w-5 h-5" />
-              List View
-            </>
-          )}
-        </button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-3">
+          {/* Add Appointment button */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Appointment
+          </button>
+
+          {/* Toggle button to switch between list and calendar view */}
+          <button
+            onClick={() =>
+              setViewMode(viewMode === "list" ? "calendar" : "list")
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors"
+          >
+            {/* Show different icon and text based on current view */}
+            {viewMode === "list" ? (
+              <>
+                <Calendar className="w-5 h-5" />
+                Calendar View
+              </>
+            ) : (
+              <>
+                <List className="w-5 h-5" />
+                List View
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ============================================ */}
@@ -1473,6 +1615,268 @@ const AdminAppointments = () => {
               >
                 Confirm
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================ */}
+      {/* ADD APPOINTMENT MODAL */}
+      {/* ============================================ */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-background-light rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-border-muted">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-text">
+                Add New Appointment
+              </h2>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setAddError("");
+                }}
+                className="text-text-muted hover:text-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {addError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                {addError}
+              </div>
+            )}
+
+            {/* Form */}
+            <div className="space-y-4">
+              {/* Client Information Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-text mb-3 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Client Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={newAppointment.firstName}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          firstName: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={newAppointment.lastName}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          lastName: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={newAppointment.email}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          email: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Phone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={newAppointment.phone}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Address *
+                    </label>
+                    <input
+                      type="text"
+                      value={newAppointment.address}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          address: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Details Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-text mb-3 flex items-center gap-2">
+                  <Building className="w-5 h-5" />
+                  Appointment Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Property Type *
+                    </label>
+                    <select
+                      value={newAppointment.propertyType}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          propertyType: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    >
+                      <option value="">Select property type</option>
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Location Type *
+                    </label>
+                    <select
+                      value={newAppointment.locationType}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          locationType: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    >
+                      <option value="">Select location type</option>
+                      <option value="Interior">Interior</option>
+                      <option value="Exterior">Exterior</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Preferred Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={newAppointment.preferredDate}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          preferredDate: e.target.value,
+                        })
+                      }
+                      min={new Date().toISOString().split("T")[0]}
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Preferred Time *
+                    </label>
+                    <select
+                      value={newAppointment.preferredTime}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          preferredTime: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      required
+                    >
+                      <option value="">Select time</option>
+                      <option value="9:00 AM">9:00 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="1:00 PM">1:00 PM</option>
+                      <option value="2:00 PM">2:00 PM</option>
+                      <option value="3:00 PM">3:00 PM</option>
+                      <option value="4:00 PM">4:00 PM</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Project Details (Optional)
+                    </label>
+                    <textarea
+                      value={newAppointment.details}
+                      onChange={(e) =>
+                        setNewAppointment({
+                          ...newAppointment,
+                          details: e.target.value,
+                        })
+                      }
+                      rows="3"
+                      className="w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                      placeholder="Add any additional details about the project..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setAddError("");
+                  }}
+                  className="flex-1 px-4 py-2 border border-border-muted text-text rounded-lg hover:bg-background transition-colors"
+                  disabled={addingAppointment}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddAppointment}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={addingAppointment}
+                >
+                  {addingAppointment ? "Adding..." : "Add Appointment"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

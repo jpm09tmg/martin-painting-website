@@ -7,6 +7,8 @@ import {
   DollarSign,
   ExternalLink,
   CheckCircle,
+  Plus,
+  X,
 } from "lucide-react";
 
 export default function PaymentsPage() {
@@ -14,23 +16,67 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [quotes, setQuotes] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [existingPayments, setExistingPayments] = useState([]);
+  const [newPayment, setNewPayment] = useState({
+    client_id: "",
+    quote_id: "",
+    project: "",
+    total: "",
+    paid: "",
+    payment_method: "",
+    payment_status: "Unpaid",
+  });
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch payments
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from("payments")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching payments:", error);
+      if (paymentsError) {
+        console.error("Error fetching payments:", paymentsError);
       } else {
-        setPayments(data || []);
+        setPayments(paymentsData || []);
       }
+
+      // Fetch clients
+      const { data: clientsData, error: clientsError } = await supabase
+        .from("clients")
+        .select("id, first_name, last_name")
+        .order("last_name", { ascending: true });
+
+      if (clientsError) {
+        console.error("Error fetching clients:", clientsError);
+      } else {
+        setClients(clientsData || []);
+      }
+
+      // Fetch quotes
+      const { data: quotesData, error: quotesError } = await supabase
+        .from("quotes")
+        .select(
+          "id, project_type, client_id, clients(first_name, last_name), total_amount"
+        )
+        .order("created_at", { ascending: false });
+
+      if (quotesError) {
+        console.error("Error fetching quotes:", quotesError);
+      } else {
+        console.log("Loaded quotes:", quotesData);
+        setQuotes(quotesData || []);
+      }
+
       setLoading(false);
     };
 
-    fetchPayments();
+    fetchData();
   }, []);
 
   const handlePaymentMethodChange = async (id, newMethod) => {
@@ -42,11 +88,13 @@ export default function PaymentsPage() {
 
     if (error) {
       console.error("Failed to update payment method:", error);
-      alert("Failed to update payment method");
+      setMessage("Error: Failed to update payment method");
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, payment_method: newMethod } : p))
       );
+      setMessage("Payment method updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
   };
@@ -59,9 +107,10 @@ export default function PaymentsPage() {
       payment_status: newStatus,
     };
 
-    // If marking as paid, set paid amount to total
+    // If marking as paid, set paid amount to total and record timestamp
     if (newStatus === "Paid" && payment.total) {
       updates.paid = payment.total;
+      updates.paid_at = new Date().toISOString();
     }
 
     const { error } = await supabase
@@ -72,11 +121,15 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update status:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      alert(`Failed to update status: ${error.message || "Unknown error"}`);
+      setMessage(
+        `Error: Failed to update status - ${error.message || "Unknown error"}`
+      );
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
+      setMessage("Payment status updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
   };
@@ -93,6 +146,11 @@ export default function PaymentsPage() {
         paidAmount >= total ? "Paid" : paidAmount > 0 ? "Partial" : "Unpaid",
     };
 
+    // Set paid_at timestamp if fully paid
+    if (paidAmount >= total) {
+      updates.paid_at = new Date().toISOString();
+    }
+
     const { error } = await supabase
       .from("payments")
       .update(updates)
@@ -101,15 +159,84 @@ export default function PaymentsPage() {
     if (error) {
       console.error("Failed to update paid amount:", error);
       console.error("Error details:", error.message, error.details, error.hint);
-      alert(
-        `Failed to update paid amount: ${error.message || "Unknown error"}`
+      setMessage(
+        `Error: Failed to update paid amount - ${
+          error.message || "Unknown error"
+        }`
       );
     } else {
       setPayments((prev) =>
         prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
+      setMessage("Paid amount updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     }
     setUpdating(null);
+  };
+
+  const handleAddPayment = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      // Get quote and client info for display
+      const selectedQuote = quotes.find((q) => q.id === newPayment.quote_id);
+      const clientName = selectedQuote?.clients
+        ? `${selectedQuote.clients.first_name} ${selectedQuote.clients.last_name}`
+        : "";
+
+      const paidAmount = parseFloat(newPayment.paid) || 0;
+      const totalAmount = parseFloat(newPayment.total) || 0;
+
+      const insertData = {
+        client_id: newPayment.client_id,
+        quote_id: newPayment.quote_id,
+        client: clientName, // Store name for display purposes
+        project: newPayment.project,
+        total: totalAmount,
+        paid: paidAmount,
+        payment_method: newPayment.payment_method,
+        payment_status: newPayment.payment_status,
+      };
+
+      // Set paid_at if payment is marked as fully paid
+      if (
+        newPayment.payment_status === "Paid" ||
+        (paidAmount > 0 && paidAmount >= totalAmount)
+      ) {
+        insertData.paid_at = new Date().toISOString();
+      }
+
+      const { data, error } = await supabase
+        .from("payments")
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPayments([data, ...payments]);
+      setShowAddForm(false);
+      setExistingPayments([]);
+      setNewPayment({
+        client_id: "",
+        quote_id: "",
+        project: "",
+        total: "",
+        paid: "",
+        payment_method: "",
+        payment_status: "Unpaid",
+      });
+      setMessage("Payment record created successfully!");
+
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      setMessage(`Error: Failed to create payment - ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const term = searchTerm.toLowerCase();
@@ -132,10 +259,10 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="p-6 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74A744] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading payments...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading payments...</p>
         </div>
       </div>
     );
@@ -149,6 +276,29 @@ export default function PaymentsPage() {
             <h1 className="text-2xl font-bold text-text">Payments</h1>
             <p className="text-text-muted">Track and manage payment records</p>
           </div>
+          <button
+            onClick={async () => {
+              setShowAddForm(true);
+              // Refresh quotes when opening form
+              const { data: quotesData, error } = await supabase
+                .from("quotes")
+                .select(
+                  "id, project_type, client_id, clients(first_name, last_name), total_amount"
+                )
+                .order("created_at", { ascending: false });
+
+              if (!error) {
+                console.log("Refreshed quotes:", quotesData);
+                setQuotes(quotesData || []);
+              } else {
+                console.error("Error refreshing quotes:", error);
+              }
+            }}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Payment
+          </button>
         </div>
       </div>
 
@@ -193,6 +343,19 @@ export default function PaymentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Success/Error Message - After stat cards */}
+      {message && !showAddForm && (
+        <div
+          className={`mb-6 p-4 rounded-lg ${
+            message.includes("Error")
+              ? "bg-red-50 text-red-800 border border-red-200"
+              : "bg-green-50 text-green-800 border border-green-200"
+          }`}
+        >
+          <p>{message}</p>
+        </div>
+      )}
 
       <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex items-center gap-2">
@@ -351,6 +514,266 @@ export default function PaymentsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Payment Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b border-border">
+              <h2 className="text-xl font-bold text-text">Add New Payment</h2>
+              <button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setExistingPayments([]);
+                  setMessage("");
+                }}
+                className="text-text-muted hover:text-text"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPayment} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">
+                  Select Quote *
+                </label>
+                {quotes.length === 0 ? (
+                  <div className="w-full px-3 py-2 border border-border rounded-md bg-background-light text-text-muted">
+                    No quotes available. Please create a quote first.
+                  </div>
+                ) : (
+                  <select
+                    value={newPayment.quote_id}
+                    onChange={(e) => {
+                      const selectedQuote = quotes.find(
+                        (q) => q.id === e.target.value
+                      );
+                      setNewPayment({
+                        ...newPayment,
+                        quote_id: e.target.value,
+                        // Auto-fill from quote
+                        client_id: selectedQuote?.client_id || "",
+                        project: selectedQuote?.project_type || "",
+                        total: selectedQuote?.total_amount || "",
+                      });
+
+                      // Check for existing payments for this quote
+                      if (e.target.value) {
+                        const existing = payments.filter(
+                          (p) => p.quote_id === e.target.value
+                        );
+                        setExistingPayments(existing);
+                      } else {
+                        setExistingPayments([]);
+                      }
+                    }}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="">Select Quote</option>
+                    {quotes.map((quote) => (
+                      <option key={quote.id} value={quote.id}>
+                        {quote.project_type || "N/A"} -{" "}
+                        {quote.clients?.first_name} {quote.clients?.last_name}{" "}
+                        (${parseFloat(quote.total_amount || 0).toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-xs text-text-muted mt-1">
+                  {quotes.length > 0
+                    ? "Client and project details will auto-fill from quote"
+                    : "Quotes need to be created before adding payment records"}
+                </p>
+
+                {/* Existing Payments Warning */}
+                {existingPayments.length > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="flex items-start gap-2">
+                      <span className="text-yellow-600 font-medium text-sm">
+                        ⚠️ Existing Payments
+                      </span>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-700">
+                      <p className="mb-1">
+                        <strong>{existingPayments.length}</strong> payment
+                        record(s) already exist for this quote:
+                      </p>
+                      <p className="font-semibold">
+                        Total Paid: $
+                        {existingPayments
+                          .reduce(
+                            (sum, p) => sum + (parseFloat(p.paid) || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </p>
+                      {newPayment.total && (
+                        <p className="mt-1">
+                          Quote Total: $
+                          {parseFloat(newPayment.total).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">
+                  Project Name *
+                </label>
+                <input
+                  type="text"
+                  value={newPayment.project}
+                  onChange={(e) =>
+                    setNewPayment({ ...newPayment, project: e.target.value })
+                  }
+                  required
+                  placeholder="e.g., Kitchen Repaint"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Total Amount * ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newPayment.total}
+                    onChange={(e) =>
+                      setNewPayment({ ...newPayment, total: e.target.value })
+                    }
+                    required
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Paid Amount ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newPayment.paid}
+                    onChange={(e) =>
+                      setNewPayment({ ...newPayment, paid: e.target.value })
+                    }
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  />
+                  {/* Overpayment Warning */}
+                  {newPayment.paid &&
+                    newPayment.total &&
+                    existingPayments.length > 0 &&
+                    (() => {
+                      const totalAlreadyPaid = existingPayments.reduce(
+                        (sum, p) => sum + (parseFloat(p.paid) || 0),
+                        0
+                      );
+                      const newAmount = parseFloat(newPayment.paid) || 0;
+                      const quoteTotal = parseFloat(newPayment.total) || 0;
+                      const totalAfterNew = totalAlreadyPaid + newAmount;
+
+                      if (totalAfterNew > quoteTotal) {
+                        return (
+                          <p className="text-xs text-red-600 mt-1">
+                            ⚠️ Warning: Total payments ($
+                            {totalAfterNew.toFixed(2)}) will exceed quote amount
+                            (${quoteTotal.toFixed(2)})
+                          </p>
+                        );
+                      } else if (totalAfterNew === quoteTotal) {
+                        return (
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ This will complete the payment ($
+                            {totalAfterNew.toFixed(2)} = $
+                            {quoteTotal.toFixed(2)})
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Payment Method
+                  </label>
+                  <select
+                    value={newPayment.payment_method}
+                    onChange={(e) =>
+                      setNewPayment({
+                        ...newPayment,
+                        payment_method: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="">Select Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="E-Transfer">E-Transfer</option>
+                    <option value="Stripe">Stripe</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Payment Status *
+                  </label>
+                  <select
+                    value={newPayment.payment_status}
+                    onChange={(e) =>
+                      setNewPayment({
+                        ...newPayment,
+                        payment_status: e.target.value,
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text bg-background"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Partial">Partial</option>
+                    <option value="Paid">Paid</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setExistingPayments([]);
+                    setMessage("");
+                  }}
+                  className="px-4 py-2 border border-border text-text rounded-lg hover:bg-background-light transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Saving..." : "Add Payment"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

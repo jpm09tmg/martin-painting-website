@@ -23,9 +23,9 @@ export default function AdminLayout({ children }) {
       // If authenticated, check if user is in admins table
       if (session) {
         const { data: adminData } = await supabase
-          .from('admins')
-          .select('id')
-          .eq('user_id', session.user.id)
+          .from("admins")
+          .select("id")
+          .eq("user_id", session.user.id)
           .maybeSingle();
 
         if (adminData) {
@@ -41,7 +41,12 @@ export default function AdminLayout({ children }) {
     checkAdminAccess();
   }, [session, loading, router]);
 
-  if (loading || isAdmin === null) return <p className="text-center mt-20">Loading...</p>;
+  if (loading || isAdmin === null)
+    return (
+      <p className="bg-background-dark text-text-muted text-center mt-20">
+        Loading...
+      </p>
+    );
 
   if (!session || !isAdmin) return null;
 

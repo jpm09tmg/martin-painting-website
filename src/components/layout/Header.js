@@ -3,45 +3,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { User, UserCog } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CustomerLoginModal from "../customer/CustomerLoginModal";
 import CustomerSignupModal from "../customer/CustomerSignupModal";
 import { useAuth } from "@/src/app/providers/AuthProvider";
-import { supabase } from "@/src/lib/db/supabase-client";
+import { useTheme } from "@/src/app/providers/ThemeProvider";
+import { btnOutline, btnPrimary } from "../ui/buttons";
+import ThemeSwitch from "@/src/components/ui/themeSwitch";
 
 export default function Header({ currentPage = "home" }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [isCustomer, setIsCustomer] = useState(false);
-  const [userName, setUserName] = useState("Profile");
   const { session } = useAuth();
   const isActive = (page) => currentPage === page;
-
-  // Check if user has a client record (simpler than role checking)
-  useEffect(() => {
-    const checkIfCustomer = async () => {
-      if (session) {
-        const { data } = await supabase
-          .from("clients")
-          .select("first_name")
-          .eq("user_id", session.user.id)
-          .single();
-
-        if (data) {
-          setIsCustomer(true);
-          setUserName(data.first_name || "Profile");
-        } else {
-          setIsCustomer(false);
-          setUserName("Profile");
-        }
-      } else {
-        setIsCustomer(false);
-        setUserName("Profile");
-      }
-    };
-
-    checkIfCustomer();
-  }, [session]);
+  const { theme, toggleTheme } = useTheme();
 
   const switchToSignup = () => {
     setShowLoginModal(false);
@@ -54,10 +29,10 @@ export default function Header({ currentPage = "home" }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50">
+    <div className="fixed top-0 left-0 right-0 w-full h-16 bg-background z-50 d-shadow">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center">
-          <div className="w-24  rounded-lg overflow-hidden shadow-md">
+          <div className="w-24  rounded-lg overflow-hidden ">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <div className="w-24  rounded-lg overflow-hidden shadow-md">
                 <Image
@@ -78,7 +53,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("home")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Home
@@ -88,7 +63,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("services")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Services
@@ -98,7 +73,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("gallery")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Gallery
@@ -108,7 +83,7 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("quote")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Quote
@@ -118,17 +93,27 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("contact")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             Contact
           </Link>
+          <Link
+            href="/appointments"
+            className={`px-6 py-4 text-sm transition-colors ${
+              isActive("appointments")
+                ? "text-text bg-background-dark font-bold border-b-2 border-primary"
+                : "text-text-muted hover:bg-highlight"
+            }`}
+          >
+            Appointments
+          </Link>
 
           {/* Customer Sign In / Profile */}
           <Link
-            href={isCustomer ? "/customer" : "#"}
+            href={session ? "/customer" : "#"}
             onClick={
-              isCustomer
+              session
                 ? undefined
                 : (e) => {
                     e.preventDefault();
@@ -138,10 +123,10 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors ${
               isActive("profile")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
-            {isCustomer ? userName : "Sign In"}
+            Profile
           </Link>
 
           {/* Admin Link */}
@@ -150,12 +135,17 @@ export default function Header({ currentPage = "home" }) {
             className={`px-6 py-4 text-sm transition-colors flex items-center gap-2 ${
               isActive("admin")
                 ? "text-text bg-background-dark font-bold border-b-2 border-primary"
-                : "text-text-muted hover:bg-white/10"
+                : "text-text-muted hover:bg-highlight"
             }`}
           >
             <UserCog className="w-4 h-4" />
             Admin
           </Link>
+
+          {/* Theme Toggle */}
+          <div className="px-4 flex items-center">
+            <ThemeSwitch />
+          </div>
         </nav>
       </div>
 
