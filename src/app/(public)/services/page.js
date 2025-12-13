@@ -6,7 +6,7 @@ import Footer from "@/src/components/layout/Footer";
 
 export default function ServicesPage() {
   return (
-    <div className="w-full min-h-screen bg-background">
+    <div className="w-full min-h-screen bg-background pt-16">
       <Header currentPage="services" />
 
       {/* Hero */}
@@ -24,7 +24,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Interior Painting */}
-      <section id="interior" className="scroll-mt-24 py-16 bg-background">
+      <section id="interior" className="scroll-mt-24 py-16 bg-background-light">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -65,7 +65,7 @@ export default function ServicesPage() {
               </ul>
               <Link
                 href="/quote"
-                className="inline-block bg-background-light text-white px-8 py-3 rounded-lg hover:bg-background-dark transition-colors font-medium"
+                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-secondary transition-colors font-medium"
               >
                 Get Interior Quote
               </Link>
@@ -201,7 +201,7 @@ export default function ServicesPage() {
               </ul>
               <Link
                 href="/quote"
-                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-secondary transition-colors font-medium"
               >
                 Get Exterior Quote
               </Link>
@@ -211,7 +211,10 @@ export default function ServicesPage() {
       </section>
 
       {/* Residential */}
-      <section id="residential" className="scroll-mt-24 py-16 bg-background">
+      <section
+        id="residential"
+        className="scroll-mt-24 py-16 bg-background-light"
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -250,7 +253,7 @@ export default function ServicesPage() {
               </ul>
               <Link
                 href="/quote"
-                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-secondary transition-colors font-medium"
               >
                 Get Residential Quote
               </Link>
@@ -389,7 +392,7 @@ export default function ServicesPage() {
               </ul>
               <Link
                 href="/quote"
-                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-secondary transition-colors font-medium"
               >
                 Get Commercial Quote
               </Link>
@@ -399,7 +402,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Consultation */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-background-light">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Images */}
@@ -477,7 +480,7 @@ export default function ServicesPage() {
               </ul>
               <Link
                 href="/appointments"
-                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-secondary transition-colors font-medium"
               >
                 Book a Consultation
               </Link>

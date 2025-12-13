@@ -112,12 +112,14 @@ export default async function ServicesGrid() {
               <div className="text-center">
                 <Link
                   href={s.href}
-                  className={textLink}
+                  className={
+                    textLink + " text-text hover:underline mx-auto group"
+                  }
                   aria-label={`Learn more about ${s.title}`}
                 >
-                  <span>Learn More</span>
+                  <span className="hover:underline">Learn More</span>
                   <span
-                    className="transition-transform duration-200 group-hover:translate-x-1"
+                    className="text-text `transition-transform duration-200 group-hover:translate-x-1"
                     aria-hidden
                   >
                     →

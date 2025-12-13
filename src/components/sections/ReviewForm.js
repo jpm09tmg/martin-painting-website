@@ -87,7 +87,7 @@ export default function ReviewForm() {
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-background-light text-text px-8 py-4 rounded-lg font-semibold text-lg hover:bg-text transition-colors inline-flex items-center gap-2 shadow-lg"
+            className="bg-background-light text-text px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary hover:text-white transition-colors inline-flex items-center gap-2 button-shadow hover:translate-y-0.5"
           >
             <MessageSquare className="w-6 h-6" />
             Leave a Review
@@ -97,14 +97,14 @@ export default function ReviewForm() {
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            <div className="p-6 border-b flex justify-between items-center bg-[#74A744]">
-              <h2 className="text-2xl font-bold text-white">
+          <div className="bg-background-light rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-border">
+            <div className="p-6 border-b border-border-muted flex justify-between items-center bg-background">
+              <h2 className="text-2xl font-bold text-text">
                 Share Your Experience
               </h2>
               <button
                 onClick={closeModal}
-                className="text-white hover:text-gray-200"
+                className="text-text hover:text-text-muted"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -112,7 +112,7 @@ export default function ReviewForm() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   Your Name *
                 </label>
                 <input
@@ -123,12 +123,12 @@ export default function ReviewForm() {
                   placeholder="John Smith"
                   required
                   maxLength={100}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] text-gray-900"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight text-text"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   What service did you use? *
                 </label>
                 <select
@@ -136,7 +136,7 @@ export default function ReviewForm() {
                   value={formData.service_type}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] text-gray-900"
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background-light focus:outline-none focus:ring-2 focus:ring-highlight text-text"
                 >
                   <option value="">Select a service...</option>
                   {serviceOptions.map((service) => (
@@ -148,7 +148,7 @@ export default function ReviewForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   How would you rate our work? *
                 </label>
                 <div className="flex items-center gap-2">
@@ -165,19 +165,19 @@ export default function ReviewForm() {
                         className={`w-10 h-10 ${
                           star <= (hoveredRating || formData.rating)
                             ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
+                            : "text-text-muted"
                         }`}
                       />
                     </button>
                   ))}
-                  <span className="ml-3 text-lg font-semibold text-gray-700">
+                  <span className="ml-3 text-lg font-semibold text-text">
                     {formData.rating} / 5 Stars
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   Tell us about your experience *
                 </label>
                 <textarea
@@ -188,9 +188,9 @@ export default function ReviewForm() {
                   required
                   maxLength={1000}
                   placeholder="Share details about your experience..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] text-gray-900 resize-none"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight text-text resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-muted mt-1">
                   {formData.quote.length} / 1000 characters
                 </p>
               </div>
@@ -211,20 +211,20 @@ export default function ReviewForm() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-6 py-3 border border-border text-text rounded-lg hover:bg-secondary hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-6 py-3 bg-[#74A744] text-white rounded-lg hover:bg-[#5F9136] disabled:opacity-50"
+                  className="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-highlight disabled:opacity-50"
                 >
                   {submitting ? "Submitting..." : "Submit Review"}
                 </button>
               </div>
 
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-text-muted text-center">
                 Your review will be reviewed by our team before being posted.
               </p>
             </form>

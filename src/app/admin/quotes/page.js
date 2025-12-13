@@ -115,7 +115,9 @@ export default function AdminQuoteForm() {
     try {
       const { data, error } = await supabase
         .from("appointments")
-        .select("id, appointment_date, client_id, clients(first_name, last_name)")
+        .select(
+          "id, appointment_date, client_id, clients(first_name, last_name)"
+        )
         .in("status", ["confirmed", "completed"]) // Show confirmed and completed appointments
         .order("appointment_date", { ascending: false });
 
@@ -148,14 +150,17 @@ export default function AdminQuoteForm() {
     if (!value) return "";
     // Remove all non-digits
     const phoneNumber = value.replace(/\D/g, "");
-    
+
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     } else {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+        3,
+        6
+      )}-${phoneNumber.slice(6, 10)}`;
     }
   };
 
@@ -507,23 +512,23 @@ Notes: ${quote.notes || "None"}
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 p-8 bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-background-dark">
+      <div className="flex-1 p-8 bg-background text-text">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-text">
                 Quotes Management
               </h1>
-              <p className="text-gray-600">Create and manage client quotes</p>
+              <p className="text-text-muted">Create and manage client quotes</p>
             </div>
             <button
               onClick={() => {
                 resetForm();
                 setShowForm(true);
               }}
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium flex items-center transition-colors"
+              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/70 font-medium flex items-center transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" />
               Create New Quote
@@ -532,35 +537,35 @@ Notes: ${quote.notes || "None"}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-yellow-100 rounded-lg">
                   <FileText className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {quotes.filter((q) => q.status === "Pending").length}
                   </p>
-                  <p className="text-gray-600">Pending</p>
+                  <p className="text-text-muted">Pending</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <FileText className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {quotes.filter((q) => q.status === "Sent").length}
                   </p>
-                  <p className="text-gray-600">Sent</p>
+                  <p className="text-text-muted">Sent</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <div className="w-6 h-6 text-green-600 flex items-center justify-center font-bold">
@@ -568,15 +573,15 @@ Notes: ${quote.notes || "None"}
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {quotes.filter((q) => q.status === "Approved").length}
                   </p>
-                  <p className="text-gray-600">Approved</p>
+                  <p className="text-text-muted">Approved</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <div className="w-6 h-6 text-red-600 flex items-center justify-center font-bold">
@@ -584,21 +589,21 @@ Notes: ${quote.notes || "None"}
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     {quotes.filter((q) => q.status === "Rejected").length}
                   </p>
-                  <p className="text-gray-600">Rejected</p>
+                  <p className="text-text-muted">Rejected</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-background-light rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-[#74A744] bg-opacity-20 rounded-lg">
                   <DollarSign className="w-6 h-6 text-[#74A744]" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-text">
                     $
                     {quotes
                       .reduce(
@@ -607,31 +612,31 @@ Notes: ${quote.notes || "None"}
                       )
                       .toLocaleString()}
                   </p>
-                  <p className="text-gray-600">Total Value</p>
+                  <p className="text-text-muted">Total Value</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Search and Filter */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-background-light rounded-lg shadow p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search quotes, clients, or addresses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-400" />
+                <Filter className="w-5 h-5 text-text-muted" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#74A744] focus:border-transparent"
+                  className="bg-background-light border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="all">All Status</option>
                   <option value="Pending">Pending</option>
@@ -665,11 +670,11 @@ Notes: ${quote.notes || "None"}
             return (
               <div
                 key={quote.id}
-                className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
+                className="bg-background-light rounded-lg shadow-lg border border-border hover:shadow-xl transition-shadow"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-text">
                       Quote #{quote.id}
                     </h3>
                     <span
@@ -682,7 +687,7 @@ Notes: ${quote.notes || "None"}
                   </div>
 
                   <div className="space-y-3 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-text-muted">
                       <User className="w-4 h-4 mr-2" />
                       <span className="font-medium">
                         {quote.clients
@@ -690,23 +695,27 @@ Notes: ${quote.notes || "None"}
                           : "Unknown Client"}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-text-muted">
                       <Mail className="w-4 h-4 mr-2" />
                       <span>{quote.clients?.email || "N/A"}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-text-muted">
                       <Phone className="w-4 h-4 mr-2" />
-                      <span>{quote.clients?.phone ? formatPhoneNumber(quote.clients.phone) : "N/A"}</span>
+                      <span>
+                        {quote.clients?.phone
+                          ? formatPhoneNumber(quote.clients.phone)
+                          : "N/A"}
+                      </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-text-muted">
                       <MapPin className="w-4 h-4 mr-2" />
                       <span className="line-clamp-1">
                         {quote.clients?.address || "N/A"}
                       </span>
                     </div>
                     {quote.project_address && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 mr-2 text-[#74A744]" />
+                      <div className="flex items-center text-sm text-text-muted">
+                        <MapPin className="w-4 h-4 mr-2 text-text-muted" />
                         <span className="line-clamp-1 font-medium">
                           Project: {quote.project_address}
                         </span>
@@ -714,16 +723,16 @@ Notes: ${quote.notes || "None"}
                     )}
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                  <div className="bg-background-light border border-border rounded-lg p-3 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-text-muted">
                         {quote.project_type} - {quote.property_type}
                       </span>
-                      <span className="text-lg font-bold text-[#74A744]">
+                      <span className="text-lg font-bold text-success">
                         ${total.toLocaleString()}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-sm text-text-muted mt-1">
                       {quote.quote_items?.length || 0} items • Valid until:{" "}
                       {quote.quote_valid_until || "N/A"}
                     </div>
@@ -779,14 +788,14 @@ Notes: ${quote.notes || "None"}
 
         {/* Empty State */}
         {quotes.length === 0 && (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-gray-400" />
+          <div className="bg-background rounded-lg shadow p-12 text-center">
+            <div className="w-16 h-16 bg-background-light rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-text-muted" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-text-muted mb-2">
               No quotes yet
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-text-muted mb-6">
               Create your first client quote to get started
             </p>
             <button
@@ -794,7 +803,7 @@ Notes: ${quote.notes || "None"}
                 resetForm();
                 setShowForm(true);
               }}
-              className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium inline-flex items-center"
+              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary font-medium inline-flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
               Create First Quote
@@ -1231,7 +1240,9 @@ Notes: ${quote.notes || "None"}
                   <div>
                     <span className="text-gray-600">Phone:</span>
                     <span className="ml-2 font-medium">
-                      {selectedQuote.clients?.phone ? formatPhoneNumber(selectedQuote.clients.phone) : "N/A"}
+                      {selectedQuote.clients?.phone
+                        ? formatPhoneNumber(selectedQuote.clients.phone)
+                        : "N/A"}
                     </span>
                   </div>
                   <div>

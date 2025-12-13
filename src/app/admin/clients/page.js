@@ -58,9 +58,8 @@ export default function ClientsPage() {
       setClients(clientsData || []);
 
       // Load appointment counts for each client
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from("appointments")
-        .select("client_id");
+      const { data: appointmentsData, error: appointmentsError } =
+        await supabase.from("appointments").select("client_id");
 
       if (appointmentsError) throw appointmentsError;
 
@@ -72,7 +71,9 @@ export default function ClientsPage() {
       setAppointmentCounts(counts);
     } catch (err) {
       console.error("Error loading clients:", err.message);
-      setMessage(`Error loading clients: ${err.message}. Please refresh the page.`);
+      setMessage(
+        `Error loading clients: ${err.message}. Please refresh the page.`
+      );
     } finally {
       setLoading(false);
     }
@@ -92,20 +93,23 @@ export default function ClientsPage() {
   const formatPhoneNumber = (value) => {
     // Remove all non-digits
     const phoneNumber = value.replace(/\D/g, "");
-    
+
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     } else {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+        3,
+        6
+      )}-${phoneNumber.slice(6, 10)}`;
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Format phone number field
     if (name === "phone") {
       setFormData({
@@ -118,7 +122,7 @@ export default function ClientsPage() {
         [name]: value,
       });
     }
-    
+
     // Clear error message when user starts typing (especially for email field)
     if (message.includes("Error") && name === "email") {
       setMessage("");
@@ -196,7 +200,7 @@ export default function ClientsPage() {
           if (existingClient) {
             setMessage(
               `Error: Email already exists for ${existingClient.first_name} ${existingClient.last_name}. ` +
-              `Please edit the existing client instead of creating a new one.`
+                `Please edit the existing client instead of creating a new one.`
             );
             return;
           }
@@ -250,9 +254,9 @@ export default function ClientsPage() {
 
   // Execute the delete based on type
   const executeDelete = () => {
-    if (deleteType === 'client-only') {
+    if (deleteType === "client-only") {
       deleteClientOnly();
-    } else if (deleteType === 'all-related') {
+    } else if (deleteType === "all-related") {
       deleteAllRelated();
     }
     setShowConfirmModal(false);
@@ -273,7 +277,13 @@ export default function ClientsPage() {
 
       if (appointmentsError) {
         console.error("Appointments error:", appointmentsError);
-        throw new Error(`Failed to update appointments: ${appointmentsError.message || appointmentsError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+        throw new Error(
+          `Failed to update appointments: ${
+            appointmentsError.message ||
+            appointmentsError.hint ||
+            "client_id might be required. Run fix-client-delete.sql first."
+          }`
+        );
       }
 
       // Update quotes - set client_id to null
@@ -284,7 +294,13 @@ export default function ClientsPage() {
 
       if (quotesError) {
         console.error("Quotes error:", quotesError);
-        throw new Error(`Failed to update quotes: ${quotesError.message || quotesError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+        throw new Error(
+          `Failed to update quotes: ${
+            quotesError.message ||
+            quotesError.hint ||
+            "client_id might be required. Run fix-client-delete.sql first."
+          }`
+        );
       }
 
       // Update projects - set client_id to null
@@ -295,7 +311,13 @@ export default function ClientsPage() {
 
       if (projectsError) {
         console.error("Projects error:", projectsError);
-        throw new Error(`Failed to update projects: ${projectsError.message || projectsError.hint || "client_id might be required. Run fix-client-delete.sql first."}`);
+        throw new Error(
+          `Failed to update projects: ${
+            projectsError.message ||
+            projectsError.hint ||
+            "client_id might be required. Run fix-client-delete.sql first."
+          }`
+        );
       }
 
       // Delete the client
@@ -306,16 +328,26 @@ export default function ClientsPage() {
 
       if (deleteError) {
         console.error("Delete error:", deleteError);
-        throw new Error(`Failed to delete client: ${deleteError.message || deleteError.hint || "Unknown error"}`);
+        throw new Error(
+          `Failed to delete client: ${
+            deleteError.message || deleteError.hint || "Unknown error"
+          }`
+        );
       }
 
-      setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" deleted successfully. Related data preserved.`);
+      setMessage(
+        `Client "${clientToDelete.first_name} ${clientToDelete.last_name}" deleted successfully. Related data preserved.`
+      );
       setClientToDelete(null);
       setDeleteType(null);
       loadClients();
     } catch (err) {
       console.error("Error deleting client:", err);
-      setMessage(`Error: ${err.message || "Failed to delete client. Check console for details."}`);
+      setMessage(
+        `Error: ${
+          err.message || "Failed to delete client. Check console for details."
+        }`
+      );
     } finally {
       setDeleteLoading(false);
     }
@@ -328,7 +360,7 @@ export default function ClientsPage() {
     setDeleteLoading(true);
     try {
       // Delete in order: quote_items -> quotes, then appointments, then projects, then client
-      
+
       // First get all quotes for this client
       const { data: quotes, error: quotesQueryError } = await supabase
         .from("quotes")
@@ -339,7 +371,7 @@ export default function ClientsPage() {
 
       // Delete quote items for each quote
       if (quotes && quotes.length > 0) {
-        const quoteIds = quotes.map(q => q.id);
+        const quoteIds = quotes.map((q) => q.id);
         const { error: quoteItemsError } = await supabase
           .from("quote_items")
           .delete()
@@ -380,13 +412,20 @@ export default function ClientsPage() {
 
       if (deleteError) throw deleteError;
 
-      setMessage(`Client "${clientToDelete.first_name} ${clientToDelete.last_name}" and all related data deleted successfully.`);
+      setMessage(
+        `Client "${clientToDelete.first_name} ${clientToDelete.last_name}" and all related data deleted successfully.`
+      );
       setClientToDelete(null);
       setDeleteType(null);
       loadClients();
     } catch (err) {
       console.error("Error deleting client and related data:", err);
-      setMessage(`Error: ${err.message || "Failed to delete client and related data. Check console for details."}`);
+      setMessage(
+        `Error: ${
+          err.message ||
+          "Failed to delete client and related data. Check console for details."
+        }`
+      );
     } finally {
       setDeleteLoading(false);
     }
@@ -394,30 +433,30 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="p-6 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74A744] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading clients...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading clients...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-background min-h-screen">
       {/* Header */}
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-            <p className="text-gray-600">Manage your client database</p>
+            <h1 className="text-2xl font-bold text-text">Clients</h1>
+            <p className="text-text-muted">Manage your client database</p>
           </div>
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="bg-[#74A744] text-white px-6 py-3 rounded-lg hover:bg-[#5F9136] font-medium flex items-center transition-colors"
+            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-background font-medium flex items-center transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Client
@@ -427,27 +466,25 @@ export default function ClientsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <User className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
-                {clients.length}
-              </p>
-              <p className="text-sm text-gray-600">Total Clients</p>
+              <p className="text-2xl font-bold text-text">{clients.length}</p>
+              <p className="text-sm text-text-muted">Total Clients</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-background-light p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <Calendar className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-text">
                 {
                   clients.filter((c) => {
                     const created = new Date(c.created_at);
@@ -457,7 +494,7 @@ export default function ClientsPage() {
                   }).length
                 }
               </p>
-              <p className="text-sm text-gray-600">New This Month</p>
+              <p className="text-sm text-text-muted">New This Month</p>
             </div>
           </div>
         </div>
@@ -477,65 +514,65 @@ export default function ClientsPage() {
       )}
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-background-light p-4 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-500" />
+          <Search className="w-4 h-4 text-text" />
           <input
             type="text"
             placeholder="Search by name, email, phone, or address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#74A744]"
+            className="text-text border border-border rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-border"
           />
         </div>
       </div>
 
       {/* Clients Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-background-light rounded-lg shadow-sm border border-border">
         {filteredClients.length === 0 ? (
           <div className="p-8 text-center">
-            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No clients found</p>
-            <p className="text-sm text-gray-400">
+            <User className="w-12 h-12 text-text-muted mx-auto mb-4" />
+            <p className="text-text-muted">No clients found</p>
+            <p className="text-sm text-text-muted">
               Client information will appear here when added to the database
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="rounded-lg overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-background-light">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Address
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Added
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                     Appointments
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-background-light divide-y divide-border">
                 {filteredClients.map((client) => {
                   const appointmentCount = appointmentCounts[client.id] || 0;
-                  
+
                   return (
-                    <tr key={client.id} className="hover:bg-gray-50">
+                    <tr key={client.id} className="hover:bg-background-hover">
                       <td
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-text">
                           {client.first_name} {client.last_name}
                         </div>
                       </td>
@@ -543,8 +580,8 @@ export default function ClientsPage() {
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                        <div className="flex items-center text-sm text-text">
+                          <Mail className="w-4 h-4 text-text-muted mr-2" />
                           {client.email || "Not provided"}
                         </div>
                       </td>
@@ -552,24 +589,26 @@ export default function ClientsPage() {
                         className="px-6 py-4 whitespace-nowrap cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                          {client.phone ? formatPhoneNumber(client.phone) : "Not provided"}
+                        <div className="flex items-center text-sm text-text">
+                          <Phone className="w-4 h-4 text-text-muted mr-2" />
+                          {client.phone
+                            ? formatPhoneNumber(client.phone)
+                            : "Not provided"}
                         </div>
                       </td>
                       <td
                         className="px-6 py-4 cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
-                        <div className="flex items-center text-sm text-gray-900">
-                          <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                        <div className="flex items-center text-sm text-text">
+                          <MapPin className="w-4 h-4 text-text-muted mr-2 flex-shrink-0" />
                           <span className="truncate max-w-xs">
                             {client.address || "Not provided"}
                           </span>
                         </div>
                       </td>
                       <td
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer"
+                        className="px-6 py-4 whitespace-nowrap text-sm text-text cursor-pointer"
                         onClick={() => openEditForm(client)}
                       >
                         {new Date(client.created_at).toLocaleDateString()}
@@ -733,7 +772,7 @@ export default function ClientsPage() {
                     {editingClient ? "Update Client" : "Add Client"}
                   </button>
                 </div>
-                
+
                 {/* Delete Button - Only show when editing */}
                 {editingClient && (
                   <button
@@ -767,7 +806,8 @@ export default function ClientsPage() {
                   Delete Client
                 </h2>
                 <p className="text-gray-600 mt-1">
-                  Choose how to delete "{clientToDelete.first_name} {clientToDelete.last_name}"
+                  Choose how to delete "{clientToDelete.first_name}{" "}
+                  {clientToDelete.last_name}"
                 </p>
               </div>
               <button
@@ -789,8 +829,13 @@ export default function ClientsPage() {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-yellow-800">
-                      <p className="font-medium">This client has {appointmentCounts[clientToDelete.id]} appointment(s)</p>
-                      <p className="mt-1">Choose whether to keep or delete related data.</p>
+                      <p className="font-medium">
+                        This client has {appointmentCounts[clientToDelete.id]}{" "}
+                        appointment(s)
+                      </p>
+                      <p className="mt-1">
+                        Choose whether to keep or delete related data.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -799,7 +844,7 @@ export default function ClientsPage() {
               <div className="space-y-3">
                 {/* Option 1: Delete Client Only */}
                 <button
-                  onClick={() => confirmDeleteType('client-only')}
+                  onClick={() => confirmDeleteType("client-only")}
                   disabled={deleteLoading}
                   className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
@@ -812,8 +857,9 @@ export default function ClientsPage() {
                         Delete Client Info Only
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Removes client information but keeps all appointments, quotes, and projects. 
-                        Related records will be preserved without client details.
+                        Removes client information but keeps all appointments,
+                        quotes, and projects. Related records will be preserved
+                        without client details.
                       </p>
                     </div>
                   </div>
@@ -821,7 +867,7 @@ export default function ClientsPage() {
 
                 {/* Option 2: Delete Everything */}
                 <button
-                  onClick={() => confirmDeleteType('all-related')}
+                  onClick={() => confirmDeleteType("all-related")}
                   disabled={deleteLoading}
                   className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
@@ -834,8 +880,9 @@ export default function ClientsPage() {
                         Delete All Related Information
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Permanently deletes client and all related appointments, quotes, projects, and data. 
-                        This action cannot be undone.
+                        Permanently deletes client and all related appointments,
+                        quotes, projects, and data. This action cannot be
+                        undone.
                       </p>
                     </div>
                   </div>
@@ -878,15 +925,23 @@ export default function ClientsPage() {
             </div>
 
             <div className="p-6 space-y-4">
-              {deleteType === 'client-only' ? (
+              {deleteType === "client-only" ? (
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <User className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-orange-900">
-                      <p className="font-semibold mb-2">You are about to delete:</p>
-                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      <p className="font-semibold mb-2">
+                        You are about to delete:
+                      </p>
+                      <p className="mb-1">
+                        • Client:{" "}
+                        <strong>
+                          {clientToDelete.first_name} {clientToDelete.last_name}
+                        </strong>
+                      </p>
                       <p className="text-orange-700 mt-3">
-                        Related appointments, quotes, and projects will be preserved but will no longer show client details.
+                        Related appointments, quotes, and projects will be
+                        preserved but will no longer show client details.
                       </p>
                     </div>
                   </div>
@@ -896,14 +951,25 @@ export default function ClientsPage() {
                   <div className="flex items-start gap-3">
                     <Trash2 className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-red-900">
-                      <p className="font-semibold mb-2">You are about to permanently delete:</p>
-                      <p className="mb-1">• Client: <strong>{clientToDelete.first_name} {clientToDelete.last_name}</strong></p>
+                      <p className="font-semibold mb-2">
+                        You are about to permanently delete:
+                      </p>
+                      <p className="mb-1">
+                        • Client:{" "}
+                        <strong>
+                          {clientToDelete.first_name} {clientToDelete.last_name}
+                        </strong>
+                      </p>
                       {appointmentCounts[clientToDelete.id] > 0 && (
-                        <p className="mb-1">• {appointmentCounts[clientToDelete.id]} appointment(s)</p>
+                        <p className="mb-1">
+                          • {appointmentCounts[clientToDelete.id]}{" "}
+                          appointment(s)
+                        </p>
                       )}
                       <p className="mb-1">• All related quotes and projects</p>
                       <p className="text-red-700 font-semibold mt-3">
-                        ⚠️ All data will be permanently removed and cannot be recovered.
+                        ⚠️ All data will be permanently removed and cannot be
+                        recovered.
                       </p>
                     </div>
                   </div>
@@ -933,12 +999,12 @@ export default function ClientsPage() {
                   onClick={executeDelete}
                   disabled={deleteLoading}
                   className={`flex-1 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-white ${
-                    deleteType === 'client-only'
-                      ? 'bg-orange-600 hover:bg-orange-700'
-                      : 'bg-red-600 hover:bg-red-700'
+                    deleteType === "client-only"
+                      ? "bg-orange-600 hover:bg-orange-700"
+                      : "bg-red-600 hover:bg-red-700"
                   }`}
                 >
-                  {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
+                  {deleteLoading ? "Deleting..." : "Yes, Delete"}
                 </button>
               </div>
             </div>

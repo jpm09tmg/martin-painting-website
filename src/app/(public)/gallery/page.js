@@ -115,7 +115,7 @@ export default function Gallery() {
 
   // Note: Consider adding a file that determines website color scheme and company theme to allow easy switching of color palette
   return (
-    <div className="w-full min-h-screen flex flex-col bg-white">
+    <div className="w-full min-h-screen flex flex-col bg-background pt-16">
       <Header currentPage="gallery" />
 
       {/* Hero Section */}
@@ -144,7 +144,7 @@ export default function Gallery() {
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     activeFilter === cat
                       ? "bg-primary text-white"
-                      : "bg-background text-text-muted border border-primary hover:bg-background-light hover:text-white"
+                      : "bg-background-light text-text-muted border border-border hover:bg-highlight hover:text-text"
                   }`}
                 >
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}{" "}
@@ -175,7 +175,7 @@ export default function Gallery() {
           ) : err ? (
             <div className="text-center text-red-600">{err}</div>
           ) : items.length === 0 ? (
-            <div className="text-center text-gray-600">
+            <div className="text-center text-text-muted">
               No images yet. Add some in Supabase Storage.
             </div>
           ) : (
@@ -205,7 +205,7 @@ export default function Gallery() {
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-center items-center space-x-4">
               <button
-                className="text-text-muted hover:text-primary disabled:opacity-50"
+                className="text-text-muted hover:underline disabled:opacity-50"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
@@ -220,7 +220,7 @@ export default function Gallery() {
               </div>
 
               <button
-                className="text-text-muted hover:text-primary disabled:opacity-50"
+                className="text-text-muted hover:underline disabled:opacity-50"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
               >
