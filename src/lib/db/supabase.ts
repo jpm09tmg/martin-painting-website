@@ -8,10 +8,10 @@ export function createClientBrowser() {
   return createBrowserClient(url, anon)
 }
 
-export function createClientServer() {
+export async function createClientServer() {
   // Persist auth cookies across server requests
-  const cookieStore = cookies()
-  const h = headers()
+  const cookieStore = await cookies()
+  const h = await headers()
   const cookieHeader = h.get('cookie') ?? ''
   const cookieObj = parseCookieHeader(cookieHeader)
 
