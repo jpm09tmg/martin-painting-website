@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/src/app/providers/AuthProvider";
 import { supabase } from "@/src/lib/db/supabase-client";
@@ -8,7 +8,7 @@ import { Loader2, LogOut, Calendar, Briefcase, CreditCard, MessageCircle, CheckC
 import Header from "@/src/components/layout/Header";
 import SupportChat from "@/src/components/chat/SupportChat";
 
-export default function CustomerHome() {
+function CustomerHome() {
   const { session, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -723,3 +723,17 @@ export default function CustomerHome() {
   );
 }
 
+// Wrapper component for Suspense boundary
+function CustomerHomeWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-background-dark">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CustomerHome />
+    </Suspense>
+  );
+}
+
+export default CustomerHomeWrapper;
