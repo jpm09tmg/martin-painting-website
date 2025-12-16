@@ -268,6 +268,9 @@ export default function ClientsPage() {
 
     setDeleteLoading(true);
     try {
+      // Store user_id before deleting client
+      const userId = clientToDelete.user_id;
+
       // First, update all related tables to remove client reference
       // Update appointments - set client_id to null
       const { error: appointmentsError } = await supabase
@@ -320,7 +323,7 @@ export default function ClientsPage() {
         );
       }
 
-      // Delete the client
+      // Delete the client from database
       const { error: deleteError } = await supabase
         .from("clients")
         .delete()
@@ -333,6 +336,26 @@ export default function ClientsPage() {
             deleteError.message || deleteError.hint || "Unknown error"
           }`
         );
+      }
+
+      // Delete the authentication user if they have one
+      if (userId) {
+        try {
+          const response = await fetch('/api/delete-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId }),
+          });
+
+          if (!response.ok) {
+            console.warn('Failed to delete auth user, but client was deleted');
+          }
+        } catch (authError) {
+          console.warn('Error deleting auth user:', authError);
+          // Continue anyway - client is already deleted
+        }
       }
 
       setMessage(
@@ -359,6 +382,9 @@ export default function ClientsPage() {
 
     setDeleteLoading(true);
     try {
+      // Store user_id before deleting client
+      const userId = clientToDelete.user_id;
+
       // Delete in order: quote_items -> quotes, then appointments, then projects, then client
 
       // First get all quotes for this client
@@ -404,13 +430,44 @@ export default function ClientsPage() {
 
       if (projectsError) throw projectsError;
 
-      // Finally, delete the client
+      // Delete support messages
+      const { error: messagesError } = await supabase
+        .from("support_messages")
+        .delete()
+        .eq("client_id", clientToDelete.id);
+
+      if (messagesError) {
+        console.warn("Error deleting messages:", messagesError);
+        // Continue anyway - messages are optional
+      }
+
+      // Finally, delete the client from database
       const { error: deleteError } = await supabase
         .from("clients")
         .delete()
         .eq("id", clientToDelete.id);
 
       if (deleteError) throw deleteError;
+
+      // Delete the authentication user if they have one
+      if (userId) {
+        try {
+          const response = await fetch('/api/delete-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId }),
+          });
+
+          if (!response.ok) {
+            console.warn('Failed to delete auth user, but client was deleted');
+          }
+        } catch (authError) {
+          console.warn('Error deleting auth user:', authError);
+          // Continue anyway - client is already deleted
+        }
+      }
 
       setMessage(
         `Client "${clientToDelete.first_name} ${clientToDelete.last_name}" and all related data deleted successfully.`
