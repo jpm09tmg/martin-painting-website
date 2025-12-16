@@ -20,6 +20,7 @@ function CustomerHome() {
   const [quotes, setQuotes] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [payingQuoteId, setPayingQuoteId] = useState(null);
+  const [approvingQuoteId, setApprovingQuoteId] = useState(null);
   const [paymentNotification, setPaymentNotification] = useState(null);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -208,6 +209,41 @@ function CustomerHome() {
 
     setupRealtimeSubscriptions();
   }, [session]);
+
+  const handleApproveQuote = async (quoteId) => {
+    try {
+      setApprovingQuoteId(quoteId);
+
+      const { error } = await supabase
+        .from('quotes')
+        .update({ status: 'approved' })
+        .eq('id', quoteId);
+
+      if (error) throw error;
+
+      // Update local state
+      setQuotes(prevQuotes =>
+        prevQuotes.map(q =>
+          q.id === quoteId ? { ...q, status: 'approved' } : q
+        )
+      );
+
+      setPaymentNotification({
+        type: 'success',
+        message: 'Quote approved! You can now proceed with payment.'
+      });
+      setTimeout(() => setPaymentNotification(null), 5000);
+    } catch (error) {
+      console.error('Error approving quote:', error);
+      setPaymentNotification({
+        type: 'error',
+        message: 'Failed to approve quote. Please try again.'
+      });
+      setTimeout(() => setPaymentNotification(null), 5000);
+    } finally {
+      setApprovingQuoteId(null);
+    }
+  };
 
   const handlePayment = async (quoteId) => {
     try {
@@ -532,7 +568,7 @@ function CustomerHome() {
                             quote.status?.toLowerCase() === "pending" ? "bg-primary/20 text-primary" :
                             "bg-danger/20 text-danger"
                           }`}>
-                            {quote.status}
+                            {quote.status?.charAt(0).toUpperCase() + quote.status?.slice(1).toLowerCase()}
                           </span>
                         </div>
                         <div className="space-y-3">
@@ -555,6 +591,25 @@ function CustomerHome() {
                               <Eye className="w-4 h-4" />
                               View Details
                             </button>
+                            {quote.status?.toLowerCase() === "sent" && (
+                              <button 
+                                onClick={() => handleApproveQuote(quote.id)}
+                                disabled={approvingQuoteId === quote.id}
+                                className="flex-1 px-4 py-2 bg-success text-white rounded-lg hover:opacity-90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              >
+                                {approvingQuoteId === quote.id ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Approving...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    Approve Quote
+                                  </>
+                                )}
+                              </button>
+                            )}
                             {quote.status?.toLowerCase() === "approved" && quote.payment_status?.toLowerCase() !== "paid" && (
                               <button 
                                 onClick={() => handlePayment(quote.id)}
