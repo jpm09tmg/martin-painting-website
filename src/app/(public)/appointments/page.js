@@ -63,15 +63,24 @@ export default function BookAppointment() {
       // Check if client already exists (by email)
       let clientId = null;
 
-      if (formData.email) {
-        const { data: existingClient } = await supabase
+      // Normalize email: trim whitespace and convert to lowercase
+      const normalizedEmail = formData.email.trim().toLowerCase();
+
+      if (normalizedEmail) {
+        const { data: existingClient, error: lookupError } = await supabase
           .from("clients")
           .select("id")
-          .eq("email", formData.email)
-          .single();
+          .eq("email", normalizedEmail)
+          .maybeSingle(); // Use maybeSingle() instead of single() to avoid error on no results
+
+        // Ignore "no rows" error (PGRST116), but log other errors
+        if (lookupError && lookupError.code !== 'PGRST116') {
+          console.error("Error looking up client:", lookupError);
+        }
 
         if (existingClient) {
           clientId = existingClient.id;
+          console.log("Found existing client:", clientId); // Debug log
 
           // Update client info with latest details from appointment
           await supabase
@@ -83,6 +92,8 @@ export default function BookAppointment() {
               address: formData.address,
             })
             .eq("id", clientId);
+        } else {
+          console.log("No existing client found, will create new one"); // Debug log
         }
       }
 
@@ -94,7 +105,7 @@ export default function BookAppointment() {
             {
               first_name: formData.firstName,
               last_name: formData.lastName,
-              email: formData.email,
+              email: normalizedEmail, // Use normalized email
               phone: formData.phone.replace(/\D/g, ""), // Store digits only
               address: formData.address,
             },
@@ -104,9 +115,10 @@ export default function BookAppointment() {
 
         if (clientError) {
           console.error("Error creating client:", clientError.message);
-          // Continue appointment
+          throw new Error("Failed to create client record. Please try again.");
         } else {
           clientId = newClient?.id;
+          console.log("Created new client:", clientId); // Debug log
         }
       }
 
