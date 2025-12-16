@@ -85,18 +85,45 @@ export default function CustomerSignupModal({ isOpen, onClose, onSwitchToLogin }
         throw new Error("Failed to create user account");
       }
 
-      // Create client record
-      const { error: clientError } = await supabase
+      // Check if client record already exists for this email
+      const { data: existingClient, error: lookupError } = await supabase
         .from('clients')
-        .insert({
-          user_id: authData.user.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email.trim(),
-          phone: formData.phone.replace(/\D/g, ""), // Store only digits
-        });
+        .select('id, user_id')
+        .eq('email', formData.email.trim())
+        .single();
 
-      if (clientError) throw clientError;
+      if (lookupError && lookupError.code !== 'PGRST116') {
+        // PGRST116 = no rows found, which is fine
+        console.error('Error looking up client:', lookupError);
+      }
+
+      if (existingClient) {
+        // Client exists - link the auth user to existing client record
+        const { error: updateError } = await supabase
+          .from('clients')
+          .update({
+            user_id: authData.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            phone: formData.phone.replace(/\D/g, ""),
+          })
+          .eq('id', existingClient.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // No existing client - create new one
+        const { error: clientError } = await supabase
+          .from('clients')
+          .insert({
+            user_id: authData.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email.trim(),
+            phone: formData.phone.replace(/\D/g, ""),
+          });
+
+        if (clientError) throw clientError;
+      }
 
       // Success - redirect to customer dashboard
       onClose();
