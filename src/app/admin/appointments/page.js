@@ -216,12 +216,15 @@ const AdminAppointments = () => {
         return;
       }
 
-      // Check if client already exists
+      // Check if client already exists (normalize email to lowercase)
+      const normalizedEmail = newAppointment.email.trim().toLowerCase();
       const { data: existingClient, error: existingErr } = await supabase
         .from("clients")
         .select("id")
-        .eq("email", newAppointment.email)
-        .single();
+        .eq("email", normalizedEmail)
+        .maybeSingle();
+
+      if (existingErr) throw existingErr;
 
       let clientId;
 
@@ -240,14 +243,14 @@ const AdminAppointments = () => {
 
         if (updateErr) throw updateErr;
       } else {
-        // Create new client
+        // Create new client (use normalized lowercase email)
         const { data: newClient, error: insertErr } = await supabase
           .from("clients")
           .insert([
             {
               first_name: newAppointment.firstName,
               last_name: newAppointment.lastName,
-              email: newAppointment.email,
+              email: normalizedEmail,
               phone: newAppointment.phone,
               address: newAppointment.address,
             },

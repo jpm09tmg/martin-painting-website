@@ -26,15 +26,16 @@ export async function bookAppointment(input: BookingInput): Promise<BookingResul
     throw new Error("Invalid time slot.");
   }
 
-  // 1) Lookup client by email
+  // 1) Lookup client by email (normalize to lowercase)
   let clientId: string | null = null;
+  const normalizedEmail = email.trim().toLowerCase();
   const { data: existingClient, error: existingErr } = await supabase
     .from("clients")
     .select("id")
-    .eq("email", email)
-    .single();
+    .eq("email", normalizedEmail)
+    .maybeSingle();
 
-  if (existingErr && existingErr.code !== "PGRST116") {
+  if (existingErr) {
     console.error("Error selecting client:", existingErr);
   }
 
@@ -52,14 +53,14 @@ export async function bookAppointment(input: BookingInput): Promise<BookingResul
       .eq("id", clientId);
     if (updateErr) console.error("Error updating client:", updateErr);
   } else {
-    // 2b) Insert new client
+    // 2b) Insert new client (use normalized email)
     const { data: created, error: insertClientErr } = await supabase
       .from("clients")
       .insert([
         {
           first_name: firstName,
           last_name: lastName,
-          email,
+          email: normalizedEmail,
           phone,
           address,
         },

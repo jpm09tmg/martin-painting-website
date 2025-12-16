@@ -89,12 +89,12 @@ export default function CustomerSignupModal({ isOpen, onClose, onSwitchToLogin }
       const { data: existingClient, error: lookupError } = await supabase
         .from('clients')
         .select('id, user_id')
-        .eq('email', formData.email.trim())
-        .single();
+        .eq('email', formData.email.trim().toLowerCase())
+        .maybeSingle();
 
-      if (lookupError && lookupError.code !== 'PGRST116') {
-        // PGRST116 = no rows found, which is fine
+      if (lookupError) {
         console.error('Error looking up client:', lookupError);
+        throw lookupError;
       }
 
       if (existingClient) {
@@ -118,7 +118,7 @@ export default function CustomerSignupModal({ isOpen, onClose, onSwitchToLogin }
             user_id: authData.user.id,
             first_name: formData.firstName,
             last_name: formData.lastName,
-            email: formData.email.trim(),
+            email: formData.email.trim().toLowerCase(),
             phone: formData.phone.replace(/\D/g, ""),
           });
 

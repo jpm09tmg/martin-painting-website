@@ -191,11 +191,12 @@ export default function ClientsPage() {
       } else {
         // Insert new client - check for duplicate email first
         if (formData.email) {
+          const normalizedEmail = formData.email.trim().toLowerCase();
           const { data: existingClient } = await supabase
             .from("clients")
             .select("id, first_name, last_name")
-            .eq("email", formData.email)
-            .single();
+            .eq("email", normalizedEmail)
+            .maybeSingle();
 
           if (existingClient) {
             setMessage(
@@ -204,17 +205,27 @@ export default function ClientsPage() {
             );
             return;
           }
+
+          const { error } = await supabase.from("clients").insert({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: normalizedEmail,
+            phone: formData.phone.replace(/\D/g, ""), // Store digits only
+            address: formData.address,
+          });
+
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("clients").insert({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone.replace(/\D/g, ""), // Store digits only
+            address: formData.address,
+          });
+
+          if (error) throw error;
         }
-
-        const { error } = await supabase.from("clients").insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone.replace(/\D/g, ""), // Store digits only
-          address: formData.address,
-        });
-
-        if (error) throw error;
         setMessage("Client added successfully!");
       }
 

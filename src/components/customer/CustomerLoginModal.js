@@ -28,11 +28,28 @@ export default function CustomerLoginModal({
       // Sign in with Supabase
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
           password: password,
         });
 
-      if (signInError) throw signInError;
+      if (signInError) {
+        // Check if email exists in clients table (but not in auth)
+        const { data: clientExists } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("email", email.trim().toLowerCase())
+          .maybeSingle();
+
+        if (clientExists) {
+          // Client exists but no auth account
+          throw new Error(
+            "No account found. Please sign up to create your account."
+          );
+        }
+        
+        // Otherwise show the original error
+        throw signInError;
+      }
 
       // Check if user has a client record
       const { data: clientData, error: clientError } = await supabase
@@ -45,7 +62,7 @@ export default function CustomerLoginModal({
         // Not a customer account or account was deleted
         await supabase.auth.signOut();
         throw new Error(
-          "This account no longer exists. Please contact support or sign up again."
+          "Account no longer exists. Contact support or sign up again."
         );
       }
 
