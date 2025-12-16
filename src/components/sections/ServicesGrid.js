@@ -95,7 +95,7 @@ export default async function ServicesGrid() {
           {items.map((s) => (
             <div
               key={s.key}
-              className="group bg-background-light rounded-lg p-8 transition-all duration-200 motion-reduce:transition-none hover:shadow-lg hover:-translate-y-1"
+              className="group grid grid-rows-[auto_auto_1fr_auto] bg-background-light rounded-lg p-8 transition-all duration-200 motion-reduce:transition-none hover:shadow-lg hover:-translate-y-1"
             >
               <div className="overflow-hidden rounded-lg mb-6">
                 <Image
