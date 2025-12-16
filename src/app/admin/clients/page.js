@@ -385,7 +385,8 @@ export default function ClientsPage() {
       // Store user_id before deleting client
       const userId = clientToDelete.user_id;
 
-      // Delete in order: payments -> quote_items -> quotes -> appointments -> projects -> messages -> client -> auth user
+      // Delete in order: payments -> quote_items -> quotes -> projects -> appointments -> messages -> client -> auth user
+      // Note: projects must be deleted before appointments (projects references appointments)
 
       // First get all quotes for this client
       const { data: quotes, error: quotesQueryError } = await supabase
@@ -423,21 +424,21 @@ export default function ClientsPage() {
 
       if (quotesError) throw quotesError;
 
-      // Delete appointments
-      const { error: appointmentsError } = await supabase
-        .from("appointments")
-        .delete()
-        .eq("client_id", clientToDelete.id);
-
-      if (appointmentsError) throw appointmentsError;
-
-      // Delete projects
+      // Delete projects (must be before appointments - projects references appointments)
       const { error: projectsError } = await supabase
         .from("projects")
         .delete()
         .eq("client_id", clientToDelete.id);
 
       if (projectsError) throw projectsError;
+
+      // Delete appointments (after projects)
+      const { error: appointmentsError } = await supabase
+        .from("appointments")
+        .delete()
+        .eq("client_id", clientToDelete.id);
+
+      if (appointmentsError) throw appointmentsError;
 
       // Delete support messages
       const { error: messagesError } = await supabase
