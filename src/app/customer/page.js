@@ -128,6 +128,87 @@ function CustomerHome() {
     }
   };
 
+  // Set up real-time subscriptions for automatic updates
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    // Get client ID first
+    const setupRealtimeSubscriptions = async () => {
+      const { data: clientData } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!clientData) return;
+
+      const clientId = clientData.id;
+
+      // Subscribe to appointments changes
+      const appointmentsChannel = supabase
+        .channel(`appointments:${clientId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'appointments',
+            filter: `client_id=eq.${clientId}`,
+          },
+          () => {
+            console.log('Appointments updated, reloading...');
+            loadCustomerData();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to projects changes
+      const projectsChannel = supabase
+        .channel(`projects:${clientId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'projects',
+            filter: `client_id=eq.${clientId}`,
+          },
+          () => {
+            console.log('Projects updated, reloading...');
+            loadCustomerData();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to quotes changes
+      const quotesChannel = supabase
+        .channel(`quotes:${clientId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'quotes',
+            filter: `client_id=eq.${clientId}`,
+          },
+          () => {
+            console.log('Quotes updated, reloading...');
+            loadCustomerData();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(appointmentsChannel);
+        supabase.removeChannel(projectsChannel);
+        supabase.removeChannel(quotesChannel);
+      };
+    };
+
+    setupRealtimeSubscriptions();
+  }, [session]);
+
   const handlePayment = async (quoteId) => {
     try {
       setPayingQuoteId(quoteId);

@@ -22,6 +22,7 @@ export default function PaymentsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [existingPayments, setExistingPayments] = useState([]);
+  const [editingPaidAmount, setEditingPaidAmount] = useState({}); // Track editing state
   const [newPayment, setNewPayment] = useState({
     client_id: "",
     quote_id: "",
@@ -429,16 +430,35 @@ export default function PaymentsPage() {
                         type="number"
                         step="0.01"
                         min="0"
-                        value={p.paid || 0}
-                        onChange={(e) =>
-                          handlePaidAmountChange(p.id, e.target.value)
-                        }
+                        value={editingPaidAmount[p.id] !== undefined ? editingPaidAmount[p.id] : (p.paid || 0)}
+                        onChange={(e) => {
+                          // Update local state while typing (no database call)
+                          setEditingPaidAmount({
+                            ...editingPaidAmount,
+                            [p.id]: e.target.value
+                          });
+                        }}
+                        onBlur={(e) => {
+                          // Save to database when user finishes (clicks away)
+                          handlePaidAmountChange(p.id, e.target.value);
+                          // Clear editing state
+                          setEditingPaidAmount({
+                            ...editingPaidAmount,
+                            [p.id]: undefined
+                          });
+                        }}
+                        onKeyDown={(e) => {
+                          // Save on Enter key
+                          if (e.key === 'Enter') {
+                            e.target.blur(); // Triggers onBlur
+                          }
+                        }}
                         disabled={updating === p.id || p.stripe_payment_id}
                         className="w-24 px-2 py-1 text-sm font-semibold text-text border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-background disabled:cursor-not-allowed disabled:text-text/70"
                         title={
                           p.stripe_payment_id
                             ? "Stripe payments cannot be edited"
-                            : "Edit paid amount"
+                            : "Edit paid amount - Press Enter or click away to save"
                         }
                       />
                     </td>
