@@ -42,10 +42,10 @@ export default function CustomerLoginModal({
         .single();
 
       if (clientError || !clientData) {
-        // Not a customer account
+        // Not a customer account or account was deleted
         await supabase.auth.signOut();
         throw new Error(
-          "This account is not registered as a customer. Please sign up first."
+          "This account no longer exists. Please contact support or sign up again."
         );
       }
 

@@ -40,7 +40,8 @@ function CustomerHome() {
           .single();
 
         if (!clientData) {
-          // No client record = not a customer, redirect to home
+          // No client record = account was deleted, sign out and redirect
+          await supabase.auth.signOut();
           router.push("/");
           return;
         }

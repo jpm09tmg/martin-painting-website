@@ -385,7 +385,7 @@ export default function ClientsPage() {
       // Store user_id before deleting client
       const userId = clientToDelete.user_id;
 
-      // Delete in order: quote_items -> quotes, then appointments, then projects, then client
+      // Delete in order: payments -> quote_items -> quotes -> appointments -> projects -> messages -> client -> auth user
 
       // First get all quotes for this client
       const { data: quotes, error: quotesQueryError } = await supabase
@@ -395,9 +395,18 @@ export default function ClientsPage() {
 
       if (quotesQueryError) throw quotesQueryError;
 
-      // Delete quote items for each quote
+      // Delete payments for each quote (must be first - references quotes)
       if (quotes && quotes.length > 0) {
         const quoteIds = quotes.map((q) => q.id);
+        
+        const { error: paymentsError } = await supabase
+          .from("payments")
+          .delete()
+          .in("quote_id", quoteIds);
+
+        if (paymentsError) throw paymentsError;
+
+        // Delete quote items for each quote
         const { error: quoteItemsError } = await supabase
           .from("quote_items")
           .delete()
