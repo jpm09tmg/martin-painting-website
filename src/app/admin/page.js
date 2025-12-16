@@ -103,12 +103,15 @@ export default function AdminDashboard() {
         setAppointments(appointmentsData || []); // Update state with fetched data
       }
 
-      // ============================================
       // LOAD PROJECTS
-      // ============================================
       const { data: projectsData, error: projectsError } = await supabase
         .from("projects") // Select from projects table
-        .select("*") // Get all columns
+        .select(`
+          *,
+          clients (*),
+          quotes (*, quote_items (*)),
+          appointments (*)
+        `) // Get all columns WITH related data
         .order("created_at", { ascending: false }) // Sort by creation date (newest first)
         .limit(5); // Only get 5 most recent
 
@@ -473,17 +476,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* ============================================ */}
+                {/* ============================================ */}
         {/* RECENT PROJECTS SECTION */}
         {/* ============================================ */}
-        {/*
-          STRUCTURE:
-          - White card with shadow
-          - Header with title and "View All" link
-          - List of recent projects with details
-          - Progress bars showing completion percentage
-          - Empty state if no projects exist
-        */}
         <div className="bg-background-light rounded-lg shadow mb-8">
           {/* Section Header */}
           <div className="p-6 border-b border-border-muted">
@@ -491,7 +486,6 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-semibold text-text">
                 Recent Projects
               </h3>
-              {/* Link to full projects page using Next.js Link component */}
               <Link
                 href="/admin/projects"
                 className="text-text hover:text-text-muted font-medium"
@@ -503,19 +497,12 @@ export default function AdminDashboard() {
 
           {/* Section Content */}
           <div className="p-6">
-            {/* ============================================ */}
-            {/* LOADING STATE - Shows while fetching data */}
-            {/* ============================================ */}
             {loading ? (
               <div className="bg-background-light text-center py-8">
                 <p className="text-text-muted">Loading projects...</p>
               </div>
             ) : projects.length > 0 ? (
-              // ============================================
-              // PROJECTS LIST - Display recent projects
-              // ============================================
               <div className="space-y-4">
-                {/* Loop through projects array and create card for each */}
                 {projects.map((project) => (
                   <div
                     key={project.id}
@@ -524,9 +511,10 @@ export default function AdminDashboard() {
                     {/* Project header with name and status badge */}
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-semibold text-text">
-                        {project.name}
+                        {project.clients
+                          ? `${project.clients.first_name} ${project.clients.last_name}'s Project`
+                          : "Project"}
                       </h4>
-                      {/* Status badge with dynamic color based on project status */}
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           project.status
@@ -541,31 +529,30 @@ export default function AdminDashboard() {
                       {/* Client name */}
                       <p>
                         <span className="font-medium">Client:</span>{" "}
-                        {project.client}
+                        {project.clients
+                          ? `${project.clients.first_name} ${project.clients.last_name}`
+                          : "No client"}
                       </p>
                       {/* Project address */}
                       <p>
                         <span className="font-medium">Address:</span>{" "}
-                        {project.address}
+                        {project.project_address || "No address"}
                       </p>
-                      {/* Budget with currency formatting (adds commas) */}
-                      <p>
-                        <span className="font-medium">Budget:</span> $
-                        {project.budget?.toLocaleString()}
-                      </p>
+                      {/* Budget from quote */}
+                      {project.quotes?.total_amount && (
+                        <p>
+                          <span className="font-medium">Budget:</span> $
+                          {project.quotes.total_amount.toLocaleString()}
+                        </p>
+                      )}
 
-                      {/* ============================================ */}
-                      {/* PROGRESS BAR - Visual completion indicator */}
-                      {/* ============================================ */}
+                      {/* Progress bar */}
                       <div className="mt-2">
-                        {/* Progress label and percentage */}
                         <div className="flex justify-between text-xs mb-1">
                           <span>Progress</span>
                           <span>{project.progress || 0}%</span>
                         </div>
-                        {/* Progress bar container (gray background) */}
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          {/* Filled portion (brand green) with dynamic width */}
                           <div
                             className="bg-[#74A744] h-2 rounded-full transition-all"
                             style={{ width: `${project.progress || 0}%` }}
@@ -577,11 +564,8 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              // ============================================
-              // EMPTY STATE - No projects exist yet
-              // ============================================
+              // Empty state
               <div className="text-center py-8">
-                {/* Briefcase/folder icon */}
                 <svg
                   className="w-12 h-12 text-text-muted mx-auto mb-4"
                   fill="none"
@@ -599,7 +583,6 @@ export default function AdminDashboard() {
                 <p className="text-text-muted text-sm">
                   Projects will appear here once you start adding them
                 </p>
-                {/* Call-to-action button to add first project */}
                 <Link
                   href="/admin/projects"
                   className="inline-block mt-3 px-4 py-2 bg-background text-text rounded-lg hover:bg-background-dark text-sm"

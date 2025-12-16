@@ -155,7 +155,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="h-64 bg-gray-200 rounded-lg overflow-hidden shadow-md">
                   <Image
-                    src="/projectImages/deckStain.jpg"
+                    src="/projectImages/deckstain.jpg"
                     alt="Deck staining and exterior work"
                     width={300}
                     height={300}
